@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/Users/linardslazdins/Library/Application Support/Herd/bin/php83",
+            "args": [
+                "/Users/linardslazdins/Development/sites/vingrosanas-studija/artisan",
+                "boost:mcp"
+            ]
+        }
+    }
+}
