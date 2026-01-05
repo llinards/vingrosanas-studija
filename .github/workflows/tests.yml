@@ -3,11 +3,11 @@ name: test and deploy
 on:
   push:
     branches:
-      - develop
+      - staging
       - main
   pull_request:
     branches:
-      - develop
+      - staging
       - main
 
 jobs:
