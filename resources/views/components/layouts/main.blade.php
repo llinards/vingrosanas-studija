@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body class="container mx-auto">
+<body>
     <flux:main>
         {{$slot}}
     </flux:main>

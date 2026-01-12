@@ -59,6 +59,10 @@
     --font-body: 'Archivo';
 }
 
+.container {
+    @apply max-w-440
+}
+
 @layer theme {
     .dark {
         --color-accent: var(--color-white);
@@ -98,11 +102,11 @@ select:focus[data-flux-control] {
 }
 
 [data-flux-heading] {
-    @apply font-heading
+    @apply font-heading-semi-bold
 }
 
 h1 {
-    @apply text-5xl md:text-[5rem]  uppercase text-white
+    @apply text-5xl md:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-22
 }
 
 h2 {
@@ -118,11 +122,11 @@ h3 {
 }
 
 .btn-primary {
-    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-80
+    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
 }
 
 .btn-secondary {
-    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white
+    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start
 }
 
 /* \[:where(&)\]:size-4 {
