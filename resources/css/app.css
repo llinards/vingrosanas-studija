@@ -87,7 +87,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
@@ -121,13 +121,21 @@ h3 {
     @apply text-2xl md:text-4xl uppercase text-black
 }
 
-.btn-primary {
-    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
-}
+/*[data-flux-button][data-variant="primary"] {*/
+/*    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start*/
+/*}*/
 
-.btn-secondary {
-    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start
-}
+/*[data-flux-button][data-variant="secondary"] {*/
+/*    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start*/
+/*}*/
+
+/*.btn-primary {*/
+/*    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start*/
+/*}*/
+
+/*.btn-secondary {*/
+/*    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start*/
+/*}*/
 
 /* \[:where(&)\]:size-4 {
     @apply size-4;

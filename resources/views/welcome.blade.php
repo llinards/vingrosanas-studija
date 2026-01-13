@@ -1,7 +1,7 @@
 <x-layouts.main :title="__('Sākums')">
 
     <flux:sidebar collapsible dir="rtl" class="bg-zinc-900 w-full md:w-lg data-flux-sidebar-collapsed-desktop:hidden">
-        <flux:sidebar.toggle icon="x-mark" class="cursor-pointer" />
+        <flux:sidebar.toggle icon="x-mark" class="cursor-pointer"/>
         <flux:sidebar.nav class="text-center items-center">
             <flux:sidebar.item href="#">Home</flux:sidebar.item>
             <flux:sidebar.item href="#">Inbox</flux:sidebar.item>
@@ -12,12 +12,12 @@
     </flux:sidebar>
 
     <flux:header class="bg-zinc-900 flex justify-end">
-        <flux:sidebar.toggle icon="bars-3" inset="left" class="cursor-pointer" />
+        <flux:sidebar.toggle icon="bars-3" inset="left" class="cursor-pointer"/>
     </flux:header>
 
     <flux:main>
         <div class="h-screen bg-cover bg-position-[35%_center] md:bg-center"
-            style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('{{ asset('images/header_image.jpg') }}');">
+             style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('{{ asset('images/header_image.jpg') }}');">
 
             <div class="container mx-auto px-4 pt-6 h-full flex flex-col">
                 <div class="flex items-center gap-4">
@@ -30,8 +30,11 @@
                     <flux:heading level="1">VINGROŠANAS
                         STUDIJA
                         veselīgam
-                        dzīvesveidam</flux:heading>
-                    <flux:button class="btn-primary">Pieteikties</flux:button>
+                        dzīvesveidam
+                    </flux:heading>
+                    <flux:button variant="primary">Pieteikties</flux:button>
+                    <flux:button variant="secondary">Pieteikties</flux:button>
+                    <flux:button variant="danger">Pieteikties</flux:button>
                 </div>
             </div>
         </div>
