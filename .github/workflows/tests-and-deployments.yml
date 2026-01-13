@@ -1,4 +1,4 @@
-name: test and deploy
+name: tests and deployments
 
 on:
   push:
@@ -50,3 +50,17 @@ jobs:
 
       - name: Run Tests
         run: ./vendor/bin/pest
+
+  deploy-staging:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
+
+    steps:
+      - name: Deploy to Staging
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://forge.laravel.com/api/v1/servers/${{ secrets.FORGE_STAGING_SERVER_ID }}/sites/${{ secrets.FORGE_STAGING_SITE_ID }}/deployment/deploy'
+          method: 'POST'
+          customHeaders: '{"Authorization": "Bearer ${{ secrets.API_TOKEN }}", "Accept": "application/json", "Content-Type": "application/json"}'
