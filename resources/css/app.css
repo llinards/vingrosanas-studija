@@ -19,7 +19,7 @@
 @font-face {
     font-family: 'Oswald-SemiBold';
     src: url('fonts/Oswald-SemiBold.ttf') format('truetype');
-    font-weight: 400;
+    font-weight: 700;
     font-style: normal;
     font-display: swap;
 }
@@ -87,7 +87,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],
