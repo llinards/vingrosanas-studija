@@ -27,7 +27,6 @@ Route::group([
 
         Route::livewire('settings/profile', Profile::class)->name('profile.edit');
         Route::livewire('settings/password', Password::class)->name('user-password.edit');
-        Route::livewire('settings/appearance', Appearance::class)->name('appearance.edit');
 
         Route::livewire('settings/two-factor', TwoFactor::class)
              ->middleware(
