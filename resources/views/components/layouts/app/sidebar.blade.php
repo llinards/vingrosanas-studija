@@ -12,9 +12,9 @@
     </a>
 
     <flux:navlist variant="outline">
-        <flux:navlist.group :heading="__('Platform')" class="grid">
+        <flux:navlist.group :heading="__('Platforma')" class="grid">
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                               wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                               wire:navigate>{{ __('Pārskats') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
@@ -52,7 +52,7 @@
 
             <flux:menu.radio.group>
                 <flux:menu.item :href="route('profile.edit')" icon="cog"
-                                wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                                wire:navigate>{{ __('Iestatījumi') }}</flux:menu.item>
             </flux:menu.radio.group>
 
             <flux:menu.separator/>
@@ -60,7 +60,7 @@
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                    {{ __('Log Out') }}
+                    {{ __('Iziet') }}
                 </flux:menu.item>
             </form>
         </flux:menu>
@@ -103,7 +103,7 @@
 
             <flux:menu.radio.group>
                 <flux:menu.item :href="route('profile.edit')" icon="cog"
-                                wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                                wire:navigate>{{ __('Iestatījumi') }}</flux:menu.item>
             </flux:menu.radio.group>
 
             <flux:menu.separator/>
@@ -111,7 +111,7 @@
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                    {{ __('Log Out') }}
+                    {{ __('Iziet') }}
                 </flux:menu.item>
             </form>
         </flux:menu>

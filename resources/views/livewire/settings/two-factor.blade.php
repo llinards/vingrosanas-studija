@@ -2,18 +2,18 @@
     @include('partials.settings-heading')
 
     <x-settings.layout
-        :heading="__('Two Factor Authentication')"
-        :subheading="__('Manage your two-factor authentication settings')"
+        :heading="__('Divu faktoru autentifikācija')"
+        :subheading="__('Pārvaldiet divu faktoru autentifikācijas iestatījumus')"
     >
         <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
             @if ($twoFactorEnabled)
                 <div class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <flux:badge color="green">{{ __('Enabled') }}</flux:badge>
+                        <flux:badge color="green">{{ __('Ieslēgts') }}</flux:badge>
                     </div>
 
                     <flux:text>
-                        {{ __('With two-factor authentication enabled, you will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
+                        {{ __('Kad divu faktoru autentifikācija ir ieslēgta, pieteikšanās laikā jums tiks lūgts ievadīt drošu, nejaušu PIN kodu, ko varat iegūt no TOTP atbalstošās lietotnes savā tālrunī.') }}
                     </flux:text>
 
                     <livewire:settings.two-factor.recovery-codes :$requiresConfirmation/>
@@ -25,18 +25,18 @@
                             icon:variant="outline"
                             wire:click="disable"
                         >
-                            {{ __('Disable 2FA') }}
+                            {{ __('Atspējot 2FA') }}
                         </flux:button>
                     </div>
                 </div>
             @else
                 <div class="space-y-4">
                     <div class="flex items-center gap-3">
-                        <flux:badge color="red">{{ __('Disabled') }}</flux:badge>
+                        <flux:badge color="red">{{ __('Atspējots') }}</flux:badge>
                     </div>
 
                     <flux:text variant="subtle">
-                        {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
+                        {{ __('Kad ieslēgsiet divu faktoru autentifikāciju, pieteikšanās laikā jums tiks lūgts ievadīt drošu PIN kodu. Šo PIN kodu var iegūt no TOTP atbalstošās lietotnes savā tālrunī.') }}
                     </flux:text>
 
                     <flux:button
@@ -45,7 +45,7 @@
                         icon:variant="outline"
                         wire:click="enable"
                     >
-                        {{ __('Enable 2FA') }}
+                        {{ __('Ieslēgt 2FA') }}
                     </flux:button>
                 </div>
             @endif
@@ -103,7 +103,7 @@
                             class="flex-1"
                             wire:click="resetVerification"
                         >
-                            {{ __('Back') }}
+                            {{ __('Atpakaļ') }}
                         </flux:button>
 
                         <flux:button
@@ -112,7 +112,7 @@
                             wire:click="confirmTwoFactor"
                             x-bind:disabled="$wire.code.length < 6"
                         >
-                            {{ __('Confirm') }}
+                            {{ __('Apstiprināt') }}
                         </flux:button>
                     </div>
                 </div>
@@ -152,7 +152,7 @@
                     <div class="relative flex items-center justify-center w-full">
                         <div class="absolute inset-0 w-full h-px top-1/2 bg-stone-200"></div>
                         <span class="relative px-2 text-sm bg-white text-stone-600">
-                            {{ __('or, enter the code manually') }}
+                            {{ __('vai ievadiet kodu manuāli') }}
                         </span>
                     </div>
 
