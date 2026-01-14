@@ -1,6 +1,6 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
+        <x-auth-header :title="__('Izveidot kontu')" :description="__('Ievadiet savus datus, lai izveidotu kontu')" />
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
@@ -11,19 +11,19 @@
             <!-- Name -->
             <flux:input
                 name="name"
-                :label="__('Name')"
+                :label="__('Vārds')"
                 :value="old('name')"
                 type="text"
                 required
                 autofocus
                 autocomplete="name"
-                :placeholder="__('Full name')"
+                :placeholder="__('Pilns vārds')"
             />
 
             <!-- Email Address -->
             <flux:input
                 name="email"
-                :label="__('Email address')"
+                :label="__('E-pasta adrese')"
                 :value="old('email')"
                 type="email"
                 required
@@ -34,35 +34,35 @@
             <!-- Password -->
             <flux:input
                 name="password"
-                :label="__('Password')"
+                :label="__('Parole')"
                 type="password"
                 required
                 autocomplete="new-password"
-                :placeholder="__('Password')"
+                :placeholder="__('Parole')"
                 viewable
             />
 
             <!-- Confirm Password -->
             <flux:input
                 name="password_confirmation"
-                :label="__('Confirm password')"
+                :label="__('Apstipriniet paroli')"
                 type="password"
                 required
                 autocomplete="new-password"
-                :placeholder="__('Confirm password')"
+                :placeholder="__('Apstipriniet paroli')"
                 viewable
             />
 
             <div class="flex items-center justify-end">
                 <flux:button type="submit" variant="primary" class="w-full">
-                    {{ __('Create account') }}
+                    {{ __('Izveidot kontu') }}
                 </flux:button>
             </div>
         </form>
 
         <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600">
-            <span>{{ __('Already have an account?') }}</span>
-            <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
+            <span>{{ __('Jau ir konts?') }}</span>
+            <flux:link :href="route('login')" wire:navigate>{{ __('Pieteikties') }}</flux:link>
         </div>
     </div>
 </x-layouts.auth>

@@ -1,8 +1,8 @@
 <x-layouts.auth>
     <div class="flex flex-col gap-6">
         <x-auth-header
-            :title="__('Confirm password')"
-            :description="__('This is a secure area of the application. Please confirm your password before continuing.')"
+            :title="__('Apstiprināt paroli')"
+            :description="__('Šī ir drošā lietotnes sadaļa. Lūdzu, apstipriniet savu paroli, lai turpinātu.')"
         />
 
         <x-auth-session-status class="text-center" :status="session('status')" />
@@ -12,16 +12,16 @@
 
             <flux:input
                 name="password"
-                :label="__('Password')"
+                :label="__('Parole')"
                 type="password"
                 required
                 autocomplete="current-password"
-                :placeholder="__('Password')"
+                :placeholder="__('Parole')"
                 viewable
             />
 
             <flux:button variant="primary" type="submit" class="w-full" data-test="confirm-password-button">
-                {{ __('Confirm') }}
+                {{ __('Apstiprināt') }}
             </flux:button>
         </form>
     </div>
