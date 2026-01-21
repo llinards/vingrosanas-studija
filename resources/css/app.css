@@ -52,7 +52,7 @@
     --color-accent-foreground: var(--color-white);
 
     /* Vingrošanas Studija - Specific Styles */
-    --color-green: #C2D06F;
+    --color-blue: #518BA9;
     --color-beige: #E3E3DE;
     --font-heading: 'Oswald';
     --font-heading-semi-bold: 'Oswald-SemiBold';
@@ -105,6 +105,10 @@ select:focus[data-flux-control] {
     @apply font-heading-semi-bold
 }
 
+[data-flux-icon] {
+    @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
+}
+
 h1 {
     @apply text-5xl md:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-22
 }
@@ -122,11 +126,11 @@ h3 {
 }
 
 .btn-primary {
-    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
+    @apply text-white font-heading-semi-bold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
 }
 
 .btn-secondary {
-    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start
+    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 hover:border-white self-start
 }
 
 /* \[:where(&)\]:size-4 {
