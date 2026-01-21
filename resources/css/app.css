@@ -109,12 +109,40 @@ select:focus[data-flux-control] {
     @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
 }
 
+[data-flux-accordion-item] [data-flux-icon] {
+ @apply text-black rotate-270
+}
+
+[data-flux-accordion-item][data-open] [data-flux-icon] {
+    @apply rotate-180
+}
+
+[data-flux-cell] {
+    @apply border-none text-black text-base md:text-2xl py-1
+}
+
+[data-flux-table] {
+    @apply py-6
+}
+[data-flux-accordion-item],
+[data-flux-accordion-item]:first-of-type {
+    @apply border-black
+}
+[data-flux-accordion-item]:first-of-type{
+    @apply border-t pt-3
+}
+
+[data-flux-accordion-item]:last-of-type {
+    @apply border-b pb-3
+}
+
+
 h1 {
     @apply text-5xl md:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-22
 }
 
 h2 {
-    @apply text-5xl md:text-7xl uppercase text-black
+    @apply text-5xl md:text-7xl uppercase text-black py-12
 }
 
 h2 .large {
