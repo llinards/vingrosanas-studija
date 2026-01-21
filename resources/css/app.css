@@ -59,6 +59,10 @@
     --font-body: 'Archivo';
 }
 
+body {
+    font-family: 'Archivo';
+}
+
 .container {
     @apply max-w-440
 }
@@ -109,6 +113,10 @@ select:focus[data-flux-control] {
     @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
 }
 
+footer [data-flux-icon] {
+    @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer
+}
+
 [data-flux-accordion-item] [data-flux-icon] {
     @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer size-8 p-1
 }
@@ -150,15 +158,23 @@ h1 {
 }
 
 h2 {
-    @apply text-5xl md:text-7xl uppercase text-black py-12
+    @apply text-5xl md:text-7xl uppercase text-black 
 }
 
-h2 .large {
-    @apply text-5xl md:text-8xl uppercase text-black
+footer h2 {
+    @apply text-3xl md:text-5xl uppercase text-black
 }
 
 h3 {
     @apply text-2xl md:text-4xl uppercase text-black
+}
+
+ul {
+    @apply space-y-1
+}
+
+li a {
+    @apply hover:text-blue hover:underline transition-all duration-300
 }
 
 .btn-primary {
@@ -167,6 +183,10 @@ h3 {
 
 .btn-secondary {
     @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 hover:border-white self-start
+}
+
+.list-heading {
+    @apply uppercase text-black font-heading-semi-bold
 }
 
 /* \[:where(&)\]:size-4 {
