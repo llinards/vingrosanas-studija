@@ -110,11 +110,11 @@ select:focus[data-flux-control] {
 }
 
 [data-flux-accordion-item] [data-flux-icon] {
- @apply text-black rotate-270
+    @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer
 }
 
 [data-flux-accordion-item][data-open] [data-flux-icon] {
-    @apply rotate-180
+    @apply rotate-180 
 }
 
 [data-flux-cell] {
