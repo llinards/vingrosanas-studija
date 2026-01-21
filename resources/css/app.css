@@ -52,11 +52,15 @@
     --color-accent-foreground: var(--color-white);
 
     /* Vingrošanas Studija - Specific Styles */
-    --color-green: #C2D06F;
+    --color-blue: #518BA9;
     --color-beige: #E3E3DE;
     --font-heading: 'Oswald';
     --font-heading-semi-bold: 'Oswald-SemiBold';
     --font-body: 'Archivo';
+}
+
+body {
+    font-family: 'Archivo';
 }
 
 .container {
@@ -105,28 +109,84 @@ select:focus[data-flux-control] {
     @apply font-heading-semi-bold
 }
 
+[data-flux-icon] {
+    @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
+}
+
+footer [data-flux-icon] {
+    @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer
+}
+
+[data-flux-accordion-item] [data-flux-icon] {
+    @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer size-8 p-1
+}
+
+[data-flux-accordion-item][data-open] {
+    @apply relative
+}
+
+[data-flux-accordion-item][data-open]::after {
+    @apply content-[''] absolute top-0 right-0 size-9 bg-blue rounded-full translate-x-2 translate-y-6 pointer-events-none
+}
+
+[data-flux-accordion-item][data-open] [data-flux-icon] {
+    @apply relative rotate-180 rounded-full z-10 hover:fill-white
+}
+
+[data-flux-cell] {
+    @apply border-none text-black text-base md:text-2xl py-1
+}
+
+[data-flux-table] {
+    @apply py-6
+}
+[data-flux-accordion-item],
+[data-flux-accordion-item]:first-of-type {
+    @apply border-black
+}
+[data-flux-accordion-item]:first-of-type{
+    @apply border-t pt-3
+}
+
+[data-flux-accordion-item]:last-of-type {
+    @apply border-b pb-3
+}
+
+
 h1 {
     @apply text-5xl md:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-22
 }
 
 h2 {
-    @apply text-5xl md:text-7xl uppercase text-black
+    @apply text-5xl md:text-7xl uppercase text-black 
 }
 
-h2 .large {
-    @apply text-5xl md:text-8xl uppercase text-black
+footer h2 {
+    @apply text-3xl md:text-5xl uppercase text-black
 }
 
 h3 {
     @apply text-2xl md:text-4xl uppercase text-black
 }
 
+ul {
+    @apply space-y-1
+}
+
+li a {
+    @apply hover:text-blue hover:underline transition-all duration-300
+}
+
 .btn-primary {
-    @apply font-heading-semi-bold border-2 border-green tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
+    @apply text-white font-heading-semi-bold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
 }
 
 .btn-secondary {
-    @apply font-heading-semi-bold border-2 border-black tracking-wide transition-all duration-300 cursor-pointer bg-green uppercase rounded-2xl px-7 hover:text-white hover:border-white self-start
+    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 hover:border-white self-start
+}
+
+.list-heading {
+    @apply uppercase text-black font-heading-semi-bold
 }
 
 /* \[:where(&)\]:size-4 {
