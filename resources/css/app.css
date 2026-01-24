@@ -173,11 +173,11 @@ ul {
     @apply space-y-1
 }
 
-footer li a {
-    @apply text-black hover:text-blue no-underline hover:underline transition-all duration-300
+footer li [data-flux-link] {
+    @apply text-black hover:text-blue hover:underline transition-all duration-300
 }
 
-footer a {
+footer [data-flux-link] {
     @apply text-white hover:text-blue transition-all underline duration-300
 }
 

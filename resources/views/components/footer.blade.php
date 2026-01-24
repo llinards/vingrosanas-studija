@@ -15,45 +15,45 @@
             <ul>
                 <li class="list-heading">Menu</li>
                 <li>
-                    <a href="#about-us">Par mums</a>
+                    <flux:link href="#about-us">Par mums</flux:link>
                 </li>
                 <li>
-                    <a href="#coaches">Treneri</a>
+                    <flux:link href="#coaches">Treneri</flux:link>
                 </li>
                 <li>
-                    <a href="#services">Pakalpojumi</a>
+                    <flux:link href="#services">Pakalpojumi</flux:link>
                 </li>
                 <li>
-                    <a href="#contacts">Kontakti</a>
+                    <flux:link href="#contacts">Kontakti</flux:link>
                 </li>
             </ul>
             <ul>
                 <li class="list-heading">Informācija</li>
                 <li>
-                    <a href="#privacy-policy">Privātuma politika</a>
+                    <flux:link href="#privacy-policy">Privātuma politika</flux:link>
                 </li>
             </ul>
             <ul>
                 <li class="list-heading">Kontakti</li>
                 <li>
-                    <a href="tel:+37126620757">+371 26620757</a>
+                    <flux:link href="tel:+37126620757">+371 26620757</flux:link>
                 </li>
                 <li>
-                    <a href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</a>
+                    <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
                 </li>
                 <li>
-                    <a href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7">Strēlnieku iela 20 A<br />
-                        Sigulda</a>
+                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7">Strēlnieku iela 20 A<br />
+                        Sigulda</flux:link>
                 </li>
             </ul>
             <div class="md:w-full flex flex-col md:items-end">
                 <ul class="list-heading">
                     <li>Pieseko</li>
                     <li class="md:flex items-end justify-end mt-1 md:mt-2">
-                        <a href="https://www.instagram.com/vingrosanas.studija" class="text-blue" target="_blank"
-                            rel="noopener noreferrer">
+                        <flux:link href="https://www.instagram.com/vingrosanas.studija" class="text-blue"
+                            target="_blank" rel="noopener noreferrer">
                             <flux:icon.instagram />
-                        </a>
+                        </flux:link>
                     </li>
                 </ul>
             </div>
@@ -62,11 +62,11 @@
     <div class="bg-black py-6">
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>© VINGROŠANAS STUDIJA 2026 | Visas tiesības rezervētas.</flux:text>
-            <flux:text>Mājaslapas dizainu izstrādāja <a href="https://www.simpledesign.lv" target="_black" noopener
-                    noreferrer>
-                    SIMPLE DESIGN</a>, izstrādi
-                veica <a href="https://www.slmedia.lv" target="_black" noopener noreferrer>S&L
-                    Media</a>
+            <flux:text>Mājaslapas dizainu izstrādāja <flux:link href="https://www.simpledesign.lv" target="_black"
+                    noopener noreferrer>
+                    SIMPLE DESIGN</flux:link>, izstrādi
+                veica <flux:link href="https://www.slmedia.lv" target="_black" noopener noreferrer>S&L
+                    Media</flux:link>
                 .</flux:text>
         </div>
     </div>
