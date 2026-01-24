@@ -5,7 +5,7 @@
     @include('partials.head')
 </head>
 
-<body>
+<body class="bg-beige">
     <flux:main>
         {{$slot}}
     </flux:main>
