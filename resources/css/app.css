@@ -173,8 +173,16 @@ ul {
     @apply space-y-1
 }
 
-li a {
-    @apply hover:text-blue hover:underline transition-all duration-300
+footer li a {
+    @apply text-black hover:text-blue no-underline hover:underline transition-all duration-300
+}
+
+footer a {
+    @apply text-white hover:text-blue transition-all underline duration-300
+}
+
+footer [data-flux-text] {
+    @apply text-white
 }
 
 .btn-primary {
