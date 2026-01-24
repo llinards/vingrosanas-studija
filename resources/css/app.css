@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import "@fancyapps/ui/dist/carousel/carousel.css";
+@import '@fancyapps/ui/dist/carousel/carousel.dots.css';
+
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -54,6 +57,8 @@
     /* Vingrošanas Studija - Specific Styles */
     --color-blue: #518BA9;
     --color-beige: #E3E3DE;
+    --color-gray: #393B3899;
+    --color-body: #efefe5;
     --font-heading: 'Oswald';
     --font-heading-semi-bold: 'Oswald-SemiBold';
     --font-body: 'Archivo';
@@ -61,6 +66,7 @@
 
 body {
     font-family: 'Archivo';
+    @apply focus:outline-blue focus:ring-blue
 }
 
 .container {
@@ -75,7 +81,7 @@ body {
     }
 }
 
-@layer base {
+/* @layer base {
 
     *,
     ::after,
@@ -84,7 +90,7 @@ body {
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
-}
+} */
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
@@ -97,12 +103,12 @@ body {
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+    @apply outline-hidden ring-2 ring-blue ring-offset-2 ring-offset-white;
 }
 
 
 [data-flux-text] {
-    @apply font-body
+    @apply font-body text-black text-base md:text-lg
 }
 
 [data-flux-heading] {
@@ -113,6 +119,11 @@ select:focus[data-flux-control] {
     @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
 }
 
+[data-flux-link] {
+    @apply transition-all duration-300 hover:text-blue
+}
+
+li [data-flux-icon],
 footer [data-flux-icon] {
     @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer
 }
@@ -154,39 +165,67 @@ footer [data-flux-icon] {
 
 
 h1 {
-    @apply text-5xl md:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-22
+    @apply text-5xl md:text-6xl lg:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-18 lg:leading-22
 }
 
 h2 {
-    @apply text-5xl md:text-7xl uppercase text-black 
+    @apply text-5xl md:text-6xl lg:text-7xl uppercase text-black leading-14 md:leading-18 lg:leading-22
 }
 
 footer h2 {
-    @apply text-3xl md:text-5xl uppercase text-black
+    @apply text-3xl md:text-4xl lg:text-5xl uppercase text-black
 }
 
 h3 {
-    @apply text-2xl md:text-4xl uppercase text-black
+    @apply text-2xl md:text-3xl lg:text-4xl uppercase text-black
 }
 
 ul {
+    @apply space-y-1 md:space-y-2 lg:space-y-3
+}
+
+footer ul {
     @apply space-y-1
 }
 
-li a {
-    @apply hover:text-blue hover:underline transition-all duration-300
+footer li [data-flux-link] {
+    @apply text-black hover:underline text-base md:text-xl
 }
 
-.btn-primary {
-    @apply text-white font-heading-semi-bold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 py-1 hover:opacity-70 self-start
+footer [data-flux-link] {
+    @apply text-white
 }
 
-.btn-secondary {
-    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase rounded-2xl px-7 hover:border-white self-start
+footer [data-flux-text] {
+    @apply text-white
+}
+
+[data-flux-input] {
+    @apply outline-none focus:ring-2 focus:ring-blue
+}
+
+[data-flux-button] {
+    @apply text-white font-heading-semi-bold border-2  tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 text-xl md:text-xl lg:text-3xl
+}
+
+.primary {
+    @apply border-blue hover:opacity-70 
+}
+
+.secondary {
+    @apply border-white hover:border-black hover:text-black 
 }
 
 .list-heading {
-    @apply uppercase text-black font-heading-semi-bold
+    @apply uppercase text-black font-heading-semi-bold text-base md:text-xl
+}
+
+#ownerCarousel {
+    @apply h-full 
+}
+
+#ownerCarousel .f-carousel__dot {
+    @apply text-blue text-xl 
 }
 
 /* \[:where(&)\]:size-4 {
