@@ -206,7 +206,7 @@ footer [data-flux-text] {
 }
 
 .btn-secondary {
-    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-xl md:rounded-2xl lg:rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 hover:border-white text-xl md:text-xl lg:text-3xl
+    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 hover:border-black hover:text-black text-xl md:text-xl lg:text-3xl
 }
 
 .list-heading {
