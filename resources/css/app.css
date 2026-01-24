@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import "@fancyapps/ui/dist/carousel/carousel.css";
+@import '@fancyapps/ui/dist/carousel/carousel.dots.css';
+
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -215,6 +218,14 @@ footer [data-flux-text] {
 
 .list-heading {
     @apply uppercase text-black font-heading-semi-bold text-base md:text-xl
+}
+
+#ownerCarousel {
+    @apply h-full 
+}
+
+#ownerCarousel .f-carousel__dot {
+    @apply text-blue text-xl 
 }
 
 /* \[:where(&)\]:size-4 {

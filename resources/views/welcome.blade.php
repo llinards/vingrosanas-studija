@@ -14,7 +14,7 @@
         </flux:accordion>
     </div>
 
-    <div class="mx-auto max-w-7xl px-4 pb-12 grid lg:grid-cols-2">
+    <div class="mx-auto max-w-7xl px-4 pb-12 grid lg:grid-cols-2 gap-x-6">
         <div class="container mx-auto justify-center space-y-6">
             <flux:heading level="2">Jaunas telpas, jaunas iespējas</flux:heading>
             <flux:text>Mūsu vingrošanas studija tagad ir plašāka un jaudīgāka nekā jebkad - vieta, kur kustība kļūst par
@@ -28,7 +28,22 @@
                 <li>Dzeramais ūdens</li>
             </ul>
         </div>
-        <div></div>
+        <div>
+            <style>
+                #myCarousel {
+                    --f-carousel-gap: 10px;
+                    --f-carousel-slide-width: 100%;
+                    --f-carousel-slide-padding: 50px;
+                    --f-carousel-slide-bg: #eee;
+                }
+            </style>
+            <div class="f-carousel" id="ownerCarousel">
+                <div class="f-carousel__slide">1</div>
+                <div class="f-carousel__slide">2</div>
+                <div class="f-carousel__slide">3</div>
+            </div>
+        </div>
+
     </div>
 
     {{-- BANNER ROW WITH BUTTON --}}

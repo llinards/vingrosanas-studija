@@ -1,4 +1,4 @@
-<div class="pb-12 mx-auto max-w-7xl px-4 grid lg:grid-cols-2 gap-y-12">
+<div class="pb-12 mx-auto max-w-7xl px-4 grid lg:grid-cols-2 gap-x-6 gap-y-12">
 
     {{-- LEFT PANEL: CONTACT DETAILS --}}
     <div class="flex flex-col text-center lg:text-start space-y-6 lg:space-y-9">
