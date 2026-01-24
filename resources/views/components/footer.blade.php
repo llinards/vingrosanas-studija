@@ -1,4 +1,4 @@
-<footer>
+<footer class="bg-beige pt-6">
     <div class="container mx-auto px-4">
         <div
             class="flex flex-col space-y-2 md:space-y-0 md:flex-row text-center md:text-right items-center justify-between border-y border-black py-3">
@@ -42,7 +42,8 @@
                     <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7">Strēlnieku iela 20 A<br />
+                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">Strēlnieku iela 20
+                        A<br />
                         Sigulda</flux:link>
                 </li>
             </ul>
@@ -50,8 +51,8 @@
                 <ul class="list-heading">
                     <li>Pieseko</li>
                     <li class="md:flex items-end justify-end mt-1 md:mt-2">
-                        <flux:link href="https://www.instagram.com/vingrosanas.studija" class="text-blue"
-                            target="_blank" rel="noopener noreferrer">
+                        <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                            rel="noopener noreferrer">
                             <flux:icon.instagram />
                         </flux:link>
                     </li>
@@ -65,7 +66,7 @@
             <flux:text>Mājaslapas dizainu izstrādāja <flux:link href="https://www.simpledesign.lv" target="_black"
                     noopener noreferrer>
                     SIMPLE DESIGN</flux:link>, izstrādi
-                veica <flux:link href="https://www.slmedia.lv" target="_black" noopener noreferrer>S&L
+                veica <flux:link href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
                     Media</flux:link>
                 .</flux:text>
         </div>
