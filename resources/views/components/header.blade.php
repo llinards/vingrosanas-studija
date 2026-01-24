@@ -13,7 +13,7 @@
                 STUDIJA
                 veselīgam
                 dzīvesveidam</flux:heading>
-            <flux:button class="btn-primary">Pieteikties</flux:button>
+            <flux:button class="primary">Pieteikties</flux:button>
         </div>
         <div class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
             <a href="tel:+37126620757">

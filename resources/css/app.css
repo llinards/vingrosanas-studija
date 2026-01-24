@@ -105,7 +105,7 @@ select:focus[data-flux-control] {
 
 
 [data-flux-text] {
-    @apply font-body
+    @apply font-body text-black text-base md:text-lg
 }
 
 [data-flux-heading] {
@@ -166,7 +166,7 @@ h1 {
 }
 
 h2 {
-    @apply text-5xl md:text-6xl lg:text-7xl uppercase text-black 
+    @apply text-5xl md:text-6xl lg:text-7xl uppercase text-black leading-14 md:leading-18 lg:leading-22
 }
 
 footer h2 {
@@ -186,7 +186,7 @@ footer ul {
 }
 
 footer li [data-flux-link] {
-    @apply text-black hover:underline
+    @apply text-black hover:underline text-base md:text-xl
 }
 
 footer [data-flux-link] {
@@ -201,16 +201,20 @@ footer [data-flux-text] {
     @apply outline-none focus:ring-2 focus:ring-blue
 }
 
-.btn-primary {
-    @apply text-white font-heading-semi-bold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 hover:opacity-70 text-xl md:text-xl lg:text-3xl
+[data-flux-button] {
+    @apply text-white font-heading-semi-bold border-2  tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 text-xl md:text-xl lg:text-3xl
 }
 
-.btn-secondary {
-    @apply text-white font-heading-semi-bold border-2 border-white tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 hover:border-black hover:text-black text-xl md:text-xl lg:text-3xl
+.primary {
+    @apply border-blue hover:opacity-70 
+}
+
+.secondary {
+    @apply border-white hover:border-black hover:text-black 
 }
 
 .list-heading {
-    @apply uppercase text-black font-heading-semi-bold
+    @apply uppercase text-black font-heading-semi-bold text-base md:text-xl
 }
 
 /* \[:where(&)\]:size-4 {

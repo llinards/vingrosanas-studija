@@ -41,6 +41,6 @@
             <flux:input type="email" label="E-pasts*" required />
             <flux:textarea rows="4" label="Jautājums*" resize="none" required />
         </div>
-        <flux:button type="submit" class="btn-primary self-center">Nosūtīt</flux:button>
+        <flux:button type="submit" class="primary self-center">Nosūtīt</flux:button>
     </form>
 </div>
