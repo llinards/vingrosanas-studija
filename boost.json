@@ -1,6 +1,7 @@
 {
     "agents": [
         "claude_code",
+        "codex",
         "copilot",
         "phpstorm"
     ],
@@ -8,7 +9,6 @@
         "phpstorm",
         "vscode"
     ],
-    "guidelines": [
-        "laravel/fortify"
-    ]
+    "guidelines": [],
+    "herd_mcp": true
 }
