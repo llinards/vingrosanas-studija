@@ -9,11 +9,8 @@
         </div>
 
         <div class="mt-auto pb-12 md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
-            <flux:heading level="1">VINGROŠANAS
-                STUDIJA
-                veselīgam
-                dzīvesveidam</flux:heading>
-            <flux:button class="primary">Pieteikties</flux:button>
+            <flux:heading level="1">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
+            <flux:button class="primary">{{ __('Pieteikties') }}</flux:button>
         </div>
         <div class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
             <a href="tel:+37126620757">
