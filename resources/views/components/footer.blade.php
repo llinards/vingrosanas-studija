@@ -12,34 +12,36 @@
             <ul>
                 <li class="list-heading">{{ __('Menu') }}</li>
                 <li>
-                    <flux:link href="#about-us">{{ __('Par mums') }}</flux:link>
+                    <flux:link variant="ghost" href="#about-us">{{ __('Par mums') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#coaches">{{ __('Treneri') }}</flux:link>
+                    <flux:link variant="ghost" href="#coaches">{{ __('Treneri') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#services">{{ __('Pakalpojumi') }}</flux:link>
+                    <flux:link variant="ghost" href="#services">{{ __('Pakalpojumi') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#contacts">{{ __('Kontakti') }}</flux:link>
+                    <flux:link variant="ghost" href="#contacts">{{ __('Kontakti') }}</flux:link>
                 </li>
             </ul>
             <ul>
                 <li class="list-heading">{{ __('Informācija') }}</li>
                 <li>
-                    <flux:link href="#privacy-policy">{{ __('Privātuma politika') }}</flux:link>
+                    <flux:link variant="ghost" href="#privacy-policy">{{ __('Privātuma politika') }}</flux:link>
                 </li>
             </ul>
             <ul>
                 <li class="list-heading">{{ __('Kontakti') }}</li>
                 <li>
-                    <flux:link href="tel:+37126620757">+371 26620757</flux:link>
+                    <flux:link variant="ghost" href="tel:+37126620757">+371 26620757</flux:link>
                 </li>
                 <li>
-                    <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
+                    <flux:link variant="ghost" href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv
+                    </flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela 20A') }}<br/>
+                    <flux:link variant="ghost" href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7"
+                               target="_blank">{{ __('Strēlnieku iela 20A') }}<br/>
                         {{ __('Sigulda') }}
                     </flux:link>
                 </li>
@@ -48,7 +50,7 @@
                 <ul class="list-heading">
                     <li>{{ __('Pieseko') }}</li>
                     <li class="md:flex items-end justify-end mt-1 md:mt-2">
-                        <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                        <flux:link variant="ghost" href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                                    rel="noopener noreferrer">
                             <flux:icon.instagram/>
                         </flux:link>
@@ -61,14 +63,14 @@
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}</flux:text>
             <flux:text>{{ __('Dizains:') }}
-                <flux:link href="https://www.simpledesign.lv" target="_black"
+                <flux:link variant="ghost" href="https://www.simpledesign.lv" target="_black"
                            rel="noopener noreferrer">
                     SIMPLE DESIGN
                 </flux:link>
             </flux:text>
             <flux:text>
                 {{ __('Izstrāde:') }}
-                <flux:link href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
+                <flux:link variant="ghost" href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
                     Media
                 </flux:link>
             </flux:text>

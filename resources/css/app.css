@@ -151,11 +151,13 @@ footer [data-flux-icon] {
 [data-flux-table] {
     @apply py-6
 }
+
 [data-flux-accordion-item],
 [data-flux-accordion-item]:first-of-type {
     @apply border-black
 }
-[data-flux-accordion-item]:first-of-type{
+
+[data-flux-accordion-item]:first-of-type {
     @apply border-t pt-3
 }
 
@@ -189,7 +191,7 @@ footer ul {
 }
 
 footer li [data-flux-link] {
-    @apply text-black hover:underline text-base md:text-xl
+    @apply text-black text-base md:text-xl
 }
 
 footer [data-flux-link] {
