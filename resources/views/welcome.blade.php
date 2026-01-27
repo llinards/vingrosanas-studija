@@ -15,12 +15,12 @@
     </div>
 
     {{-- CTA --}}
-    <x-banner-with-cta/>
+    <x-banner-with-cta />
 
     {{-- COACHES --}}
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
-    <x-banner-with-cta/>
+    <x-banner-with-cta />
 
     {{-- CAROUSEL --}}
     <div class="pb-12">
@@ -31,17 +31,17 @@
             <div class="f-carousel__slide">
                 <img src="{{ asset('images/anete_platkevica_2.jpg') }}" alt="">
             </div>
-            <div class="f-carousel__slide"> 
+            <div class="f-carousel__slide">
                 <img src="{{ asset('images/anete_platkevica_3.jpg') }}" alt="">
             </div>
         </div>
     </div>
 
     {{-- NEW PREMISES --}}
-   <x-new-premises/>
+    <x-new-premises />
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
-    <x-banner-with-cta/>
+    <x-banner-with-cta />
 
     {{-- FORM --}}
     <x-form />
