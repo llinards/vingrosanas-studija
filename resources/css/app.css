@@ -1,15 +1,30 @@
+/* ============================================================================
+   Imports
+   ========================================================================== */
+
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
-@import "@fancyapps/ui/dist/carousel/carousel.css";
+@import '@fancyapps/ui/dist/carousel/carousel.css';
 @import '@fancyapps/ui/dist/carousel/carousel.dots.css';
 
+/* ============================================================================
+   Sources - Tailwind v4 Content Scanning
+   ========================================================================== */
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
 
+/* ============================================================================
+   Custom Variants
+   ========================================================================== */
+
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================================
+   Custom Fonts
+   ========================================================================== */
 
 @font-face {
     font-family: 'Oswald';
@@ -20,9 +35,9 @@
 }
 
 @font-face {
-    font-family: 'Oswald-SemiBold';
+    font-family: 'Oswald';
     src: url('fonts/Oswald-SemiBold.ttf') format('truetype');
-    font-weight: 700;
+    font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
@@ -35,9 +50,23 @@
     font-display: swap;
 }
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+/* ============================================================================
+   Theme Configuration
+   ========================================================================== */
 
+@theme {
+    /* Typography */
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+
+    /* Brand Colors */
+    --color-blue: #518BA9;
+    --color-beige: #E3E3DE;
+    --color-gray: #393B3899;
+    --color-body: #efefe5;
+
+    /* Zinc Scale (Flux UI Default) */
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
     --color-zinc-200: #e5e5e5;
@@ -50,28 +79,15 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
+    /* Flux UI Accent Colors */
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
-
-    /* Vingrošanas Studija - Specific Styles */
-    --color-blue: #518BA9;
-    --color-beige: #E3E3DE;
-    --color-gray: #393B3899;
-    --color-body: #efefe5;
-    --font-heading: 'Oswald';
-    --font-heading-semi-bold: 'Oswald-SemiBold';
-    --font-body: 'Archivo';
 }
 
-body {
-    font-family: 'Archivo';
-    @apply focus:outline-blue focus:ring-blue
-}
-
-.container {
-    @apply max-w-440
-}
+/* ============================================================================
+   Dark Mode Theme
+   ========================================================================== */
 
 @layer theme {
     .dark {
@@ -81,17 +97,24 @@ body {
     }
 }
 
-/* @layer base {
+/* ============================================================================
+   Base Styles
+   ========================================================================== */
 
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
-    }
-} */
+body {
+    font-family: var(--font-body);
+    @apply focus:outline-blue focus:ring-blue;
+}
 
+.container {
+    @apply max-w-440;
+}
+
+/* ============================================================================
+   Flux UI Component Overrides
+   ========================================================================== */
+
+/* Form Fields */
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
@@ -106,128 +129,167 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-blue ring-offset-2 ring-offset-white;
 }
 
+[data-flux-input] {
+    @apply outline-none focus:ring-2 focus:ring-blue;
+}
 
+/* Typography Components */
 [data-flux-text] {
-    @apply font-body text-black text-base md:text-lg
+    @apply font-body text-black text-base md:text-lg;
 }
 
 [data-flux-heading] {
-    @apply font-heading-semi-bold
+    font-family: var(--font-heading);
+    @apply font-semibold;
 }
 
-[data-flux-icon] {
-    @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer
-}
-
+/* Links */
 [data-flux-link] {
-    @apply transition-all duration-300 hover:text-blue
+    @apply transition-all duration-300 hover:text-blue;
+}
+
+/* Icons */
+[data-flux-icon] {
+    @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer;
 }
 
 li [data-flux-icon],
 footer [data-flux-icon] {
-    @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer
+    @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer;
 }
 
-[data-flux-accordion-item] [data-flux-icon] {
-    @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer size-8 p-1
+/* Buttons */
+[data-flux-button] {
+    font-family: var(--font-heading);
+    @apply text-white font-semibold border-2 tracking-wide transition-all duration-300 cursor-pointer;
+    @apply bg-blue uppercase rounded-3xl;
+    @apply px-7 py-6 text-xl;
+    @apply md:px-10 md:py-7 md:text-xl;
+    @apply lg:px-12 lg:py-8 lg:text-3xl;
 }
 
-[data-flux-accordion-item][data-open] {
-    @apply relative
-}
-
-[data-flux-accordion-item][data-open]::after {
-    @apply content-[''] absolute top-0 right-0 size-9 bg-blue rounded-full translate-x-2 translate-y-6 pointer-events-none
-}
-
-[data-flux-accordion-item][data-open] [data-flux-icon] {
-    @apply relative rotate-180 rounded-full z-10 hover:fill-white
-}
-
-[data-flux-cell] {
-    @apply border-none text-black text-base md:text-2xl py-1
-}
-
-[data-flux-table] {
-    @apply py-6
-}
+/* Accordion */
 [data-flux-accordion-item],
 [data-flux-accordion-item]:first-of-type {
-    @apply border-black
+    @apply border-black;
 }
-[data-flux-accordion-item]:first-of-type{
-    @apply border-t pt-3
+
+[data-flux-accordion-item]:first-of-type {
+    @apply border-t pt-3;
 }
 
 [data-flux-accordion-item]:last-of-type {
-    @apply border-b pb-3
+    @apply border-b pb-3;
 }
 
+[data-flux-accordion-item] [data-flux-icon] {
+    @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer size-8 p-1;
+}
+
+[data-flux-accordion-item][data-open] {
+    @apply relative;
+}
+
+[data-flux-accordion-item][data-open]::after {
+    @apply content-[''] absolute top-0 right-0 size-9 bg-blue rounded-full translate-x-2 translate-y-6 pointer-events-none;
+}
+
+[data-flux-accordion-item][data-open] [data-flux-icon] {
+    @apply relative rotate-180 rounded-full z-10 hover:fill-white;
+}
+
+/* Tables */
+[data-flux-table] {
+    @apply py-6;
+}
+
+[data-flux-cell] {
+    @apply border-none text-black text-base md:text-2xl py-1;
+}
+
+/* ============================================================================
+   Typography - Headings
+   ========================================================================== */
 
 h1 {
-    @apply text-5xl md:text-6xl lg:text-[5rem] uppercase text-white tracking-wide leading-14 md:leading-18 lg:leading-22
+    font-family: var(--font-heading);
+    @apply text-5xl md:text-6xl lg:text-[5rem];
+    @apply uppercase text-white tracking-wide;
+    @apply leading-14 md:leading-18 lg:leading-22;
 }
 
 h2 {
-    @apply text-5xl md:text-6xl lg:text-7xl uppercase text-black leading-14 md:leading-18 lg:leading-22
-}
-
-footer h2 {
-    @apply text-3xl md:text-4xl lg:text-5xl uppercase text-black
+    font-family: var(--font-heading);
+    @apply text-5xl md:text-6xl lg:text-7xl;
+    @apply uppercase text-black;
+    @apply leading-14 md:leading-18 lg:leading-22;
 }
 
 h3 {
-    @apply text-2xl md:text-3xl lg:text-4xl uppercase text-black
+    font-family: var(--font-heading);
+    @apply text-2xl md:text-3xl lg:text-4xl;
+    @apply uppercase text-black;
 }
 
+/* ============================================================================
+   Layout Components
+   ========================================================================== */
+
+/* Lists */
 ul {
-    @apply space-y-1 md:space-y-2 lg:space-y-3
-}
-
-footer ul {
-    @apply space-y-1
-}
-
-footer li [data-flux-link] {
-    @apply text-black hover:underline text-base md:text-xl
-}
-
-footer [data-flux-link] {
-    @apply text-white
-}
-
-footer [data-flux-text] {
-    @apply text-white
-}
-
-[data-flux-input] {
-    @apply outline-none focus:ring-2 focus:ring-blue
-}
-
-[data-flux-button] {
-    @apply text-white font-heading-semi-bold border-2  tracking-wide transition-all duration-300 cursor-pointer bg-blue uppercase px-7 rounded-3xl py-6 md:px-10 md:py-7 lg:px-12 lg:py-8 text-xl md:text-xl lg:text-3xl
-}
-
-.primary {
-    @apply border-blue hover:opacity-70
-}
-
-.secondary {
-    @apply border-white hover:border-black hover:text-black
+    @apply space-y-1 md:space-y-2 lg:space-y-3;
 }
 
 .list-heading {
-    @apply uppercase text-black font-heading-semi-bold text-base md:text-xl
+    font-family: var(--font-heading);
+    @apply uppercase text-black font-semibold text-base md:text-xl;
 }
 
+/* ============================================================================
+   Footer Overrides
+   ========================================================================== */
+
+footer h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl uppercase text-black;
+}
+
+footer ul {
+    @apply space-y-1;
+}
+
+footer li [data-flux-link] {
+    @apply text-black hover:underline text-base md:text-xl;
+}
+
+footer [data-flux-link] {
+    @apply text-white;
+}
+
+footer [data-flux-text] {
+    @apply text-white;
+}
+
+/* ============================================================================
+   Button Variants
+   ========================================================================== */
+
+.primary {
+    @apply border-blue hover:opacity-70;
+}
+
+.secondary {
+    @apply border-white hover:border-black hover:text-black;
+}
+
+/* ============================================================================
+   Third-Party Component Overrides
+   ========================================================================== */
+
+/* Fancyapps Carousel */
 #ownerCarousel {
-    @apply h-full
+    @apply h-full;
 }
 
 #ownerCarousel .f-carousel__dot {
-    @apply text-blue text-xl
+    @apply text-blue text-xl;
 }
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
