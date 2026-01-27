@@ -8,7 +8,8 @@
             <flux:heading level="2">VINGROŠANAS
                 STUDIJA
                 veselīgam
-                dzīvesveidam</flux:heading>
+                dzīvesveidam
+            </flux:heading>
         </div>
 
         <div class="pt-12 pb-12 md:flex md:flex-row space-y-6 md:space-y-0 gap-x-24">
@@ -42,9 +43,9 @@
                     <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">Strēlnieku iela 20
-                        A<br />
-                        Sigulda</flux:link>
+                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">Strēlnieku iela 20A<br/>
+                        Sigulda
+                    </flux:link>
                 </li>
             </ul>
             <div class="md:w-full flex flex-col md:items-end">
@@ -52,8 +53,8 @@
                     <li>Pieseko</li>
                     <li class="md:flex items-end justify-end mt-1 md:mt-2">
                         <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
-                            rel="noopener noreferrer">
-                            <flux:icon.instagram />
+                                   rel="noopener noreferrer">
+                            <flux:icon.instagram/>
                         </flux:link>
                     </li>
                 </ul>
@@ -62,13 +63,19 @@
     </div>
     <div class="bg-black py-6">
         <div class="container mx-auto space-y-2 text-center">
-            <flux:text>© VINGROŠANAS STUDIJA 2026 | Visas tiesības rezervētas.</flux:text>
-            <flux:text>Mājaslapas dizainu izstrādāja <flux:link href="https://www.simpledesign.lv" target="_black"
-                    noopener noreferrer>
-                    SIMPLE DESIGN</flux:link>, izstrādi
-                veica <flux:link href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
-                    Media</flux:link>
-                .</flux:text>
+            <flux:text>© VINGROŠANAS STUDIJA {{ now()->year }} | Visas tiesības rezervētas.</flux:text>
+            <flux:text>Dizains:
+                <flux:link href="https://www.simpledesign.lv" target="_black"
+                           rel="noopener noreferrer">
+                    SIMPLE DESIGN
+                </flux:link>
+            </flux:text>
+            <flux:text>
+                Izstrāde:
+                <flux:link href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
+                    Media
+                </flux:link>
+            </flux:text>
         </div>
     </div>
 </footer>

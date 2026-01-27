@@ -209,11 +209,11 @@ footer [data-flux-text] {
 }
 
 .primary {
-    @apply border-blue hover:opacity-70 
+    @apply border-blue hover:opacity-70
 }
 
 .secondary {
-    @apply border-white hover:border-black hover:text-black 
+    @apply border-white hover:border-black hover:text-black
 }
 
 .list-heading {
@@ -221,11 +221,11 @@ footer [data-flux-text] {
 }
 
 #ownerCarousel {
-    @apply h-full 
+    @apply h-full
 }
 
 #ownerCarousel .f-carousel__dot {
-    @apply text-blue text-xl 
+    @apply text-blue text-xl
 }
 
 /* \[:where(&)\]:size-4 {
