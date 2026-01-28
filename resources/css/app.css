@@ -157,6 +157,10 @@ select:focus[data-flux-control] {
     @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer;
 }
 
+ui-checkbox [data-flux-icon] {
+    @apply size-4 hover:text-white;
+}
+
 li [data-flux-icon],
 footer [data-flux-icon] {
     @apply text-blue hover:text-black;
