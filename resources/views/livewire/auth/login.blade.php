@@ -37,7 +37,7 @@
             <flux:checkbox name="remember" :label="__('Atcerēties mani')" :checked="old('remember')"/>
 
             <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="primary w-full" data-test="login-button">
+                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
                     {{ __('Pieteikties') }}
                 </flux:button>
             </div>

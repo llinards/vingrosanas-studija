@@ -137,10 +137,6 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-blue ring-offset-2 ring-offset-white;
 }
 
-[data-flux-input] {
-    @apply outline-none focus:ring-2 focus:ring-blue;
-}
-
 /* Typography Components */
 [data-flux-text] {
     @apply font-body text-black text-base md:text-lg;
@@ -163,7 +159,7 @@ select:focus[data-flux-control] {
 
 li [data-flux-icon],
 footer [data-flux-icon] {
-    @apply text-blue size-8 hover:text-black transition-all duration-300 cursor-pointer;
+    @apply text-blue hover:text-black;
 }
 
 /* Buttons */
@@ -274,7 +270,7 @@ footer li [data-flux-link] {
 }
 
 .primary {
-    @apply border-blue hover:opacity-70;
+    
 }
 
 .secondary {
