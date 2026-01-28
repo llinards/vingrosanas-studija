@@ -258,11 +258,7 @@ footer ul {
 }
 
 footer li [data-flux-link] {
-    @apply text-black hover:underline text-base md:text-xl;
-}
-
-footer [data-flux-link] {
-    @apply text-white;
+    @apply text-black text-base md:text-xl;
 }
 
 footer [data-flux-text] {
