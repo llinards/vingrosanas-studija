@@ -1,26 +1,22 @@
-import { Carousel } from "@fancyapps/ui/dist/carousel/";
-import { Dots } from '@fancyapps/ui/dist/carousel/carousel.dots.js';
-import { Autoplay } from '@fancyapps/ui/dist/carousel/carousel.autoplay.js';
+import {Carousel} from '@fancyapps/ui';
+import {Dots} from '@fancyapps/ui/dist/carousel/carousel.dots.js';
 
+const fitnessCarousel = document.getElementById('fitnessCarousel');
+const ownerCarousel = document.getElementById('ownerCarousel');
 
-Carousel(
-  document.getElementById('ownerCarousel'),
-  {
-    // Your custom options
-  },
-  {
-    // Autoplay,
-    Dots,
-  }
-).init();
+if (fitnessCarousel) {
+    Carousel(fitnessCarousel, {
+        // Your custom options
+    }, {
+        Dots,
+    }).init();
+}
 
-Carousel(
-  document.getElementById('fitnessCarousel'),
-  {
-    // Your custom options
-  },
-  {
-    // Autoplay,
-    Dots,
-  }
-).init();
+if (ownerCarousel) {
+    Carousel(ownerCarousel, {
+        // Your custom options
+    }, {
+        Autoplay: false,
+        Dots,
+    }).init();
+}
