@@ -123,6 +123,14 @@ body {
     @apply !mb-0 !leading-tight;
 }
 
+[data-flux-error] {
+    @apply mt-1;
+}
+
+[data-flux-error] [data-flux-icon] {
+    @apply hidden;
+}
+
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
@@ -159,14 +167,6 @@ footer [data-flux-icon] {
 }
 
 /* Buttons */
-[data-flux-button] {
-    font-family: var(--font-heading);
-    @apply text-white font-semibold border-2 tracking-wide transition-all duration-300 cursor-pointer;
-    @apply bg-blue uppercase rounded-3xl;
-    @apply px-7 py-6 text-xl;
-    @apply md:px-10 md:py-7 md:text-xl;
-    @apply lg:px-12 lg:py-8 lg:text-3xl;
-}
 
 /* Accordion */
 [data-flux-accordion-item],
@@ -253,17 +253,25 @@ footer ul {
     @apply space-y-1;
 }
 
-footer li [data-flux-link] {
-    @apply text-black text-base md:text-xl;
-}
-
 footer [data-flux-text] {
     @apply text-white;
+}
+
+footer li [data-flux-link] {
+    @apply text-black text-base md:text-xl;
 }
 
 /* ============================================================================
    Button Variants
    ========================================================================== */
+.button {
+    font-family: var(--font-heading);
+    @apply text-white font-semibold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer
+    bg-blue uppercase rounded-3xl hover:opacity-70
+    px-7 py-6 text-xl
+    md:px-10 md:py-7 md:text-xl
+    lg:px-12 lg:py-8 lg:text-3xl;
+}
 
 .primary {
     @apply border-blue hover:opacity-70;
@@ -280,10 +288,10 @@ footer [data-flux-text] {
 /* Fancyapps Carousel */
 
 .f-carousel__dot::after {
-   @apply p-2 text-blue;
+    @apply p-2 text-blue;
 }
 
-.f-carousel__slide img{
+.f-carousel__slide img {
     @apply w-full
 }
 
