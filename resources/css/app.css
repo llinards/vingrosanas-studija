@@ -133,7 +133,9 @@ body {
 
 input:focus[data-flux-control],
 textarea:focus[data-flux-control],
-select:focus[data-flux-control] {
+select:focus[data-flux-control],
+ui-checkbox:focus,
+button:focus[data-flux-button] {
     @apply outline-hidden ring-2 ring-blue ring-offset-2 ring-offset-white;
 }
 
