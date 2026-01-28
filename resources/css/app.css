@@ -263,14 +263,14 @@ footer li [data-flux-link] {
 .button {
     font-family: var(--font-heading);
     @apply text-white font-semibold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer
-    bg-blue uppercase rounded-3xl hover:opacity-70
+    bg-blue uppercase rounded-3xl
     px-7 py-6 text-xl
     md:px-10 md:py-7 md:text-xl
     lg:px-12 lg:py-8 lg:text-3xl;
 }
 
 .primary {
-    
+    @apply hover:opacity-70
 }
 
 .secondary {
