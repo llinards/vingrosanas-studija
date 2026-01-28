@@ -1,4 +1,4 @@
-<div class="h-screen relative bg-cover bg-position-[35%_center] md:bg-center"
+<header class="h-screen relative bg-cover bg-position-[35%_center] md:bg-center"
     style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('{{ asset('images/header_image.jpg') }}');">
 
     <div class="container mx-auto px-4 pt-6 h-full flex flex-col relative">
@@ -24,4 +24,4 @@
             </a>
         </div>
     </div>
-</div>
+</header>

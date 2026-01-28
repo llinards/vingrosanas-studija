@@ -190,12 +190,8 @@ footer [data-flux-icon] {
     @apply relative;
 }
 
-[data-flux-accordion-item][data-open]::after {
-    @apply content-[''] absolute top-0 right-0 size-9 bg-blue rounded-full translate-x-2 translate-y-6 pointer-events-none;
-}
-
 [data-flux-accordion-item][data-open] [data-flux-icon] {
-    @apply relative rotate-180 rounded-full z-10 hover:fill-white;
+    @apply relative rotate-180 rounded-full z-10 hover:fill-blue;
 }
 
 /* Tables */
@@ -286,10 +282,29 @@ footer [data-flux-text] {
    ========================================================================== */
 
 /* Fancyapps Carousel */
-#ownerCarousel {
-    @apply h-full;
+
+.f-carousel__dot::after {
+   @apply p-2 text-blue;
 }
 
-#ownerCarousel .f-carousel__dot {
-    @apply text-blue text-xl;
+.f-carousel__slide img{
+    @apply w-full
 }
+
+#fitnessCarousel {
+    @apply h-128;
+}
+
+#fitnessCarousel .f-carousel__slide {
+    @apply w-full;
+}
+
+.f-carousel__dots {
+    top: 90%;
+}
+
+#ownerCarousel {
+    @apply max-h-156;
+}
+
+
