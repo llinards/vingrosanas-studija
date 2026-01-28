@@ -39,7 +39,8 @@
                     <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela 20A') }}<br/>
+                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7"
+                               target="_blank">{{ __('Strēlnieku iela 20A') }}<br/>
                         {{ __('Sigulda') }}
                     </flux:link>
                 </li>
@@ -61,14 +62,16 @@
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}</flux:text>
             <flux:text>{{ __('Dizains:') }}
-                <flux:link href="https://www.simpledesign.lv" target="_black"
+                <flux:link href="https://www.simpledesign.lv" class="text-white decoration-white" target="_black"
                            rel="noopener noreferrer">
                     SIMPLE DESIGN
                 </flux:link>
             </flux:text>
             <flux:text>
                 {{ __('Izstrāde:') }}
-                <flux:link href="https://www.slmedia.lv" target="_black" rel="noopener noreferrer">S&L
+                <flux:link href="https://www.slmedia.lv" class="text-white decoration-white" target="_black"
+                           rel="noopener noreferrer">
+                    S&L
                     Media
                 </flux:link>
             </flux:text>
