@@ -12,7 +12,7 @@
     </a>
 
     <flux:navlist variant="outline">
-        <flux:navlist.group :heading="__('Platforma')" class="grid">
+        <flux:navlist.group class="grid">
             <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                                wire:navigate>{{ __('Pārskats') }}</flux:navlist.item>
         </flux:navlist.group>

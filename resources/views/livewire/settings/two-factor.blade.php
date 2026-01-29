@@ -35,14 +35,12 @@
                         <flux:badge color="red">{{ __('Atspējots') }}</flux:badge>
                     </div>
 
-                    <flux:text variant="subtle">
+                    <flux:text>
                         {{ __('Kad ieslēgsiet divu faktoru autentifikāciju, pieteikšanās laikā jums tiks lūgts ievadīt drošu PIN kodu. Šo PIN kodu var iegūt no TOTP atbalstošās lietotnes savā tālrunī.') }}
                     </flux:text>
 
                     <flux:button
                         variant="primary"
-                        icon="shield-check"
-                        icon:variant="outline"
                         wire:click="enable"
                     >
                         {{ __('Ieslēgt 2FA') }}
@@ -62,13 +60,15 @@
             <div class="flex flex-col items-center space-y-4">
                 <div class="p-0.5 w-auto rounded-full border border-stone-100 bg-white shadow-sm">
                     <div class="p-2.5 rounded-full border border-stone-200 overflow-hidden bg-stone-100 relative">
-                        <div class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 divide-stone-200 justify-around opacity-50">
+                        <div
+                            class="flex items-stretch absolute inset-0 w-full h-full divide-x [&>div]:flex-1 divide-stone-200 justify-around opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
                         </div>
 
-                        <div class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 divide-stone-200 justify-around opacity-50">
+                        <div
+                            class="flex flex-col items-stretch absolute w-full h-full divide-y [&>div]:flex-1 inset-0 divide-stone-200 justify-around opacity-50">
                             @for ($i = 1; $i <= 5; $i++)
                                 <div></div>
                             @endfor
@@ -118,7 +118,7 @@
                 </div>
             @else
                 @error('setupData')
-                    <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}"/>
+                <flux:callout variant="danger" icon="x-circle" heading="{{ $message }}"/>
                 @enderror
 
                 <div class="flex justify-center">
