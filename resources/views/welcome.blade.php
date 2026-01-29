@@ -22,20 +22,8 @@
     {{-- BANNER ROW WITH CTA BUTTON --}}
     <x-banner-with-cta />
 
-    {{-- CAROUSEL --}}
-    <div class="pb-12">
-        <div class="f-carousel" id="fitnessCarousel">
-            <div class="f-carousel__slide">
-                <img src="{{ asset('images/anete_platkevica_1.jpg') }}" alt="">
-            </div>
-            <div class="f-carousel__slide">
-                <img src="{{ asset('images/anete_platkevica_2.jpg') }}" alt="">
-            </div>
-            <div class="f-carousel__slide">
-                <img src="{{ asset('images/anete_platkevica_3.jpg') }}" alt="">
-            </div>
-        </div>
-    </div>
+    {{-- GALLERY CAROUSEL --}}
+    <x-gallery-carousel />
 
     {{-- NEW PREMISES --}}
     <x-new-premises />

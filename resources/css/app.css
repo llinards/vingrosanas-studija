@@ -294,15 +294,11 @@ footer li [data-flux-link] {
 }
 
 .f-carousel__slide img {
-    @apply w-full
+    @apply w-full h-full object-center object-cover
 }
 
 #fitnessCarousel {
-    @apply h-128;
-}
-
-#fitnessCarousel .f-carousel__slide {
-    @apply w-full;
+    @apply h-screen lg:h-204;
 }
 
 .f-carousel__dots {
