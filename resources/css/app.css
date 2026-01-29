@@ -306,6 +306,10 @@ footer li [data-flux-link] {
     @apply p-2 text-blue;
 }
 
+.f-carousel.has-dots {
+    margin-bottom: 0px;
+}
+
 .f-carousel__slide img {
     @apply w-full h-full object-center object-cover
 }

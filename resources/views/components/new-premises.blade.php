@@ -1,6 +1,6 @@
 <div class="pb-12 grid lg:grid-cols-2 gap-x-6 lg:relative">
     <div class="flex lg:justify-end">
-        <div class="h-156 lg:max-w-157 flex flex-col justify-center pb-12 lg:pb-0 space-y-6 px-4">
+        <div class="lg:h-156 lg:max-w-157 flex flex-col justify-center pb-12 lg:pb-0 space-y-6 px-4">
             <flux:heading level="2">{{ __('Jaunas telpas, jaunas iespējas') }}</flux:heading>
             <flux:text>{{ __('Mūsu vingrošanas studija tagad ir plašāka un jaudīgāka nekā jebkad - vieta, kur kustība
                 kļūst par labsajūtu.') }}</flux:text>
