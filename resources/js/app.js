@@ -1,11 +1,11 @@
 import {Carousel} from '@fancyapps/ui';
 import {Dots} from '@fancyapps/ui/dist/carousel/carousel.dots.js';
 
-const fitnessCarousel = document.getElementById('fitnessCarousel');
+const galleryCarousel = document.getElementById('galleryCarousel');
 const ownerCarousel = document.getElementById('ownerCarousel');
 
-if (fitnessCarousel) {
-    Carousel(fitnessCarousel, {
+if (galleryCarousel) {
+    Carousel(galleryCarousel, {
         // Your custom options
     }, {
         Dots,

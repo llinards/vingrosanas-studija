@@ -240,7 +240,15 @@ ul {
 
 .list-heading {
     font-family: var(--font-heading);
-    @apply uppercase text-black font-semibold text-base md:text-xl;
+    @apply uppercase text-black font-semibold text-base md:text-xl 
+}
+
+#contactDetails .list-heading {
+    @apply lg:text-3xl;
+}
+
+footer .list-heading {
+    @apply lg:text-xl
 }
 
 /* ============================================================================
@@ -260,7 +268,7 @@ footer [data-flux-text] {
 }
 
 footer li [data-flux-link] {
-    @apply text-black text-base md:text-xl;
+    @apply text-black text-base lg:text-xl;
 }
 
 /* ============================================================================
@@ -289,6 +297,10 @@ footer li [data-flux-link] {
 
 /* Fancyapps Carousel */
 
+.f-carousel__dots {
+    top: 90%;
+}
+
 .f-carousel__dot::after {
     @apply p-2 text-blue;
 }
@@ -297,16 +309,12 @@ footer li [data-flux-link] {
     @apply w-full h-full object-center object-cover
 }
 
-#fitnessCarousel {
+#galleryCarousel {
     @apply h-screen lg:h-204;
 }
 
-.f-carousel__dots {
-    top: 90%;
-}
-
 #ownerCarousel {
-    @apply max-h-156;
+    @apply h-screen lg:max-h-156;
 }
 
 
