@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    @include('partials.head')
+    @include('partials.admin-head')
 </head>
 <body class="min-h-screen bg-white">
 <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50">
