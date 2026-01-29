@@ -6,6 +6,7 @@
 @import '../../vendor/livewire/flux/dist/flux.css';
 @import '@fancyapps/ui/dist/carousel/carousel.css';
 @import '@fancyapps/ui/dist/carousel/carousel.dots.css';
+@import '@fancyapps/ui/dist/carousel/carousel.autoplay.css';
 
 /* ============================================================================
    Sources - Tailwind v4 Content Scanning
