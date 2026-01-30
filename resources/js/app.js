@@ -1,13 +1,20 @@
 import {Carousel} from '@fancyapps/ui';
 import {Dots} from '@fancyapps/ui/dist/carousel/carousel.dots.js';
+import {Autoplay} from '@fancyapps/ui/dist/carousel/carousel.autoplay.js';
 
-const fitnessCarousel = document.getElementById('fitnessCarousel');
+const galleryCarousel = document.getElementById('galleryCarousel');
 const ownerCarousel = document.getElementById('ownerCarousel');
 
-if (fitnessCarousel) {
-    Carousel(fitnessCarousel, {
-        // Your custom options
+if (galleryCarousel) {
+    Carousel(galleryCarousel, {
+        Autoplay: {
+            pauseOnHover: false,
+            showProgressbar: false,
+            timeout: 3000,
+        },
+        gestures: false,
     }, {
+        Autoplay,
         Dots,
     }).init();
 }
@@ -16,7 +23,6 @@ if (ownerCarousel) {
     Carousel(ownerCarousel, {
         // Your custom options
     }, {
-        Autoplay: false,
         Dots,
     }).init();
 }
