@@ -34,7 +34,6 @@
     {{-- FORM --}}
     <x-form />
 
-
     {{-- FOOTER --}}
     <x-footer />
 

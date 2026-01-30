@@ -111,6 +111,10 @@ body {
     @apply max-w-440;
 }
 
+[x-cloak] {
+    display: none !important
+}
+
 /* ============================================================================
    Flux UI Component Overrides
    ========================================================================== */
@@ -132,8 +136,13 @@ body {
     @apply hidden;
 }
 
-:focus {
-    @apply outline-hidden ring-2 ring-blue ring-offset-1 ring-offset-transparent transition-all duration-300;
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control],
+ui-checkbox:focus,
+button:focus[data-flux-button] {
+    @apply outline-hidden ring-2 ring-blue ring-offset-1;
+    @apply ring-offset-transparent transition-all duration-300;
 }
 
 /* Typography Components */
@@ -153,7 +162,15 @@ body {
 
 /* Icons */
 [data-flux-icon] {
-    @apply text-white size-8 hover:text-blue transition-all duration-300 cursor-pointer;
+    @apply size-8 hover:text-blue transition-all duration-300 cursor-pointer;
+}
+
+header [data-flux-icon] {
+    @apply text-white;
+}
+
+nav [data-flux-icon] {
+    @apply text-black hover:text-blue;
 }
 
 ui-checkbox [data-flux-icon] {
@@ -164,8 +181,6 @@ li [data-flux-icon],
 footer [data-flux-icon] {
     @apply text-blue hover:text-black;
 }
-
-/* Buttons */
 
 /* Accordion */
 [data-flux-accordion-item],
@@ -182,7 +197,8 @@ footer [data-flux-icon] {
 }
 
 [data-flux-accordion-item] [data-flux-icon] {
-    @apply text-black rotate-270 hover:text-blue transition-all duration-300 cursor-pointer size-8 p-1;
+    @apply text-black rotate-270 hover:text-blue transition-all;
+    @apply duration-300 cursor-pointer size-8 p-1;
 }
 
 [data-flux-accordion-item][data-open] {
@@ -235,6 +251,16 @@ ul {
     @apply space-y-1 md:space-y-2 lg:space-y-3;
 }
 
+[data-flux-navlist-item] {
+    @apply text-black md:text-xl lg:text-2xl xl:text-3xl;
+    @apply border-b-2 border-transparent hover:bg-none hover:border-blue;
+    @apply transition-all duration-300 hover:text-blue;
+}
+
+.nav-icons [data-flux-navlist-item] {
+    @apply border-b-0;
+}
+
 .list-heading {
     font-family: var(--font-heading);
     @apply uppercase text-black font-semibold text-base md:text-xl 
@@ -273,11 +299,9 @@ footer li [data-flux-link] {
    ========================================================================== */
 .button {
     font-family: var(--font-heading);
-    @apply text-white font-semibold border-2 border-blue tracking-wide transition-all duration-300 cursor-pointer
-    bg-blue uppercase rounded-3xl
-    px-7 py-6 text-xl
-    md:px-10 md:py-7 md:text-xl
-    lg:px-12 lg:py-8 lg:text-3xl;
+    @apply text-white font-semibold border-2 border-blue tracking-wide transition-all;
+    @apply duration-300 cursor-pointer bg-blue uppercase rounded-3xl px-7 py-6 text-xl;
+    @apply md:px-10 md:py-7 md:text-xl lg:px-12 lg:py-8 lg:text-3xl;
 }
 
 .primary {
