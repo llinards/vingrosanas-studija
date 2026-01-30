@@ -132,11 +132,7 @@ body {
     @apply hidden;
 }
 
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control],
-ui-checkbox:focus,
-button:focus[data-flux-button] {
+:focus {
     @apply outline-hidden ring-2 ring-blue ring-offset-1 ring-offset-transparent transition-all duration-300;
 }
 
@@ -290,6 +286,10 @@ footer li [data-flux-link] {
 
 .secondary {
     @apply border-white hover:border-black hover:text-black;
+}
+
+.secondary:focus {
+    @apply ring-black
 }
 
 /* ============================================================================
