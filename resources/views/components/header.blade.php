@@ -43,7 +43,7 @@
             <a href="https://www.instagram.com/vingrosanas.studija" target="_blank" rel="noopener noreferrer">
                 <flux:icon.instagram />
             </a>
-            <a href="https://www.instagram.com/vingrosanas.studija" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
                 <flux:icon.facebook />
             </a>
         </div>
@@ -83,7 +83,7 @@
                 <flux:navlist.item href="#services">{{ __('Pakalpojumi') }}</flux:navlist.item>
             </flux:navlist>
             <flux:navlist class="nav-icons flex flex-row gap-x-4 absolute bottom-16">
-                <flux:navlist.item href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                <flux:navlist.item href="https://www.facebook.com/vs.sigulda" target="_blank"
                     rel="noopener noreferrer">
                     <flux:icon.facebook />
                 </flux:navlist.item>
