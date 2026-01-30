@@ -24,12 +24,16 @@
         </ul>
         <ul class="md:text-xl lg:text-3xl">
             <li class="list-heading">{{ __('Pieseko') }}</li>
-            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start">
+            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-2">
                 <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                     rel="noopener noreferrer">
                     <flux:icon.instagram />
                 </flux:link>
+                <flux:link href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
+                    <flux:icon.facebook />
+                </flux:link>
             </li>
+
         </ul>
     </div>
 
@@ -41,6 +45,12 @@
             <flux:input type="test" :label="__('Uzvārds*')" required />
             <flux:input type="email" :label="__('E-pasts*')" required />
             <flux:textarea rows="4" :label="__('Jautājums*')" resize="none" required />
+            <flux:field variant="inline">
+                <flux:checkbox wire:model="terms" required />
+                <flux:label>{{ __('Es piekrītu manu personas datu apstrādei saziņas nolūkos saskaņā ar Privātuma
+                    politiku.*') }}</flux:label>
+                <flux:error name="terms" />
+            </flux:field>
         </div>
         <flux:button type="submit" class="button primary self-center">{{ __('Nosūtīt') }}</flux:button>
     </form>

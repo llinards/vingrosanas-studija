@@ -39,8 +39,8 @@
                     <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7"
-                               target="_blank">{{ __('Strēlnieku iela 20A') }}<br/>
+                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela
+                        20A') }}<br />
                         {{ __('Sigulda') }}
                     </flux:link>
                 </li>
@@ -48,10 +48,14 @@
             <div class="md:w-full flex flex-col md:items-end">
                 <ul class="list-heading">
                     <li>{{ __('Pieseko') }}</li>
-                    <li class="md:flex items-end justify-end mt-1 md:mt-2">
+                    <li class="md:flex items-end justify-end mt-1 md:mt-2 gap-x-2">
                         <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
-                                   rel="noopener noreferrer">
-                            <flux:icon.instagram/>
+                            rel="noopener noreferrer">
+                            <flux:icon.instagram />
+                        </flux:link>
+
+                        <flux:link href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
+                            <flux:icon.facebook />
                         </flux:link>
                     </li>
                 </ul>
@@ -60,17 +64,18 @@
     </div>
     <div class="bg-black py-6">
         <div class="container mx-auto space-y-2 text-center">
-            <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}</flux:text>
+            <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}
+            </flux:text>
             <flux:text>{{ __('Dizains:') }}
                 <flux:link href="https://www.simpledesign.lv" class="text-white decoration-white" target="_black"
-                           rel="noopener noreferrer">
+                    rel="noopener noreferrer">
                     SIMPLE DESIGN
                 </flux:link>
             </flux:text>
             <flux:text>
                 {{ __('Izstrāde:') }}
                 <flux:link href="https://www.slmedia.lv" class="text-white decoration-white" target="_black"
-                           rel="noopener noreferrer">
+                    rel="noopener noreferrer">
                     S&L
                     Media
                 </flux:link>

@@ -89,11 +89,11 @@ $classes = Flux::classes()
     })
     ->add(match ($hasLeadingIcon) {
         true => 'ps-10',
-        false => 'ps-0',
+        false => 'ps-2',
     })
     ->add(match ($countOfTrailingIcons) {
         // Make sure there's enough padding on the right side of the input to account for all the icons...
-        0 => 'pe-0',
+        0 => 'pe-2',
         1 => 'pe-10',
         2 => 'pe-16',
         3 => 'pe-23',
