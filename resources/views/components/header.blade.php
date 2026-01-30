@@ -27,7 +27,7 @@
         </div>
 
         {{-- CONTACT/SOCIAL MEDIA ICONS --}}
-        <div class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
+        <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
             <a href="tel:+37126620757">
                 <flux:icon.phone />
             </a>
@@ -58,7 +58,7 @@
                                         flex flex-col items-center justify-center
                                         overflow-y-auto overscroll-contain space-y-4 md:space-y-4 lg:space-y-6">
 
-            <div class="absolute right-4 top-6 close-button" x-cloak>
+            <div class="absolute right-7 top-12 close-button" x-cloak>
                 <flux:button x-show="open" variant="ghost" @click="open = !open">
                     <flux:icon.x-mark />
                 </flux:button>
