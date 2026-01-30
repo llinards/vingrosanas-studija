@@ -136,11 +136,7 @@ body {
     @apply hidden;
 }
 
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control],
-ui-checkbox:focus,
-button:focus[data-flux-button] {
+:focus-visible {
     @apply outline-hidden ring-2 ring-blue ring-offset-1;
     @apply ring-offset-transparent transition-all duration-300;
 }
