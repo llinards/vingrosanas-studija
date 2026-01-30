@@ -166,7 +166,7 @@ header [data-flux-icon] {
 }
 
 nav [data-flux-icon] {
-    @apply text-black hover:text-blue;
+    @apply text-black;
 }
 
 ui-checkbox [data-flux-icon] {
@@ -176,6 +176,10 @@ ui-checkbox [data-flux-icon] {
 li [data-flux-icon],
 footer [data-flux-icon] {
     @apply text-blue hover:text-black;
+}
+
+.close-button [data-flux-icon] {
+    @apply hover:text-white;
 }
 
 /* Accordion */
@@ -310,6 +314,11 @@ footer li [data-flux-link] {
 
 .secondary:focus {
     @apply ring-black
+}
+
+.close-button {
+    @apply bg-blue rounded-full size-10 flex items-center justify-center;
+    @apply transition-colors duration-300;
 }
 
 /* ============================================================================
