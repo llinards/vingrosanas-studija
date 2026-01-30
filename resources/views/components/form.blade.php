@@ -41,6 +41,12 @@
             <flux:input type="test" :label="__('Uzvārds*')" required />
             <flux:input type="email" :label="__('E-pasts*')" required />
             <flux:textarea rows="4" :label="__('Jautājums*')" resize="none" required />
+            <flux:field variant="inline">
+                <flux:checkbox wire:model="terms" required />
+                <flux:label>{{ __('Es piekrītu manu personas datu apstrādei saziņas nolūkos saskaņā ar Privātuma
+                    politiku.*') }}</flux:label>
+                <flux:error name="terms" />
+            </flux:field>
         </div>
         <flux:button type="submit" class="button primary self-center">{{ __('Nosūtīt') }}</flux:button>
     </form>
