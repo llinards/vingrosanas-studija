@@ -1,3 +1,69 @@
-body {
-    background-color: red !important;
+/* ============================================================================
+   Admin Panel Styles
+   ========================================================================== */
+
+/* Icon Colors & Sizes
+   ========================================================================== */
+
+[data-flux-icon] {
+    color: #262626; /* zinc-800 */
+    transition: color 0.3s ease;
+}
+
+[data-flux-icon]:hover {
+    color: #171717; /* zinc-900 */
+}
+
+/* Menu and profile icons - smaller, refined size */
+[data-flux-menu] [data-flux-icon],
+[data-flux-profile] [data-flux-icon] {
+    width: 1rem; /* 16px */
+    height: 1rem;
+}
+
+/* Focus States - Accessibility First
+   ========================================================================== */
+
+/* Remove outline on mouse clicks only */
+[data-flux-sidebar-toggle]:focus:not(:focus-visible),
+[data-flux-profile]:focus:not(:focus-visible),
+button[data-flux-sidebar-toggle]:focus:not(:focus-visible),
+button[data-flux-profile]:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Beautiful focus ring for keyboard navigation */
+[data-flux-sidebar-toggle]:focus-visible,
+[data-flux-profile]:focus-visible,
+button[data-flux-sidebar-toggle]:focus-visible,
+button[data-flux-profile]:focus-visible {
+    outline: 2px solid #518BA9 !important; /* brand blue */
+    outline-offset: 2px;
+    box-shadow: none !important;
+    border-radius: 0.5rem; /* rounded-lg */
+}
+
+/* Additional Polish
+   ========================================================================== */
+
+/* Smooth transitions for interactive elements */
+[data-flux-sidebar-toggle],
+[data-flux-profile] {
+    transition: all 0.2s ease;
+}
+
+/* Hover effect for better interactivity */
+[data-flux-sidebar-toggle]:hover,
+[data-flux-profile]:hover {
+    opacity: 0.8;
+}
+
+/* Menu items hover enhancement */
+[data-flux-menu] [data-flux-menu-item]:hover {
+    background-color: rgba(81, 139, 169, 0.05); /* subtle blue tint */
+}
+
+[data-flux-text] {
+    font-size: var(--text-base);
 }
