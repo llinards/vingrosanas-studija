@@ -30,6 +30,7 @@
                     required
                     autocomplete="current-password"
                     :placeholder="__('Parole')"
+                    viewable
                 />
             </div>
 

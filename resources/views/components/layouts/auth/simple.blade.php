@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    @include('partials.head')
+    @include('partials.admin-head')
 </head>
 <body class="min-h-screen bg-white antialiased">
 <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
