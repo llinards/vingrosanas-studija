@@ -151,6 +151,27 @@ body {
     @apply font-semibold;
 }
 
+#quote [data-flux-text] {
+    @apply text-white
+}
+
+/* #quote - quote */
+#quote [data-flux-text]:nth-of-type(1) {
+    font-family: var(--font-heading);
+    @apply uppercase text-3xl md:text-4xl;
+    @apply lg:text-5xl xl:text-6xl leading-normal;
+}
+
+/* #quote - owner title */
+#quote [data-flux-text]:nth-of-type(2) {
+    @apply text-base mb-2 opacity-75;
+}
+
+/* #quote - name */
+#quote [data-flux-text]:nth-of-type(3) {
+    @apply text-2xl font-bold
+}
+
 /* Links */
 [data-flux-link] {
     @apply transition-all duration-300 hover:text-blue;
@@ -158,15 +179,15 @@ body {
 
 /* Icons */
 [data-flux-icon] {
-    @apply size-8 hover:text-blue transition-all duration-300 cursor-pointer;
+    @apply hover:text-blue transition-all duration-300 cursor-pointer;
 }
 
 header [data-flux-icon] {
-    @apply text-white;
+    @apply size-8 text-white;
 }
 
 nav [data-flux-icon] {
-    @apply text-black;
+    @apply size-8 text-black;
 }
 
 ui-checkbox [data-flux-icon] {
@@ -175,7 +196,17 @@ ui-checkbox [data-flux-icon] {
 
 li [data-flux-icon],
 footer [data-flux-icon] {
-    @apply text-blue hover:text-black;
+    @apply size-8 text-blue hover:text-black;
+}
+
+#quote [data-flux-icon] {
+    @apply fill-blue size-12 md:size-14 lg:size-16 xl:size-18;
+}
+
+#quote [data-flux-icon].image-arrow {
+    @apply absolute top-1/2 left-1/2 -translate-x-1/2;
+    @apply bg-blue rounded-full -translate-y-1/2;
+    @apply p-3 text-white;
 }
 
 .close-button [data-flux-icon] {
@@ -353,8 +384,12 @@ footer li [data-flux-link] {
 
 #workoutCarousel [data-flux-text] {
     font-family: var(--font-heading);
-    @apply text-5xl md:text-6xl lg:text-[5rem];
     @apply uppercase leading-tight py-6 md:py-12
+}
+
+#workoutCarousel [data-flux-text] {
+    @apply text-5xl md:text-6xl lg:text-[5rem];
+  
 }
 
 #workoutCarousel .f-carousel__slide {
