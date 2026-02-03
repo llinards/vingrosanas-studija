@@ -1,6 +1,5 @@
 <?php
 
-use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
@@ -18,25 +17,22 @@ Route::group([
         return view('welcome');
     })->name('home');
 
-    Route::view('dashboard', 'dashboard')
-         ->middleware(['auth', 'verified'])
-         ->name('dashboard');
-
     Route::middleware(['auth'])->group(function () {
-        Route::redirect('settings', 'settings/profile');
+        Route::view('dashboard', 'dashboard')->name('dashboard');
+        Route::view('coach-list', 'coach-list')->name('coach-list');
 
+        Route::redirect('settings', 'settings/profile');
         Route::livewire('settings/profile', Profile::class)->name('profile.edit');
         Route::livewire('settings/password', Password::class)->name('user-password.edit');
-
         Route::livewire('settings/two-factor', TwoFactor::class)
-             ->middleware(
-                 when(
-                     Features::canManageTwoFactorAuthentication()
-                     && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                     ['password.confirm'],
-                     [],
-                 ),
-             )
-             ->name('two-factor.show');
+            ->middleware(
+                when(
+                    Features::canManageTwoFactorAuthentication()
+                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
+                    ['password.confirm'],
+                    [],
+                ),
+            )
+            ->name('two-factor.show');
     });
 });
