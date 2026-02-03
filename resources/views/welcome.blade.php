@@ -6,9 +6,21 @@
     {{-- HEADER --}}
     <x-header />
 
+    {{-- WORKOUT CAROUSEL --}}
+    <div>
+        <div class="f-carousel" id="workoutCarousel">
+            <x-workout-carousel-slides />
+            <x-workout-carousel-slides />
+            <x-workout-carousel-slides />
+            <x-workout-carousel-slides />
+            <x-workout-carousel-slides />
+            <x-workout-carousel-slides />
+        </div>
+    </div>
+
     {{-- ACCORDION WRAPPER --}}
     <div class="mx-auto max-w-7xl px-4 pb-12">
-        <flux:heading level="2" class="py-12">{{ __('Pakalpojumi un cenas') }}</flux:heading>
+        <flux:heading level="2" class="py-b">{{ __('Pakalpojumi un cenas') }}</flux:heading>
         <flux:accordion transition>
             <x-services-price-table />
         </flux:accordion>

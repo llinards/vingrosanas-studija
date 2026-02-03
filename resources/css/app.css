@@ -104,7 +104,7 @@
 
 body {
     font-family: var(--font-body);
-    @apply focus:outline-blue focus:ring-blue;
+    @apply focus:outline-blue focus:ring-blue; 
 }
 
 .container {
@@ -226,14 +226,14 @@ h1 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-[5rem];
     @apply uppercase text-white tracking-wide;
-    @apply leading-14 md:leading-18 lg:leading-22;
+    @apply leading-tight;
 }
 
 h2 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-7xl;
-    @apply uppercase text-black;
-    @apply leading-14 md:leading-18 lg:leading-22;
+    @apply uppercase text-black py-6 md:py-12;
+    @apply leading-tight;
 }
 
 h3 {
@@ -351,6 +351,22 @@ footer li [data-flux-link] {
     @apply h-screen lg:max-h-156;
 }
 
+#workoutCarousel [data-flux-text] {
+    font-family: var(--font-heading);
+    @apply text-5xl md:text-6xl lg:text-[5rem];
+    @apply uppercase leading-tight py-6 md:py-12
+}
+
+#workoutCarousel .f-carousel__slide {
+    @apply flex items-center w-fit;
+}
+
+ #workoutCarousel .f-carousel__slide::after {
+    content: '';
+    @apply mx-6 w-3 h-3 md:w-4;
+    @apply md:h-4 lg:w-5 lg:h-5;
+    @apply bg-blue rounded-full;
+}
 
 /* ============================================================================
    Admin panel sections (leave as last)
