@@ -107,7 +107,8 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->layout('components.layouts.app');
+                    ->layout('components.layouts.app')
+                    ->title('Pievienot jaunu treneri');
     }
 };
 ?>
