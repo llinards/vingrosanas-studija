@@ -1,7 +1,10 @@
 <?php
 
 use App\Models\Coach;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -10,6 +13,34 @@ new class extends Component {
     public function coaches(): Collection
     {
         return Coach::all();
+    }
+
+    public function destroy(Coach $coach): void
+    {
+        try {
+            $imagePath = str_replace('storage/', '', $coach->image);
+
+            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+            }
+
+            $coach->delete();
+
+            unset($this->coaches);
+
+            Flux::toast(
+                text: __('Treneris veiksmīgi dzēsts!'),
+                variant: 'success',
+            );
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            Flux::toast(
+                text: __('Neizdevās dzēst treneri. Lūdzu, mēģini vēlreiz.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        }
     }
 };
 ?>
@@ -57,12 +88,35 @@ new class extends Component {
 
                     <div class="mt-4 flex gap-2">
                         <flux:button variant="primary" class="flex-1">
-                            Rediģēt
+                            {{ __('Rediģēt') }}
                         </flux:button>
-                        <flux:button variant="danger" class="flex-1">
-                            Dzēst
-                        </flux:button>
+                        <flux:modal.trigger :name="'delete-coach-'.$coach->id">
+                            <flux:button variant="danger" class="flex-1">
+                                {{ __('Dzēst') }}
+                            </flux:button>
+                        </flux:modal.trigger>
                     </div>
+
+                    <flux:modal :name="'delete-coach-'.$coach->id" class="min-w-[22rem]">
+                        <div class="space-y-6">
+                            <div>
+                                <flux:heading level="2" size="lg">{{ __('Dzēst treneri?') }}</flux:heading>
+                                <flux:text class="mt-2">
+                                    <p>{{ __('Tu vēlies dzēst treneri - ') }} <strong>{{ $coach->name }}</strong>.</p>
+                                    <p>{{ __('Šo darbību nevar atcelt.') }}</p>
+                                </flux:text>
+                            </div>
+                            <div class="flex gap-2">
+                                <flux:spacer/>
+                                <flux:modal.close>
+                                    <flux:button variant="ghost">{{ __('Atcelt') }}</flux:button>
+                                </flux:modal.close>
+                                <flux:button variant="danger" wire:click="destroy({{ $coach->id }})">
+                                    {{ __('Dzēst treneri') }}
+                                </flux:button>
+                            </div>
+                        </div>
+                    </flux:modal>
                 </flux:card>
             @endforeach
         </div>

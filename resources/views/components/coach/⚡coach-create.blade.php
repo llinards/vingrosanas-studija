@@ -30,7 +30,7 @@ new class extends Component {
             'email' => ['nullable', 'email', 'max:255', 'unique:coaches,email'],
             'phone' => ['nullable', 'string', 'max:255', 'unique:coaches,phone'],
             'title' => ['required', 'string', 'max:255'],
-            'image' => ['required', 'image', 'max:10240'],
+            'image' => ['required', 'image', 'max:400'],
             'bio'   => ['required', 'string', 'max:10000'],
         ];
     }
@@ -47,7 +47,7 @@ new class extends Component {
             'title.max'      => __('Amats nedrīkst pārsniegt 255 rakstzīmes.'),
             'image.required' => __('Attēls ir obligāts.'),
             'image.image'    => __('Failam jābūt attēlam.'),
-            'image.max'      => __('Attēls nedrīkst pārsniegt 10MB.'),
+            'image.max'      => __('Attēls nedrīkst pārsniegt 400KB.'),
             'bio.required'   => __('Biogrāfija ir obligāta.'),
             'bio.max'        => __('Biogrāfija nedrīkst pārsniegt 1000 rakstzīmes.'),
         ];
@@ -88,7 +88,6 @@ new class extends Component {
 
             Flux::toast(
                 text: __('Treneris izveidots!'),
-                heading: __('Veiksmīgi!'),
                 variant: 'success',
             );
 

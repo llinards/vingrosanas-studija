@@ -54,7 +54,6 @@ class Profile extends Component
 
         Flux::toast(
             text: __('Profils ir atjaunots!'),
-            heading: __('Veiksmīgi!'),
             variant: 'success',
         );
     }

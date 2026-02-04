@@ -40,7 +40,6 @@ class Password extends Component
 
         Flux::toast(
             text: __('Parole ir atjaunota!'),
-            heading: __('Veiksmīgi!'),
             variant: 'success',
         );
     }
