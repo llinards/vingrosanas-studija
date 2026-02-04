@@ -38,6 +38,10 @@ class Password extends Component
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        Flux::toast(__('Your changes have been saved.'));
+        Flux::toast(
+            text: __('Parole ir atjaunota!'),
+            heading: __('Veiksmīgi!'),
+            variant: 'success',
+        );
     }
 }

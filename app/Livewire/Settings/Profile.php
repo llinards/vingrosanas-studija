@@ -52,7 +52,11 @@ class Profile extends Component
 
         $user->save();
 
-        Flux::toast(__('Your changes have been saved.'));
+        Flux::toast(
+            text: __('Profils ir atjaunots!'),
+            heading: __('Veiksmīgi!'),
+            variant: 'success',
+        );
     }
 
     /**

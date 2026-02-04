@@ -18,8 +18,9 @@ Route::group([
     })->name('home');
 
     Route::middleware(['auth'])->group(function () {
-        Route::view('dashboard', 'dashboard')->name('dashboard');
-        Route::view('coach-list', 'coach-list')->name('coach-list');
+        Route::view('dashboard', 'dashboard.dashboard')->name('dashboard');
+        Route::view('coach-list', 'dashboard.coach-list')->name('coach-list');
+        Route::livewire('coach-create', 'coach.coach-create')->name('coach-create');
 
         Route::redirect('settings', 'settings/profile');
         Route::livewire('settings/profile', Profile::class)->name('profile.edit');

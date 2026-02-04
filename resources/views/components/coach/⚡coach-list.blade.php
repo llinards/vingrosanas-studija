@@ -6,11 +6,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 new class extends Component {
-    /**
-     * Get all coaches.
-     *
-     * @return Collection<int, Coach>
-     */
     #[Computed]
     public function coaches(): Collection
     {
@@ -23,7 +18,8 @@ new class extends Component {
     @if($this->coaches->isEmpty())
         <div class="flex flex-col items-center">
             <flux:heading class="mb-2" level="2" size="xl">Šobrīd nav neviena aktīva trenera!</flux:heading>
-            <flux:button>Pievienot jaunu treneri</flux:button>
+            <flux:button href="{{route('coach-create')}}" wire:navigate class="mb-4">Pievienot jaunu treneri
+            </flux:button>
         </div>
     @else
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -37,8 +33,9 @@ new class extends Component {
                                 class="size-full object-cover"
                             >
                         @else
-                            <div class="flex size-full items-center justify-center bg-linear-to-br from-zinc-200 to-zinc-300">
-                                <flux:icon.user class="size-24 text-zinc-400" />
+                            <div
+                                class="flex size-full items-center justify-center bg-linear-to-br from-zinc-200 to-zinc-300">
+                                <flux:icon.user class="size-24 text-zinc-400"/>
                             </div>
                         @endif
 

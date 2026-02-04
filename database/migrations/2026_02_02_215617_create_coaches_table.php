@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone')->unique()->nullable();
             $table->string('title');
             $table->string('image');
-            $table->string('bio');
+            $table->text('bio');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

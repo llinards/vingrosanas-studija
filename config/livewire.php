@@ -30,8 +30,8 @@ return [
     */
 
     'component_namespaces' => [
-        'layouts' => resource_path('views/components/layouts'),
-        'pages'   => resource_path('views/pages'),
+        'layouts' => resource_path('views/layouts'),
+        'pages' => resource_path('views/pages'),
     ],
 
     /*
@@ -44,7 +44,7 @@ return [
     |
     */
 
-    'component_layout' => 'layouts::app',
+    'component_layout' => 'components.layouts.app',
 
     /*
     |---------------------------------------------------------------------------
@@ -69,8 +69,13 @@ return [
     */
 
     'make_command' => [
-        'type'  => 'sfc', // Options: 'sfc', 'mfc', 'class'
+        'type' => 'sfc', // Options: 'sfc', 'mfc', 'class'
         'emoji' => true, // Options: true, false
+        'with' => [
+            'js' => false,
+            'css' => false,
+            'test' => false,
+        ],
     ],
 
     /*
@@ -124,19 +129,19 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk'            => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK'),
+        'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK'),
         // Example: 'local', 's3'             | Default: 'default'
-        'rules'           => null,
+        'rules' => null,
         // Example: ['file', 'mimes:png,jpg'] | Default: ['required', 'file', 'max:12288'] (12MB)
-        'directory'       => null,// Example: 'tmp'                     | Default: 'livewire-tmp'
-        'middleware'      => null,// Example: 'throttle:5,1'            | Default: 'throttle:60,1'
-        'preview_mimes'   => [                                  // Supported file types for temporary pre-signed file URLs...
+        'directory' => null, // Example: 'tmp'                     | Default: 'livewire-tmp'
+        'middleware' => null, // Example: 'throttle:5,1'            | Default: 'throttle:60,1'
+        'preview_mimes' => [                                  // Supported file types for temporary pre-signed file URLs...
             'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
             'mov', 'avi', 'wmv', 'mp3', 'm4a',
             'jpg', 'jpeg', 'mpga', 'webp', 'wma',
         ],
         'max_upload_time' => 5, // Max duration (in minutes) before an upload is invalidated...
-        'cleanup'         => true, // Should cleanup temporary uploads older than 24 hrs...
+        'cleanup' => true, // Should cleanup temporary uploads older than 24 hrs...
     ],
 
     /*
@@ -190,7 +195,7 @@ return [
     */
 
     'navigate' => [
-        'show_progress_bar'  => true,
+        'show_progress_bar' => true,
         'progress_bar_color' => '#2299dd',
     ],
 
@@ -271,9 +276,9 @@ return [
     */
 
     'payload' => [
-        'max_size'          => 1024 * 1024,   // 1MB - maximum request payload size in bytes
+        'max_size' => 1024 * 1024,   // 1MB - maximum request payload size in bytes
         'max_nesting_depth' => 10,   // Maximum depth of dot-notation property paths
-        'max_calls'         => 50,           // Maximum method calls per request
-        'max_components'    => 20,      // Maximum components per batch request
+        'max_calls' => 50,           // Maximum method calls per request
+        'max_components' => 20,      // Maximum components per batch request
     ],
 ];
