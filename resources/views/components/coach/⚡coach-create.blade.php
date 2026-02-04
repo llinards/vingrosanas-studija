@@ -106,7 +106,6 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->layout('components.layouts.app')
                     ->title('Pievienot jaunu treneri');
     }
 };
@@ -154,7 +153,7 @@ new class extends Component {
             <flux:file-upload wire:model="image" :label="__('Attēls')">
                 <flux:file-upload.dropzone
                     :heading="__('Velciet failu šeit vai klikšķiniet, lai pārlūkotu')"
-                    :text="__('JPG, PNG, GIF līdz 10MB')"
+                    :text="__('JPG, PNG, GIF līdz 400KB')"
                 />
             </flux:file-upload>
 
