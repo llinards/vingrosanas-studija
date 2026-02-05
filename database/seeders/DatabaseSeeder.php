@@ -23,5 +23,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Coach::factory()->count(4)->create();
+
+        $this->call([
+            ServiceTypeSeeder::class,
+            ServiceSeeder::class,
+        ]);
     }
 }
