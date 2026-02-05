@@ -17,6 +17,8 @@
                                wire:navigate>{{ __('Sākums') }}</flux:navlist.item>
             <flux:navlist.item icon="user" :href="route('coach-list')" :current="request()->routeIs('coach-list')"
                                wire:navigate>{{ __('Treneri') }}</flux:navlist.item>
+            <flux:navlist.item icon="user" :href="route('service-list')" :current="request()->routeIs('service-list')"
+                               wire:navigate>{{ __('Pakalpojumi') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
