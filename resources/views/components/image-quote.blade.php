@@ -1,10 +1,9 @@
 <div id="quote" class="relative flex flex-col md:grid grid-cols-2 overflow-hidden">
     <div class="h-124 md:h-206">
-        <img class="h-full w-full object-cover" src="{{ asset('images/anete_platkevica_7.jpg') }}" alt="">
+        <img class="h-full w-full object-cover" src="" alt="">
     </div>
     <div class="h-124 md:h-206 relative flex justify-center items-center">
-        <img class="h-full w-full absolute blur-sm object-cover" src="{{ asset('images/anete_platkevica_8.jpg') }}"
-            alt="">
+        <img class="h-full w-full absolute blur-sm object-cover" src="" alt="">
         <div class="absolute inset-0 bg-black/30"></div>
         <div
             class="h-full relative flex flex-col justify-center items-center text-center space-y-6 md:space-y-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24">
