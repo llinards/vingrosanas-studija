@@ -51,6 +51,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Archivo-SemiBold';
+    src: url('fonts/Archivo-SemiBold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ============================================================================
    Theme Configuration
    ========================================================================== */
@@ -60,6 +68,7 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    --font-body-bold: 'Archivo-SemiBold', ui-sans-serif, system-ui, sans-serif;
 
     /* Brand Colors */
     --color-blue: #518BA9;
@@ -169,7 +178,8 @@ body {
 
 /* #quote - name */
 #quote [data-flux-text]:nth-of-type(3) {
-    @apply text-2xl font-bold
+    font-family: var(--font-body-bold);
+    @apply text-2xl
 }
 
 /* Links */
