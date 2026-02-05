@@ -51,6 +51,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Archivo-SemiBold';
+    src: url('fonts/Archivo-SemiBold.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ============================================================================
    Theme Configuration
    ========================================================================== */
@@ -60,6 +68,7 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+    --font-body-bold: 'Archivo-SemiBold', ui-sans-serif, system-ui, sans-serif;
 
     /* Brand Colors */
     --color-blue: #518BA9;
@@ -169,7 +178,8 @@ body {
 
 /* #quote - name */
 #quote [data-flux-text]:nth-of-type(3) {
-    @apply text-2xl font-bold
+    font-family: var(--font-body-bold);
+    @apply text-2xl
 }
 
 /* Links */
@@ -199,14 +209,22 @@ footer [data-flux-icon] {
     @apply size-8 text-blue hover:text-black;
 }
 
-#quote [data-flux-icon] {
+#quote [data-flux-icon],
+#videoBanner [data-flux-icon] {
     @apply fill-blue size-12 md:size-14 lg:size-16 xl:size-18;
 }
 
-#quote [data-flux-icon].image-arrow {
+[data-flux-icon].centered-icon {
     @apply absolute top-1/2 left-1/2 -translate-x-1/2;
     @apply bg-blue rounded-full -translate-y-1/2;
-    @apply p-3 text-white;
+}
+
+#quote [data-flux-icon].centered-icon {
+    @apply text-white p-3;
+}
+
+#videoBanner [data-flux-icon].centered-icon {
+    @apply text-blue fill-blue stroke-white hover:opacity-70
 }
 
 .close-button [data-flux-icon] {
@@ -247,6 +265,11 @@ footer [data-flux-icon] {
 
 [data-flux-cell] {
     @apply border-none text-black text-base md:text-2xl py-1;
+}
+
+/* Image based full width section */
+.full-width-banner {
+    @apply h-screen md:h-192 lg:h-224 xl:h-256;
 }
 
 /* ============================================================================
@@ -374,10 +397,6 @@ footer li [data-flux-link] {
     @apply w-full h-full object-center object-cover
 }
 
-#galleryCarousel {
-    @apply h-screen lg:h-204;
-}
-
 #ownerCarousel {
     @apply h-screen lg:max-h-156;
 }
@@ -396,7 +415,7 @@ footer li [data-flux-link] {
     @apply flex items-center w-fit;
 }
 
- #workoutCarousel .f-carousel__slide::after {
+#workoutCarousel .f-carousel__slide::after {
     content: '';
     @apply mx-6 w-3 h-3 md:w-4;
     @apply md:h-4 lg:w-5 lg:h-5;

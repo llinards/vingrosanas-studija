@@ -29,6 +29,9 @@
         </flux:accordion>
     </div>
 
+    {{-- VIDEO BANNER --}}
+    <x-video-banner />
+
     {{-- CTA --}}
     <x-banner-with-cta />
 

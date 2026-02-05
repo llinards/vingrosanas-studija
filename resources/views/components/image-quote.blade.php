@@ -15,6 +15,6 @@
             <flux:text>{{__('Anete Platkēviča') }}</flux:text>
         </div>
     </div>
-    <flux:icon.arrow-down class="md:hidden image-arrow" />
-    <flux:icon.arrow-right class="hidden md:flex image-arrow" />
+    <flux:icon.arrow-down class="md:hidden centered-icon" />
+    <flux:icon.arrow-right class="hidden md:flex centered-icon" />
 </div>
