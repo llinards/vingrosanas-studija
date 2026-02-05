@@ -385,7 +385,7 @@ footer li [data-flux-link] {
 }
 
 #galleryCarousel {
-    @apply h-screen lg:h-204;
+    @apply h-screen md:h-192 lg:h-206 xl:h-222;
 }
 
 #ownerCarousel {
