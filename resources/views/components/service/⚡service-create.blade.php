@@ -18,6 +18,8 @@ new class extends Component {
 
     public string $price = '';
 
+    public string $newServiceTypeName = '';
+
     #[Computed]
     public function serviceTypes(): Collection
     {
@@ -33,26 +35,51 @@ new class extends Component {
     protected function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name'            => ['required', 'string', 'max:255'],
             'service_type_id' => ['required', 'exists:service_types,id'],
-            'coach_id' => ['required', 'exists:coaches,id'],
-            'price' => ['required', 'numeric', 'min:0'],
+            'coach_id'        => ['required', 'exists:coaches,id'],
+            'price'           => ['required', 'numeric', 'min:0'],
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'name.required' => __('Nosaukums ir obligāts.'),
-            'name.max' => __('Nosaukums nedrīkst pārsniegt 255 rakstzīmes.'),
+            'name.required'            => __('Nosaukums ir obligāts.'),
+            'name.max'                 => __('Nosaukums nedrīkst pārsniegt 255 rakstzīmes.'),
             'service_type_id.required' => __('Pakalpojuma veids ir obligāts.'),
-            'service_type_id.exists' => __('Izvēlētais pakalpojuma veids neeksistē.'),
-            'coach_id.required' => __('Treneris ir obligāts.'),
-            'coach_id.exists' => __('Izvēlētais treneris neeksistē.'),
-            'price.required' => __('Cena ir obligāta.'),
-            'price.numeric' => __('Cenai jābūt skaitlim.'),
-            'price.min' => __('Cena nedrīkst būt negatīva.'),
+            'service_type_id.exists'   => __('Izvēlētais pakalpojuma veids neeksistē.'),
+            'coach_id.required'        => __('Treneris ir obligāts.'),
+            'coach_id.exists'          => __('Izvēlētais treneris neeksistē.'),
+            'price.required'           => __('Cena ir obligāta.'),
+            'price.numeric'            => __('Cenai jābūt skaitlim.'),
+            'price.min'                => __('Cena nedrīkst būt negatīva.'),
         ];
+    }
+
+    public function saveServiceType(): void
+    {
+        $this->validate([
+            'newServiceTypeName' => ['required', 'string', 'max:255', 'unique:service_types,name'],
+        ], [
+            'newServiceTypeName.required' => __('Nosaukums ir obligāts.'),
+            'newServiceTypeName.max'      => __('Nosaukums nedrīkst pārsniegt 255 rakstzīmes.'),
+            'newServiceTypeName.unique'   => __('Šāds pakalpojuma veids jau eksistē.'),
+        ]);
+
+        $serviceType = ServiceType::create(['name' => $this->newServiceTypeName]);
+
+        $this->service_type_id    = $serviceType->id;
+        $this->newServiceTypeName = '';
+
+        unset($this->serviceTypes);
+
+        Flux::toast(
+            text: __('Pakalpojuma veids izveidots!'),
+            variant: 'success',
+        );
+
+        $this->modal('create-service-type')->close();
     }
 
     public function save(): void
@@ -61,10 +88,10 @@ new class extends Component {
 
         try {
             Service::create([
-                'name' => $this->name,
+                'name'            => $this->name,
                 'service_type_id' => $this->service_type_id,
-                'coach_id' => $this->coach_id,
-                'price' => (int) round($this->price * 100),
+                'coach_id'        => $this->coach_id,
+                'price'           => (int) round($this->price * 100),
             ]);
 
             Flux::toast(
@@ -87,7 +114,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-            ->title('Pievienot jaunu pakalpojumu');
+                    ->title('Pievienot jaunu pakalpojumu');
     }
 };
 ?>
@@ -104,12 +131,35 @@ new class extends Component {
                 :placeholder="__('Ievadiet pakalpojuma nosaukumu')"
             />
 
-            <flux:select wire:model="service_type_id" :label="__('Pakalpojuma veids')">
-                <flux:select.option value="">{{ __('Izvēlieties veidu') }}</flux:select.option>
-                @foreach($this->serviceTypes as $serviceType)
-                    <flux:select.option :value="$serviceType->id">{{ $serviceType->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
+            <div class="flex items-end gap-2">
+                <div class="flex-1">
+                    <flux:select wire:model="service_type_id" :label="__('Pakalpojuma veids')">
+                        <flux:select.option value="">{{ __('Izvēlieties veidu') }}</flux:select.option>
+                        @foreach($this->serviceTypes as $serviceType)
+                            <flux:select.option :value="$serviceType->id">{{ $serviceType->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+                <flux:modal.trigger name="create-service-type">
+                    <flux:button variant="outline" icon="plus"/>
+                </flux:modal.trigger>
+            </div>
+
+            <flux:modal name="create-service-type" class="md:w-96">
+                <div class="space-y-6">
+                    <div>
+                        <flux:heading size="lg">{{ __('Jauns pakalpojuma veids') }}</flux:heading>
+                    </div>
+
+                    <flux:input wire:model="newServiceTypeName" :label="__('Nosaukums')"
+                                :placeholder="__('Ievadi nosaukumu')"/>
+
+                    <div class="flex">
+                        <flux:spacer/>
+                        <flux:button wire:click="saveServiceType" variant="primary">{{ __('Saglabāt') }}</flux:button>
+                    </div>
+                </div>
+            </flux:modal>
 
             <flux:select wire:model="coach_id" :label="__('Treneris')">
                 <flux:select.option value="">{{ __('Izvēlieties treneri') }}</flux:select.option>

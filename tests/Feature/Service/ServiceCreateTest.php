@@ -113,3 +113,38 @@ test('validation messages are in latvian', function () {
         ->call('save')
         ->assertSee('Nosaukums ir obligāts.');
 });
+
+test('can create a new service type from modal', function () {
+    Livewire::test('service.service-create')
+        ->set('newServiceTypeName', 'Grupu nodarbības')
+        ->call('saveServiceType')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('service_types', ['name' => 'Grupu nodarbības']);
+});
+
+test('new service type is auto-selected after creation', function () {
+    $component = Livewire::test('service.service-create')
+        ->set('newServiceTypeName', 'Individuālās nodarbības')
+        ->call('saveServiceType')
+        ->assertHasNoErrors();
+
+    $serviceType = ServiceType::where('name', 'Individuālās nodarbības')->first();
+    $component->assertSet('service_type_id', $serviceType->id);
+});
+
+test('new service type name is required', function () {
+    Livewire::test('service.service-create')
+        ->set('newServiceTypeName', '')
+        ->call('saveServiceType')
+        ->assertHasErrors(['newServiceTypeName' => 'required']);
+});
+
+test('new service type name must be unique', function () {
+    ServiceType::factory()->create(['name' => 'Joga']);
+
+    Livewire::test('service.service-create')
+        ->set('newServiceTypeName', 'Joga')
+        ->call('saveServiceType')
+        ->assertHasErrors(['newServiceTypeName' => 'unique']);
+});
