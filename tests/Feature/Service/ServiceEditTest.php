@@ -43,7 +43,8 @@ test('service edit form is populated with existing data', function () {
         ->assertSet('name', 'Jogas nodarbība')
         ->assertSet('service_type_id', $serviceType->id)
         ->assertSet('coach_id', $coach->id)
-        ->assertSet('price', '25');
+        ->assertSet('price', '25')
+        ->assertSet('is_active', true);
 });
 
 test('can update a service', function () {
@@ -121,6 +122,23 @@ test('price cannot be negative', function () {
         ->set('price', '-5')
         ->call('save')
         ->assertHasErrors(['price' => 'min']);
+});
+
+test('can toggle is_active on a service', function () {
+    $service = Service::factory()->create(['is_active' => true]);
+    $serviceType = $service->serviceType;
+    $coach = $service->coach;
+
+    Livewire::test('service.service-edit', ['service' => $service])
+        ->set('is_active', false)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('service-list'));
+
+    $this->assertDatabaseHas('services', [
+        'id' => $service->id,
+        'is_active' => false,
+    ]);
 });
 
 test('validation messages are in latvian', function () {

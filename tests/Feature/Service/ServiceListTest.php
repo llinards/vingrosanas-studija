@@ -53,6 +53,16 @@ test('service list displays service type and coach', function () {
         ->assertSee('Jānis Bērziņš');
 });
 
+test('service list shows active status badge', function () {
+    Service::factory()->create(['name' => 'Aktīvs pakalpojums', 'is_active' => true]);
+    Service::factory()->create(['name' => 'Neaktīvs pakalpojums', 'is_active' => false]);
+
+    $this->get(route('service-list'))
+        ->assertSuccessful()
+        ->assertSee('Aktīvs pakalpojums')
+        ->assertSee('Neaktīvs pakalpojums');
+});
+
 test('can destroy a service', function () {
     $service = Service::factory()->create();
 

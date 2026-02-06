@@ -52,6 +52,7 @@ new class extends Component {
                 <flux:table.column>{{ __('Veids') }}</flux:table.column>
                 <flux:table.column>{{ __('Treneris') }}</flux:table.column>
                 <flux:table.column>{{ __('Cena') }}</flux:table.column>
+                <flux:table.column>{{ __('Statuss') }}</flux:table.column>
                 <flux:table.column>{{ __('Darbības') }}</flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
@@ -61,6 +62,11 @@ new class extends Component {
                         <flux:table.cell>{{ $service->serviceType->name }}</flux:table.cell>
                         <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
+                        <flux:table.cell>
+                            <flux:badge :color="$service->is_active ? 'green' : 'red'" size="sm">
+                                {{ $service->is_active ? __('Aktīvs') : __('Neaktīvs') }}
+                            </flux:badge>
+                        </flux:table.cell>
                         <flux:table.cell>
                             <div class="flex gap-2">
                                 <flux:button href="{{ route('service.edit', $service) }}" variant="primary" size="sm">

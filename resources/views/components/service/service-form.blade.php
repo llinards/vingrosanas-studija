@@ -43,6 +43,8 @@
                 :placeholder="__('Ievadiet cenu (piem., 25.00)')"
             />
 
+            <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
+
             <div class="flex items-center justify-end gap-4">
                 <flux:button href="{{ route('service-list') }}" wire:navigate variant="ghost">
                     {{ __('Atcelt') }}

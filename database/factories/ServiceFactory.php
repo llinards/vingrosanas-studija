@@ -23,6 +23,7 @@ class ServiceFactory extends Factory
             'coach_id' => Coach::factory(),
             'name' => fake()->words(3, true),
             'price' => fake()->numberBetween(500, 10000),
+            'is_active' => true,
         ];
     }
 }

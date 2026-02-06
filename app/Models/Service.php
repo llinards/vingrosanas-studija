@@ -26,4 +26,11 @@ class Service extends Model
     {
         return $this->belongsTo(Coach::class);
     }
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
 }

@@ -19,6 +19,7 @@ new class extends Component {
                 'service_type_id' => $this->service_type_id,
                 'coach_id'        => $this->coach_id,
                 'price'           => (int) round($this->price * 100),
+                'is_active'       => $this->is_active,
             ]);
 
             Flux::toast(

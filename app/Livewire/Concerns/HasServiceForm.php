@@ -18,6 +18,8 @@ trait HasServiceForm
 
     public string $price = '';
 
+    public bool $is_active = false;
+
     public string $newServiceTypeName = '';
 
     #[Computed]

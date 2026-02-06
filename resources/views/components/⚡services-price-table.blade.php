@@ -9,7 +9,7 @@ new class extends Component {
     #[Computed]
     public function serviceTypes(): Collection
     {
-        return ServiceType::with('services')->get();
+        return ServiceType::with(['services' => fn ($query) => $query->where('is_active', true)])->get();
     }
 };
 ?>
@@ -26,8 +26,7 @@ new class extends Component {
                         @foreach ($serviceType->services as $service)
                             <flux:table.row>
                                 <flux:table.cell>{{ $service->name }}</flux:table.cell>
-                                <flux:table.cell
-                                    align="center">{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
+                                <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
                             </flux:table.row>
                         @endforeach
                     </flux:table.rows>

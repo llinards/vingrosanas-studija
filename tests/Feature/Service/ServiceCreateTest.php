@@ -41,6 +41,7 @@ test('can create a service with valid data', function () {
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'price' => 2500,
+        'is_active' => false,
     ]);
 });
 
@@ -105,6 +106,26 @@ test('name cannot exceed 255 characters', function () {
         ->set('name', str_repeat('a', 256))
         ->call('save')
         ->assertHasErrors(['name' => 'max']);
+});
+
+test('can create a service with is_active enabled', function () {
+    $serviceType = ServiceType::factory()->create();
+    $coach = Coach::factory()->create();
+
+    Livewire::test('service.service-create')
+        ->set('name', 'Aktīvs pakalpojums')
+        ->set('service_type_id', $serviceType->id)
+        ->set('coach_id', $coach->id)
+        ->set('price', '15.00')
+        ->set('is_active', true)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('service-list'));
+
+    $this->assertDatabaseHas('services', [
+        'name' => 'Aktīvs pakalpojums',
+        'is_active' => true,
+    ]);
 });
 
 test('validation messages are in latvian', function () {

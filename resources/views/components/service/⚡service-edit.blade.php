@@ -20,6 +20,7 @@ new class extends Component {
         $this->service_type_id = $service->service_type_id;
         $this->coach_id        = $service->coach_id;
         $this->price           = (string) ($service->price / 100);
+        $this->is_active       = $service->is_active;
     }
 
     public function save(): void
@@ -34,6 +35,7 @@ new class extends Component {
                 'service_type_id' => $this->service_type_id,
                 'coach_id'        => $this->coach_id,
                 'price'           => (int) round($this->price * 100),
+                'is_active'       => $this->is_active,
             ]);
 
             Flux::toast(
