@@ -153,90 +153,40 @@ new class extends Component
 ?>
 
 
-<div class="flex min-h-full flex-col items-center justify-center p-6">
-    <div class="w-full max-w-2xl">
-        <flux:heading level="1" size="xl" class="mb-6">{{ __('Rediģēt treneri') }}</flux:heading>
+<x-coach.coach-form :heading="__('Rediģēt treneri')">
+    @if ($existingImage && !$newImage)
+        <div>
+            <flux:label>{{ __('Pašreizējais attēls') }}</flux:label>
+            <flux:file-item
+                :heading="basename($existingImage)"
+                :image="asset($existingImage)"
+                class="mt-2"
+            >
+                <x-slot name="actions">
+                    <flux:file-item.remove wire:click="removeExistingImage"/>
+                </x-slot>
+            </flux:file-item>
+        </div>
+    @endif
 
-        <form wire:submit="save" class="flex flex-col gap-6">
-            <flux:input
-                wire:model="name"
-                :label="__('Vārds, uzvārds')"
-                :placeholder="__('Ievadiet trenera vārdu un uzvārdu')"
-            />
+    <flux:file-upload wire:model="newImage" :label="$existingImage ? __('Jauns attēls (neobligāts)') : __('Attēls')">
+        <flux:file-upload.dropzone
+            :heading="__('Velciet failu šeit vai klikšķiniet, lai pārlūkotu')"
+            :text="__('JPG, PNG, GIF līdz 400KB')"
+        />
+    </flux:file-upload>
 
-            <flux:input
-                wire:model="email"
-                :label="__('E-pasts')"
-                type="email"
-                :placeholder="__('Ievadiet e-pasta adresi')"
-            />
+    @if ($newImage)
+        <flux:file-item
+            :heading="$newImage->getClientOriginalName()"
+            :image="$newImage->temporaryUrl()"
+            :size="$newImage->getSize()"
+        >
+            <x-slot name="actions">
+                <flux:file-item.remove wire:click="removeNewImage"/>
+            </x-slot>
+        </flux:file-item>
+    @endif
 
-            <flux:input
-                wire:model="phone"
-                :label="__('Telefons')"
-                type="tel"
-                :placeholder="__('Ievadiet telefona numuru')"
-            />
-
-            <flux:input
-                wire:model="title"
-                :label="__('Amats')"
-                :placeholder="__('Ievadiet amatu (piem., Fitnesa treneris)')"
-            />
-
-            <flux:editor
-                wire:model="bio"
-                :label="__('Biogrāfija')"
-                rows="4"
-                :placeholder="__('Īss apraksts par treneri')"
-            />
-
-            @if ($existingImage && !$newImage)
-                <div>
-                    <flux:label>{{ __('Pašreizējais attēls') }}</flux:label>
-                    <flux:file-item
-                        :heading="basename($existingImage)"
-                        :image="asset($existingImage)"
-                        class="mt-2"
-                    >
-                        <x-slot name="actions">
-                            <flux:file-item.remove wire:click="removeExistingImage"/>
-                        </x-slot>
-                    </flux:file-item>
-                </div>
-            @endif
-
-            <flux:file-upload wire:model="newImage" :label="$existingImage ? __('Jauns attēls (neobligāts)') : __('Attēls')">
-                <flux:file-upload.dropzone
-                    :heading="__('Velciet failu šeit vai klikšķiniet, lai pārlūkotu')"
-                    :text="__('JPG, PNG, GIF līdz 400KB')"
-                />
-            </flux:file-upload>
-
-            @if ($newImage)
-                <flux:file-item
-                    :heading="$newImage->getClientOriginalName()"
-                    :image="$newImage->temporaryUrl()"
-                    :size="$newImage->getSize()"
-                >
-                    <x-slot name="actions">
-                        <flux:file-item.remove wire:click="removeNewImage"/>
-                    </x-slot>
-                </flux:file-item>
-            @endif
-
-            <flux:error name="newImage"/>
-
-            <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
-
-            <div class="flex items-center justify-end gap-4">
-                <flux:button href="{{ route('coach-list') }}" wire:navigate variant="ghost">
-                    {{ __('Atcelt') }}
-                </flux:button>
-                <flux:button type="submit" variant="primary">
-                    {{ __('Saglabāt') }}
-                </flux:button>
-            </div>
-        </form>
-    </div>
-</div>
+    <flux:error name="newImage"/>
+</x-coach.coach-form>
