@@ -5,33 +5,44 @@
         <flux:heading level="1" size="xl" class="mb-6">{{ $heading }}</flux:heading>
 
         <form wire:submit="save" class="flex flex-col gap-6">
-            <div class="flex">
-                <flux:input
-                    wire:model="name"
-                    :label="__('Vārds, uzvārds')"
-                    :placeholder="__('Ievadi trenera vārdu un uzvārdu')"
-                />
+            <div class="flex flex-col gap-6 sm:flex-row ">
+                <div class="sm:flex-1">
+                    <flux:input
+                        wire:model="name"
+                        :label="__('Vārds, uzvārds')"
+                        :placeholder="__('Ievadi trenera vārdu un uzvārdu')"
+                    />
+                </div>
 
-                <flux:input
-                    wire:model="title"
-                    :label="__('Amats')"
-                    :placeholder="__('Ievadi amatu (piem., Fitnesa treneris)')"
-                />
+                <div class="sm:flex-1">
+                    <flux:input
+                        wire:model="title"
+                        :label="__('Amats')"
+                        :placeholder="__('Ievadi amatu (piem., Fitnesa treneris)')"
+                    />
+                </div>
             </div>
-            <flux:input
-                wire:model="email"
-                :label="__('E-pasts')"
-                type="email"
-                :placeholder="__('Ievadi e-pasta adresi')"
-            />
 
-            <flux:input
-                wire:model="phone"
-                :label="__('Telefons')"
-                type="tel"
-                :placeholder="__('Ievadi telefona numuru')"
-            />
+            <div class="flex flex-col gap-6 sm:flex-row ">
+                <div class="sm:flex-1">
+                    <flux:input
+                        wire:model="email"
+                        :label="__('E-pasts')"
+                        type="email"
+                        :placeholder="__('Ievadi e-pasta adresi')"
+                    />
+                </div>
 
+                <div class="sm:flex-1">
+                    <flux:input
+                        wire:model="phone"
+                        :label="__('Telefons')"
+                        type="tel"
+                        :placeholder="__('Ievadi telefona numuru')"
+                    />
+                </div>
+            </div>
+            
             <flux:editor
                 wire:model="bio"
                 :label="__('Biogrāfija')"

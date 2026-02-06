@@ -36,12 +36,9 @@
                     @endforeach
                 </flux:select>
             @endif
-
-            <flux:input
-                wire:model="booking_date"
-                :label="__('Rezervācijas datums')"
-                type="date"
-            />
+            
+            <flux:date-picker min="today" placeholder="Rezervācijas datums" :label="__('Rezervācijas datums')"
+                              wire:model="booking_date"/>
 
             <flux:separator/>
 

@@ -26,18 +26,11 @@
                     @endforeach
                 </flux:select>
             @else
-                <flux:input
-                    wire:model="date"
-                    :label="__('Datums')"
-                    type="date"
-                />
+                <flux:date-picker min="today" placeholder="Izvēlies datumu" :label="__('Datums')" wire:model="date"/>
             @endif
 
-            <flux:input
-                wire:model="start_time"
-                :label="__('Sākuma laiks')"
-                type="time"
-            />
+            <flux:time-picker wire:model="start_time" interval="15" placeholder="Izvēlies laiku"
+                              :label="__('Sākuma laiks')"/>
 
             <flux:input
                 wire:model="max_capacity"

@@ -5,12 +5,32 @@
         <flux:heading level="1" size="xl" class="mb-6">{{ $heading }}</flux:heading>
 
         <form wire:submit="save" class="flex flex-col gap-6">
-            <flux:input
-                wire:model="name"
-                :label="__('Nosaukums')"
-                :placeholder="__('Ievadi pakalpojuma nosaukumu')"
-            />
+            <div class="flex flex-col gap-6 sm:flex-row ">
+                <div class="sm:flex-1">
 
+                    <flux:input
+                        wire:model="name"
+                        :label="__('Nosaukums')"
+                        :placeholder="__('Ievadi pakalpojuma nosaukumu')"
+                    />
+                </div>
+                <div class="sm:flex-1">
+                    <flux:input
+                        wire:model="price"
+                        :label="__('Cena (EUR)')"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        :placeholder="__('Ievadi cenu (piem., 25.00)')"
+                    />
+                </div>
+            </div>
+            <flux:select wire:model="coach_id" :label="__('Treneris')">
+                <flux:select.option value="">{{ __('Izvēlieties treneri') }}</flux:select.option>
+                @foreach($this->coaches as $coach)
+                    <flux:select.option :value="$coach->id">{{ $coach->name }}</flux:select.option>
+                @endforeach
+            </flux:select>
             <div class="flex items-end gap-2">
                 <div class="flex-1">
                     <flux:select wire:model="service_type_id" :label="__('Pakalpojuma veids')">
@@ -26,22 +46,6 @@
             </div>
 
             <x-service.new-service-type-modal/>
-
-            <flux:select wire:model="coach_id" :label="__('Treneris')">
-                <flux:select.option value="">{{ __('Izvēlieties treneri') }}</flux:select.option>
-                @foreach($this->coaches as $coach)
-                    <flux:select.option :value="$coach->id">{{ $coach->name }}</flux:select.option>
-                @endforeach
-            </flux:select>
-
-            <flux:input
-                wire:model="price"
-                :label="__('Cena (EUR)')"
-                type="number"
-                step="0.01"
-                min="0"
-                :placeholder="__('Ievadi cenu (piem., 25.00)')"
-            />
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
 

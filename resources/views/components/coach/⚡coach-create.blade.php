@@ -27,7 +27,7 @@ new class extends Component {
     {
         return [
             'name'  => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:coaches,email'],
+            'email' => ['required', 'email', 'max:255', 'unique:coaches,email'],
             'phone' => ['nullable', 'string', 'max:255', 'unique:coaches,phone'],
             'title' => ['required', 'string', 'max:255'],
             'image' => ['required', 'image', 'max:400'],
@@ -40,6 +40,7 @@ new class extends Component {
         return [
             'name.required'  => __('Vārds un uzvārds ir obligāts.'),
             'name.max'       => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'email.required' => __('E-pasts ir obligāts.'),
             'email.email'    => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
             'email.unique'   => __('Šis e-pasts jau ir reģistrēts.'),
             'phone.unique'   => __('Šis telefona numurs jau ir reģistrēts.'),
