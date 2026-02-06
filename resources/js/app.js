@@ -58,7 +58,19 @@ const createOdometer = (el, value) => {
     odometer.update(value)
 };
 
-createOdometer(yearsOfExperience, yearsOfExperience.innerHTML);
-createOdometer(totalCalories, totalCalories.innerHTML);
-createOdometer(trainingCoaches, trainingCoaches.innerHTML);
-createOdometer(totalClients, totalClients.innerHTML);
+if(yearsOfExperience){
+    createOdometer(yearsOfExperience, yearsOfExperience.innerHTML);
+}
+
+if(totalCalories){
+    createOdometer(totalCalories, totalCalories.innerHTML);
+}
+
+if(trainingCoaches){
+    createOdometer(trainingCoaches, trainingCoaches.innerHTML);
+}
+
+if(totalClients){
+    createOdometer(totalClients, totalClients.innerHTML);
+}
+

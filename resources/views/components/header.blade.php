@@ -1,7 +1,6 @@
 <header class="h-screen relative bg-cover bg-position-[35%_center] md:bg-center"
-        style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('{{ asset('images/header_image.jpg') }}');"
-        x-data="{ open: false }"
-        x-effect="
+    style="background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('{{ asset('images/header_image.jpg') }}');"
+    x-data="{ open: false }" x-effect="
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
         document.body.style.overflow = open ? 'hidden' : '';
         document.body.style.paddingRight = open ? scrollbarWidth + 'px' : '';
@@ -13,14 +12,14 @@
         <nav class="relative flex justify-center items-center gap-4">
             <div class="w-28">
                 <a href="{{ route('home') }}">
-                    <x-app-logo-icon/>
+                    <x-app-logo-icon />
                 </a>
             </div>
 
             {{-- NAV OPEN/CLOSE CONTROL --}}
             <div class="absolute right-0 top-1/2 -translate-y-1/2" x-cloak>
                 <flux:button variant="ghost" @click="open = !open">
-                    <flux:icon.bars-3/>
+                    <flux:icon.bars-3 />
                 </flux:button>
             </div>
         </nav>
@@ -28,22 +27,23 @@
         {{-- HEADING AND CTA --}}
         <div class="mt-auto pb-12 md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
             <flux:heading level="1">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
-            <flux:button class="button primary">{{ __('Pieteikties') }}</flux:button>
+            <flux:button class="button primary" @click="document.querySelector('#apply')">{{ __('Pieteikties')
+                }}</flux:button>
         </div>
 
         {{-- CONTACT/SOCIAL MEDIA ICONS --}}
         <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
             <a href="tel:+37126620757">
-                <flux:icon.phone/>
+                <flux:icon.phone />
             </a>
             <a href="mailto:info@vingrosanasstudija.lv">
-                <flux:icon.envelope/>
+                <flux:icon.envelope />
             </a>
             <a href="https://www.instagram.com/vingrosanas.studija" target="_blank" rel="noopener noreferrer">
-                <flux:icon.instagram/>
+                <flux:icon.instagram />
             </a>
             <a href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
-                <flux:icon.facebook/>
+                <flux:icon.facebook />
             </a>
         </div>
     </div>
@@ -51,21 +51,21 @@
     {{-- NAV LINKS --}}
     <nav>
         <div x-cloak x-show="open" x-transition:enter="transition-opacity duration-300 ease-out"
-             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-             x-transition:leave="transition-opacity duration-300 ease-in" x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0" @click="open = false" class="fixed inset-0 bg-black/50 z-10">
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity duration-300 ease-in" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0" @click="open = false" class="fixed inset-0 bg-black/50 z-10">
         </div>
         <div x-cloak x-show="open" x-transition:enter="transition-all duration-300 ease-out"
-             x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100"
-             x-transition:leave="transition-all duration-300 ease-in"
-             x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
-             class="bg-beige w-full md:w-1/2 lg:w-1/3 fixed inset-y-0 right-0 h-screen z-20
+            x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100"
+            x-transition:leave="transition-all duration-300 ease-in"
+            x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
+            class="bg-beige w-full md:w-1/2 lg:w-1/3 fixed inset-y-0 right-0 h-screen z-20
                                         flex flex-col items-center justify-center
                                         overflow-y-auto overscroll-contain space-y-4 md:space-y-4 lg:space-y-6">
 
             <div class="absolute right-7 top-12 close-button" x-cloak>
                 <flux:button x-show="open" variant="ghost" @click="open = !open">
-                    <flux:icon.x-mark/>
+                    <flux:icon.x-mark />
                 </flux:button>
             </div>
 
@@ -89,11 +89,11 @@
             </flux:navlist>
             <flux:navlist class="nav-icons flex flex-row gap-x-4 absolute bottom-16">
                 <flux:navlist.item href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
-                    <flux:icon.facebook/>
+                    <flux:icon.facebook />
                 </flux:navlist.item>
                 <flux:navlist.item href="https://www.instagram.com/vingrosanas.studija" target="_blank"
-                                   rel="noopener noreferrer">
-                    <flux:icon.instagram/>
+                    rel="noopener noreferrer">
+                    <flux:icon.instagram />
                 </flux:navlist.item>
             </flux:navlist>
         </div>
