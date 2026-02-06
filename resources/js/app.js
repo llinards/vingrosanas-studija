@@ -44,11 +44,6 @@ if (workoutCarousel) {
     }).init();
 }
 
-const yearsOfExperience = document.getElementById('yearsOfExperience');
-const totalCalories = document.getElementById('totalCalories');
-const trainingCoaches = document.getElementById('trainingCoaches');
-const totalClients = document.getElementById('totalClients');
-
 
 const createOdometer = (el, value) => {
     const odometer = new Odometer({
@@ -58,19 +53,14 @@ const createOdometer = (el, value) => {
     odometer.update(value)
 };
 
-if(yearsOfExperience){
-    createOdometer(yearsOfExperience, yearsOfExperience.innerHTML);
-}
 
-if(totalCalories){
-    createOdometer(totalCalories, totalCalories.innerHTML);
-}
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+            createOdometer(entry.target, entry.target.textContent)
+        }
+    });
+}, { threshold: 0.6 })
 
-if(trainingCoaches){
-    createOdometer(trainingCoaches, trainingCoaches.innerHTML);
-}
-
-if(totalClients){
-    createOdometer(totalClients, totalClients.innerHTML);
-}
-
+const odometerNumbers = document.querySelectorAll('.counter-number')
+odometerNumbers.forEach((el) => observer.observe(el));
