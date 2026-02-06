@@ -8,7 +8,8 @@
                 {{ __('Strēlnieku iela 20 A, Sigulda') }}
             </flux:link>
         </div>
-        <div class="text-center flex flex-col md:flex-row items-center justify-evenly my-6 md:mb-12">
+        <div
+            class="text-center flex flex-col md:flex-row items-center justify-evenly my-6 md:mb-12 space-y-6 md:space-y-0">
             <div class="space-y-3">
                 <flux:text id="yearsOfExperience" class="counter-number">6</flux:text>
                 <flux:text>{{ __('Gadu pieredze') }}</flux:text>
