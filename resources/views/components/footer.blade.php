@@ -21,7 +21,7 @@
                     <flux:link href="#services">{{ __('Pakalpojumi') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#contacts">{{ __('Kontakti') }}</flux:link>
+                    <flux:link href="#contactForm">{{ __('Kontakti') }}</flux:link>
                 </li>
             </ul>
             <ul>
