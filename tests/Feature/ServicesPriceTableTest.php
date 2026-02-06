@@ -23,3 +23,16 @@ test('price table only shows active services', function () {
         ->assertSee('Aktīvs pakalpojums')
         ->assertDontSee('Neaktīvs pakalpojums');
 });
+
+test('price table hides service type when all its services are inactive', function () {
+    $serviceType = ServiceType::factory()->create(['name' => 'Tukšais veids']);
+
+    Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => false,
+    ]);
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertDontSee('Tukšais veids');
+});

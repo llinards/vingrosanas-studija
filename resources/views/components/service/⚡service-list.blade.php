@@ -14,6 +14,18 @@ new class extends Component {
         return Service::with(['serviceType', 'coach'])->get();
     }
 
+    public function toggleActive(Service $service): void
+    {
+        $service->update(['is_active' => ! $service->is_active]);
+
+        Flux::toast(
+            text: $service->is_active ? __('Pakalpojums aktivizēts!') : __('Pakalpojums deaktivizēts.'),
+            variant: 'success',
+        );
+
+        unset($this->services);
+    }
+
     public function destroy(Service $service): void
     {
         try {
@@ -63,9 +75,7 @@ new class extends Component {
                         <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
                         <flux:table.cell>
-                            <flux:badge :color="$service->is_active ? 'green' : 'red'" size="sm">
-                                {{ $service->is_active ? __('Aktīvs') : __('Neaktīvs') }}
-                            </flux:badge>
+                            <flux:switch wire:click="toggleActive({{ $service->id }})" :checked="$service->is_active"/>
                         </flux:table.cell>
                         <flux:table.cell>
                             <div class="flex gap-2">

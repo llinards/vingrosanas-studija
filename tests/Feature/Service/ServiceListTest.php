@@ -63,6 +63,22 @@ test('service list shows active status badge', function () {
         ->assertSee('Neaktīvs pakalpojums');
 });
 
+test('can toggle service active status', function () {
+    $service = Service::factory()->create(['is_active' => true]);
+
+    Livewire::test('service.service-list')
+        ->call('toggleActive', $service->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'is_active' => false]);
+
+    Livewire::test('service.service-list')
+        ->call('toggleActive', $service->id)
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', ['id' => $service->id, 'is_active' => true]);
+});
+
 test('can destroy a service', function () {
     $service = Service::factory()->create();
 

@@ -9,7 +9,9 @@ new class extends Component {
     #[Computed]
     public function serviceTypes(): Collection
     {
-        return ServiceType::with(['services' => fn ($query) => $query->where('is_active', true)])->get();
+        return ServiceType::with(['services' => fn ($query) => $query->where('is_active', true)])
+            ->whereHas('services', fn ($query) => $query->where('is_active', true))
+            ->get();
     }
 };
 ?>
