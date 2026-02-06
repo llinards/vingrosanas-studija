@@ -1,0 +1,95 @@
+<?php
+
+use App\Models\Booking;
+use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
+
+new class extends Component {
+    #[Computed]
+    public function bookings(): Collection
+    {
+        return Booking::with(['schedule.service.coach'])
+            ->latest()
+            ->get();
+    }
+
+    public function destroy(Booking $booking): void
+    {
+        try {
+            $booking->delete();
+
+            unset($this->bookings);
+
+            Flux::toast(
+                text: __('Rezervācija veiksmīgi dzēsta!'),
+                variant: 'success',
+            );
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            Flux::toast(
+                text: __('Neizdevās dzēst rezervāciju. Lūdzu, mēģini vēlreiz.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        }
+    }
+};
+?>
+
+<div>
+    @if($this->bookings->isEmpty())
+        <div class="flex flex-col items-center">
+            <flux:heading class="mb-2" level="2" size="xl">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:heading>
+            <flux:button href="{{ route('booking-create') }}" wire:navigate class="mb-4">{{ __('Pievienot jaunu rezervāciju') }}
+            </flux:button>
+        </div>
+    @else
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>{{ __('Klients') }}</flux:table.column>
+                <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
+                <flux:table.column>{{ __('Treneris') }}</flux:table.column>
+                <flux:table.column>{{ __('Datums') }}</flux:table.column>
+                <flux:table.column>{{ __('Laiks') }}</flux:table.column>
+                <flux:table.column>{{ __('Statuss') }}</flux:table.column>
+                <flux:table.column>{{ __('Darbības') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach($this->bookings as $booking)
+                    <flux:table.row wire:key="booking-{{ $booking->id }}">
+                        <flux:table.cell>{{ $booking->name }} {{ $booking->surname }}</flux:table.cell>
+                        <flux:table.cell>{{ $booking->schedule->service->name }}</flux:table.cell>
+                        <flux:table.cell>{{ $booking->schedule->service->coach->name }}</flux:table.cell>
+                        <flux:table.cell>{{ $booking->booking_date->format('d.m.Y') }}</flux:table.cell>
+                        <flux:table.cell>{{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
+                        <flux:table.cell>
+                            <flux:badge size="sm" :color="match($booking->payment_status->value) {
+                                'paid' => 'green',
+                                'pending' => 'yellow',
+                                'failed' => 'red',
+                                'refunded' => 'zinc',
+                            }">{{ $booking->payment_status->label() }}</flux:badge>
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <div class="flex gap-2">
+                                <flux:button href="{{ route('booking.edit', $booking) }}" variant="primary" size="sm">
+                                    {{ __('Rediģēt') }}
+                                </flux:button>
+                                <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst rezervāciju?') }}"
+                                             variant="danger"
+                                             size="sm"
+                                             wire:click="destroy({{ $booking->id }})">
+                                    {{ __('Dzēst') }}
+                                </flux:button>
+                            </div>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+    @endif
+</div>

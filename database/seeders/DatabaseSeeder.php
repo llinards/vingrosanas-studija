@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ServiceTypeSeeder::class,
             ServiceSeeder::class,
             ScheduleSeeder::class,
+            BookingSeeder::class,
         ]);
     }
 }

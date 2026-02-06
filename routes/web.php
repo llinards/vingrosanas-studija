@@ -31,6 +31,10 @@ Route::group([
         Route::livewire('schedule/add', 'schedule.schedule-create')->name('schedule-create');
         Route::livewire('schedule/{schedule}/edit', 'schedule.schedule-edit')->name('schedule.edit');
 
+        Route::view('bookings', 'dashboard.booking-list')->name('booking-list');
+        Route::livewire('booking/add', 'booking.booking-create')->name('booking-create');
+        Route::livewire('booking/{booking}/edit', 'booking.booking-edit')->name('booking.edit');
+
         Route::redirect('settings', 'settings/profile');
         Route::livewire('settings/profile', Profile::class)->name('profile.edit');
         Route::livewire('settings/password', Password::class)->name('user-password.edit');

@@ -23,6 +23,9 @@
             <flux:navlist.item icon="calendar-days" :href="route('schedule-list')"
                                :current="request()->routeIs('schedule-list')"
                                wire:navigate>{{ __('Grafiks') }}</flux:navlist.item>
+            <flux:navlist.item icon="ticket" :href="route('booking-list')"
+                               :current="request()->routeIs('booking-list')"
+                               wire:navigate>{{ __('Rezervācijas') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 

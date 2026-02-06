@@ -56,4 +56,7 @@
     {{-- FOOTER --}}
     <x-footer />
 
+    {{-- BOOKING MODAL --}}
+    <livewire:booking-modal />
+
 </x-layouts.main>
