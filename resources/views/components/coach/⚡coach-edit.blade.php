@@ -3,7 +3,6 @@
 use App\Models\Coach;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -98,10 +97,7 @@ new class extends Component
             $imagePath = $coach->image;
 
             if ($this->newImage) {
-                $oldImagePath = str_replace('storage/', '', $coach->image);
-                if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-                    Storage::disk('public')->delete($oldImagePath);
-                }
+                $coach->deleteImage();
 
                 $newPath = $this->newImage->store('coaches', 'public');
 
@@ -117,10 +113,7 @@ new class extends Component
 
                 $imagePath = 'storage/'.$newPath;
             } elseif (! $this->existingImage) {
-                $oldImagePath = str_replace('storage/', '', $coach->image);
-                if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-                    Storage::disk('public')->delete($oldImagePath);
-                }
+                $coach->deleteImage();
                 $imagePath = null;
             }
 

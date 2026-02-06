@@ -4,7 +4,6 @@ use App\Models\Coach;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -18,12 +17,7 @@ new class extends Component {
     public function destroy(Coach $coach): void
     {
         try {
-            $imagePath = str_replace('storage/', '', $coach->image);
-
-            if ($imagePath && Storage::disk('public')->exists($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
-            }
-
+            $coach->deleteImage();
             $coach->delete();
 
             unset($this->coaches);
