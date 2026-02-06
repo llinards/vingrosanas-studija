@@ -5,12 +5,19 @@
         <flux:heading level="1" size="xl" class="mb-6">{{ $heading }}</flux:heading>
 
         <form wire:submit="save" class="flex flex-col gap-6">
-            <flux:input
-                wire:model="name"
-                :label="__('Vārds, uzvārds')"
-                :placeholder="__('Ievadiet trenera vārdu un uzvārdu')"
-            />
+            <div class="flex">
+                <flux:input
+                    wire:model="name"
+                    :label="__('Vārds, uzvārds')"
+                    :placeholder="__('Ievadiet trenera vārdu un uzvārdu')"
+                />
 
+                <flux:input
+                    wire:model="title"
+                    :label="__('Amats')"
+                    :placeholder="__('Ievadiet amatu (piem., Fitnesa treneris)')"
+                />
+            </div>
             <flux:input
                 wire:model="email"
                 :label="__('E-pasts')"
@@ -23,12 +30,6 @@
                 :label="__('Telefons')"
                 type="tel"
                 :placeholder="__('Ievadiet telefona numuru')"
-            />
-
-            <flux:input
-                wire:model="title"
-                :label="__('Amats')"
-                :placeholder="__('Ievadiet amatu (piem., Fitnesa treneris)')"
             />
 
             <flux:editor

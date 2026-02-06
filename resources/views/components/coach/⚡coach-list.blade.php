@@ -63,21 +63,15 @@ new class extends Component {
                                 <flux:icon.user class="size-24 text-zinc-400"/>
                             </div>
                         @endif
-
-                        <div class="absolute right-3 top-3">
-                            <flux:badge :color="$coach->is_active ? 'green' : 'red'" size="sm">
-                                {{ $coach->is_active ? 'Aktīvs' : 'Neaktīvs' }}
-                            </flux:badge>
-                        </div>
                     </div>
 
                     <div class="flex-1">
-                        <flux:heading level="3" size="lg" class="mb-1">
+                        <flux:badge :color="$coach->is_active ? 'green' : 'red'" size="sm">
+                            {{ $coach->is_active ? 'Aktīvs' : 'Neaktīvs' }}
+                        </flux:badge>
+                        <flux:heading level="3" size="lg" class="my-1">
                             {{ $coach->name }}
                         </flux:heading>
-                        <flux:subheading class="mb-3">
-                            {{ $coach->title }}
-                        </flux:subheading>
                     </div>
 
                     <div class="mt-4 flex gap-2">

@@ -20,6 +20,9 @@
             <flux:navlist.item icon="wrench" :href="route('service-list')"
                                :current="request()->routeIs('service-list')"
                                wire:navigate>{{ __('Pakalpojumi') }}</flux:navlist.item>
+            <flux:navlist.item icon="calendar-days" :href="route('schedule-list')"
+                               :current="request()->routeIs('schedule-list')"
+                               wire:navigate>{{ __('Grafiks') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 
