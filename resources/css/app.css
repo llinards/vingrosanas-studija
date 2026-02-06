@@ -121,10 +121,14 @@
    Base Styles
    ========================================================================== */
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: var(--font-body);
     @apply focus:outline-blue focus:ring-blue; 
-    scroll-behavior: smooth;
+   
 }
 
 .container {
@@ -191,7 +195,15 @@ body {
 #counter [data-flux-text].counter-number {
     font-family: var(--font-heading-bold);
     @apply uppercase text-3xl md:text-4xl;
-    @apply text-7xl;
+    @apply text-7xl text-center;
+}
+
+/* When the animation ends, odometer uses an absolutely-positioned “last value”.
+   Without left/right it snaps to the left edge of the digit container. */
+.odometer.odometer-auto-theme .odometer-digit .odometer-value.odometer-last-value,
+.odometer.odometer-theme-default .odometer-digit .odometer-value.odometer-last-value {
+    left: 0;
+    right: 0;
 }
 
 #counter [data-flux-heading] {
