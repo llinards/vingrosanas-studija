@@ -6,20 +6,21 @@
 
         <form wire:submit="save" class="flex flex-col gap-6">
             <flux:select wire:model="service_id" :label="__('Pakalpojums')">
-                <flux:select.option value="">{{ __('Izvēlieties pakalpojumu') }}</flux:select.option>
+                <flux:select.option value="">{{ __('Izvēlies pakalpojumu') }}</flux:select.option>
                 @foreach($this->services as $service)
-                    <flux:select.option :value="$service->id">{{ $service->name }} ({{ $service->coach->name }})</flux:select.option>
+                    <flux:select.option :value="$service->id">{{ $service->name }} ({{ $service->coach->name }})
+                    </flux:select.option>
                 @endforeach
             </flux:select>
 
             <flux:radio.group wire:model.live="schedule_type" :label="__('Grafika veids')" variant="segmented">
-                <flux:radio value="recurring" :label="__('Regulārs')" />
-                <flux:radio value="specific" :label="__('Vienreizējs')" />
+                <flux:radio value="recurring" :label="__('Regulārs')"/>
+                <flux:radio value="specific" :label="__('Vienreizējs')"/>
             </flux:radio.group>
 
             @if($this->schedule_type === 'recurring')
                 <flux:select wire:model="day_of_week" :label="__('Nedēļas diena')">
-                    <flux:select.option value="">{{ __('Izvēlieties dienu') }}</flux:select.option>
+                    <flux:select.option value="">{{ __('Izvēlies dienu') }}</flux:select.option>
                     @foreach($this->dayOptions as $day)
                         <flux:select.option :value="$day['value']">{{ $day['label'] }}</flux:select.option>
                     @endforeach
@@ -43,7 +44,7 @@
                 :label="__('Maks. dalībnieki')"
                 type="number"
                 min="1"
-                :placeholder="__('Ievadiet maksimālo dalībnieku skaitu')"
+                :placeholder="__('Ievadi maksimālo dalībnieku skaitu')"
             />
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>

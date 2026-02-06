@@ -40,7 +40,7 @@ new class extends Component {
         return [
             'name.required'  => __('Vārds un uzvārds ir obligāts.'),
             'name.max'       => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
-            'email.email'    => __('Lūdzu, ievadiet derīgu e-pasta adresi.'),
+            'email.email'    => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
             'email.unique'   => __('Šis e-pasts jau ir reģistrēts.'),
             'phone.unique'   => __('Šis telefona numurs jau ir reģistrēts.'),
             'title.required' => __('Amats ir obligāts.'),
@@ -115,7 +115,7 @@ new class extends Component {
 <x-coach.coach-form :heading="__('Pievienot jaunu treneri')">
     <flux:file-upload wire:model="image" :label="__('Attēls')">
         <flux:file-upload.dropzone
-            :heading="__('Velciet failu šeit vai klikšķiniet, lai pārlūkotu')"
+            :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
             :text="__('JPG, PNG, GIF līdz 400KB')"
         />
     </flux:file-upload>

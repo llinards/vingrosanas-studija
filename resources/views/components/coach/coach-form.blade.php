@@ -9,27 +9,27 @@
                 <flux:input
                     wire:model="name"
                     :label="__('Vārds, uzvārds')"
-                    :placeholder="__('Ievadiet trenera vārdu un uzvārdu')"
+                    :placeholder="__('Ievadi trenera vārdu un uzvārdu')"
                 />
 
                 <flux:input
                     wire:model="title"
                     :label="__('Amats')"
-                    :placeholder="__('Ievadiet amatu (piem., Fitnesa treneris)')"
+                    :placeholder="__('Ievadi amatu (piem., Fitnesa treneris)')"
                 />
             </div>
             <flux:input
                 wire:model="email"
                 :label="__('E-pasts')"
                 type="email"
-                :placeholder="__('Ievadiet e-pasta adresi')"
+                :placeholder="__('Ievadi e-pasta adresi')"
             />
 
             <flux:input
                 wire:model="phone"
                 :label="__('Telefons')"
                 type="tel"
-                :placeholder="__('Ievadiet telefona numuru')"
+                :placeholder="__('Ievadi telefona numuru')"
             />
 
             <flux:editor

@@ -8,7 +8,7 @@
             <flux:input
                 wire:model="name"
                 :label="__('Nosaukums')"
-                :placeholder="__('Ievadiet pakalpojuma nosaukumu')"
+                :placeholder="__('Ievadi pakalpojuma nosaukumu')"
             />
 
             <div class="flex items-end gap-2">
@@ -40,7 +40,7 @@
                 type="number"
                 step="0.01"
                 min="0"
-                :placeholder="__('Ievadiet cenu (piem., 25.00)')"
+                :placeholder="__('Ievadi cenu (piem., 25.00)')"
             />
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
