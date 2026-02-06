@@ -15,7 +15,7 @@
                 <flux:text>{{ __('Gadu pieredze') }}</flux:text>
             </div>
             <div class="space-y-3">
-                <flux:text id="totalCalories" class="counter-number">120k</flux:text>
+                <flux:text id="totalCalories" class="counter-number" data-suffix="K">120</flux:text>
                 <flux:text>{{ __('Patērētās kalorijas') }}</flux:text>
             </div>
             <div class="space-y-3">
@@ -23,7 +23,7 @@
                 <flux:text>{{ __('Profesionāli treneri') }}</flux:text>
             </div>
             <div class="space-y-3">
-                <flux:text id="totalClients" class="counter-number">100</flux:text>
+                <flux:text id="totalClients" class="counter-number" data-suffix="+">100</flux:text>
                 <flux:text>{{ __('Apmierināti klienti') }}</flux:text>
             </div>
         </div>

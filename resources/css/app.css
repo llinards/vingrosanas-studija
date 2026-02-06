@@ -194,8 +194,32 @@ body {
 
 #counter [data-flux-text].counter-number {
     font-family: var(--font-heading-bold);
-    @apply uppercase text-3xl md:text-4xl;
-    @apply text-7xl text-center;
+    @apply uppercase text-7xl text-center;
+}
+
+.counter-label {
+    line-height: 1.1em;
+    font-family: var(--font-heading-bold);
+    @apply text-7xl;
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+/* Counter suffixes (K, +) without affecting Odometer's number parsing */
+#counter .counter-number[data-suffix]::after {
+    content: attr(data-suffix);
+    @apply inline-block align-baseline relative;
+    @apply ml-[0.1em] leading-[1.1em] top-[0.085em];
+}
+
+/* Odometer inserts a block-level .odometer-inside wrapper; make it inline so the suffix stays on the same line. */
+#counter .counter-number.odometer .odometer-inside {
+    @apply inline-block;
+}
+
+/* Prevent wrapping between the number and its suffix */
+#counter .counter-number[data-suffix] {
+    @apply whitespace-nowrap;
 }
 
 /* When the animation ends, odometer uses an absolutely-positioned “last value”.
