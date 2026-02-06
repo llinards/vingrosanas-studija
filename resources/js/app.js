@@ -2,6 +2,7 @@ import {Carousel} from '@fancyapps/ui';
 import {Dots} from '@fancyapps/ui/dist/carousel/carousel.dots.js';
 import {Autoplay} from '@fancyapps/ui/dist/carousel/carousel.autoplay.js';
 import { Autoscroll } from "@fancyapps/ui/dist/carousel/carousel.autoscroll.js";
+import Odometer from 'odometer';
 
 const galleryCarousel = document.getElementById('galleryCarousel');
 const ownerCarousel = document.getElementById('ownerCarousel');
@@ -42,3 +43,22 @@ if (workoutCarousel) {
     Autoscroll
     }).init();
 }
+
+const yearsOfExperience = document.getElementById('yearsOfExperience');
+const totalCalories = document.getElementById('totalCalories');
+const trainingCoaches = document.getElementById('trainingCoaches');
+const totalClients = document.getElementById('totalClients');
+
+
+const createOdometer = (el, value) => {
+    const odometer = new Odometer({
+        el: el,
+        value: 0,
+    });
+    odometer.update(value)
+};
+
+createOdometer(yearsOfExperience, yearsOfExperience.innerHTML);
+createOdometer(totalCalories, totalCalories.innerHTML);
+createOdometer(trainingCoaches, trainingCoaches.innerHTML);
+createOdometer(totalClients, totalClients.innerHTML);

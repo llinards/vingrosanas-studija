@@ -40,7 +40,7 @@
                 </li>
                 <li>
                     <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela
-                        20A') }}<br />
+                        20 A') }}<br />
                         {{ __('Sigulda') }}
                     </flux:link>
                 </li>

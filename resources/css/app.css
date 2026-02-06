@@ -7,6 +7,7 @@
 @import '@fancyapps/ui/dist/carousel/carousel.css';
 @import '@fancyapps/ui/dist/carousel/carousel.dots.css';
 @import '@fancyapps/ui/dist/carousel/carousel.autoplay.css';
+@import 'odometer/themes/odometer-theme-default.css';
 
 /* ============================================================================
    Sources - Tailwind v4 Content Scanning
@@ -44,6 +45,14 @@
 }
 
 @font-face {
+    font-family: 'Oswald-SemiBold';
+    src: url('fonts/Oswald-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
     font-family: 'Archivo';
     src: url('fonts/Archivo-Regular.ttf') format('truetype');
     font-weight: 400;
@@ -67,6 +76,7 @@
     /* Typography */
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+    --font-heading-bold: 'Oswald-SemiBold', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
     --font-body-bold: 'Archivo-SemiBold', ui-sans-serif, system-ui, sans-serif;
 
@@ -170,6 +180,23 @@ body {
     @apply uppercase text-3xl md:text-4xl;
     @apply lg:text-5xl xl:text-6xl leading-normal;
 }
+
+/* #counter - numbers and meaning */
+#counter [data-flux-text],
+#counter [data-flux-link] {
+    @apply uppercase text-center
+}
+
+#counter [data-flux-text].counter-number {
+    font-family: var(--font-heading-bold);
+    @apply uppercase text-3xl md:text-4xl;
+    @apply text-7xl;
+}
+
+#counter [data-flux-heading] {
+    @apply pb-6
+}
+
 
 /* #quote - owner title */
 #quote [data-flux-text]:nth-of-type(2) {
