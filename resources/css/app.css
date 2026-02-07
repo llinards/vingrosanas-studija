@@ -350,7 +350,7 @@ h1 {
 h2 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-7xl;
-    @apply uppercase text-black py-6 md:py-12;
+    @apply uppercase text-black pb-6 md:pb-12;
     @apply leading-tight;
 }
 
@@ -415,23 +415,44 @@ footer li [data-flux-link] {
 /* ============================================================================
    Button Variants
    ========================================================================== */
+button {
+    @apply cursor-pointer
+}
+
 .button {
     font-family: var(--font-heading);
-    @apply text-white font-semibold border-2 border-blue tracking-wide transition-all;
-    @apply duration-300 cursor-pointer bg-blue uppercase rounded-3xl px-7 py-6 text-xl;
-    @apply md:px-10 md:py-7 md:text-xl lg:px-12 lg:py-8 lg:text-3xl;
+    @apply font-semibold border-2 tracking-wide transition-all;
+    @apply duration-300 cursor-pointer uppercase rounded-3xl;
+}
+
+.large {
+    @apply px-7 py-6 text-xl md:px-10 md:py-7;
+    @apply lg:px-12 lg:py-8 lg:text-3xl;
+}
+
+.small{
+    @apply px-5 py-4 text-base md:px-6 md:py-5 md:text-lg;
 }
 
 .primary {
-    @apply hover:opacity-70
+    @apply bg-blue border-blue text-white hover:opacity-70
+}
+
+.secondary,
+.tertiary {
+    @apply hover:border-black hover:text-black;
 }
 
 .secondary {
-    @apply border-white hover:border-black hover:text-black;
+    @apply bg-blue border-white text-white;
 }
 
 .secondary:focus {
     @apply ring-black
+}
+
+.tertiary {
+    @apply border-blue text-blue;
 }
 
 .close-button {

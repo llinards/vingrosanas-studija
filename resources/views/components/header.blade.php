@@ -14,7 +14,7 @@
         <div class="mt-auto pb-12 md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
             <flux:heading level="1">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
             <flux:modal.trigger name="booking-modal">
-                <flux:button class="button primary">{{ __('Pieteikties') }}</flux:button>
+                <flux:button class="button large primary">{{ __('Pieteikties') }}</flux:button>
             </flux:modal.trigger>
         </div>
 
