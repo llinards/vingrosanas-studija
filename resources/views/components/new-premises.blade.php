@@ -5,7 +5,7 @@
             <flux:text class="pb-6">{{ __('Mūsu vingrošanas studija tagad ir plašāka un jaudīgāka nekā jebkad - vieta,
                 kur kustība
                 kļūst par labsajūtu.') }}</flux:text>
-            <ul class="list-disc pl-4 ">
+            <ul class="list-disc pl-4">
                 <li>{{ __('Personalizēta treniņu programma vai treneru konsultācijas') }}</li>
                 <li>{{ __('Grupas nodarbības (joga, pilates, body balance, HIIT, u.c.)') }}</li>
                 <li>{{ __('Privātās treniņu sesijas') }}</li>

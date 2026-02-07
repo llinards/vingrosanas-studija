@@ -264,6 +264,10 @@ nav [data-flux-icon] {
     @apply size-8 text-black;
 }
 
+.close-button [data-flux-icon] {
+    @apply hover:text-white;
+}
+
 ui-checkbox [data-flux-icon] {
     @apply size-4 hover:text-white;
 }
@@ -289,10 +293,6 @@ footer [data-flux-icon] {
 
 #videoBanner [data-flux-icon].centered-icon {
     @apply text-blue fill-blue stroke-white hover:opacity-70
-}
-
-.close-button [data-flux-icon] {
-    @apply hover:text-white;
 }
 
 /* Accordion */
@@ -360,13 +360,26 @@ h3 {
     @apply uppercase text-black;
 }
 
+footer h2 {
+    @apply pb-0;
+}
+
+[data-flux-modal-trigger] h3 {
+    @apply tracking-widest;
+}
+
+#coaches [data-flux-modal] h2 {
+    @apply text-4xl md:text-6xl lg:text-7xl;
+}
+
 /* ============================================================================
    Layout Components
    ========================================================================== */
 
 /* Lists */
 ul {
-    @apply space-y-1 md:space-y-2 lg:space-y-3;
+    @apply space-y-1;
+    @apply text-base md:text-lg;
 }
 
 [data-flux-navlist-item] {
@@ -386,6 +399,10 @@ ul {
 
 #contactDetails .list-heading {
     @apply lg:text-3xl;
+}
+
+#contactDetails ul li {
+    @apply md:text-xl lg:text-3xl
 }
 
 footer .list-heading {
@@ -409,7 +426,7 @@ footer [data-flux-text] {
 }
 
 footer li [data-flux-link] {
-    @apply text-black text-base lg:text-xl;
+    @apply text-black;
 }
 
 /* ============================================================================
@@ -456,9 +473,41 @@ button {
 }
 
 .close-button {
-    @apply bg-blue rounded-full size-10 flex items-center justify-center;
-    @apply transition-colors duration-300;
+    @apply bg-blue rounded-full size-10 flex items-center;
+    @apply justify-center transition-colors duration-300;
+    @apply flex items-center justify-center leading-none;
 }
+
+.close-button [data-flux-icon] {
+    @apply hover:text-white size-8;
+}
+
+#bookingModal .close-button,
+#coaches .close-button {
+    @apply size-8
+}
+
+#bookingModal .close-button [data-flux-icon],
+#coaches .close-button [data-flux-icon] {
+    @apply hover:text-white size-6;
+}
+
+/* ============================================================================
+   Modal Component Overrides
+   ========================================================================== */
+
+#coaches [data-flux-modal-trigger] [data-flux-icon] {
+    @apply text-blue group-hover:text-black size-8 md:size-10 lg:size-12 xl:size-14 group-hover:translate-x-2;
+}
+
+#coaches [data-flux-modal-trigger] [data-flux-text] {
+    @apply uppercase;
+}
+
+[data-flux-modal]>dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
 
 /* ============================================================================
    Third-Party Component Overrides
@@ -478,7 +527,9 @@ button {
     margin-bottom: 0px;
 }
 
-.f-carousel__slide img {
+#ownerCarousel .f-carousel__slide img,
+#workoutCarousel .f-carousel__slide img,
+#galleryCarousel .f-carousel__slide img {
     @apply w-full h-full object-center object-cover
 }
 
@@ -505,6 +556,47 @@ button {
     @apply mx-6 w-3 h-3 md:w-4;
     @apply md:h-4 lg:w-5 lg:h-5;
     @apply bg-blue rounded-full;
+}
+
+#coachCarousel {
+    --f-carousel-slide-width: calc((100%) / 1.2);
+    --f-carousel-gap: 8px;
+}
+
+#coachCarousel {
+    @apply h-auto min-h-140 sm:min-h-156 md:min-h-164;
+}
+
+#coachCarousel .f-carousel__slide {
+    @apply h-auto;
+}
+
+@media screen and (min-width: 640px) {
+    #coachCarousel
+    {
+        --f-carousel-slide-width: calc((100% - 64px) / 2);
+    }
+
+}
+
+@media screen and (max-width: 640px) {
+    .f-carousel__slide {
+        opacity: .35;
+        transition: opacity .3s ease;
+    }
+
+    .f-carousel__slide.is-in {
+        opacity: 1;
+    }
+
+    .f-carousel__slide {
+        opacity: .35;
+        transition: opacity .3s ease;
+    }
+
+    .f-carousel__slide.is-selected {
+        opacity: 1;
+    }
 }
 
 /* ============================================================================

@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const galleryCarousel = document.getElementById('galleryCarousel');
     const ownerCarousel = document.getElementById('ownerCarousel');
     const workoutCarousel = document.getElementById('workoutCarousel');
+    const coachCarousel = document.getElementById('coachCarousel');
 
     if (galleryCarousel) {
         Carousel(galleryCarousel, {
@@ -41,6 +42,14 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         }, {
             Autoscroll,
+        }).init();
+    }
+
+    if (coachCarousel) {
+        Carousel(coachCarousel, {
+            fill: true,
+            infinite: false,
+        }, {
         }).init();
     }
 
