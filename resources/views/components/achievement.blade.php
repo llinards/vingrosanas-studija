@@ -1,6 +1,6 @@
 {{-- SLOGAN AND NUMBER --}}
 <div class="container mx-auto px-4">
-    <div id="counter" class="mb-12 pb-6 md:pb-0 px-4 border-8 md:border-12 border-blue rounded-4xl text-center">
+    <div id="counter" class="my-12 pb-6 md:pb-0 px-4 border-8 md:border-12 border-blue rounded-4xl text-center">
         <flux:heading level="2" class="text-center">{{ __('Kustība sākas tieši šeit!') }}</flux:heading>
         <div class="flex items-center justify-center">
             <flux:link class="flex!" href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">

@@ -1,5 +1,5 @@
 <div class="bg-blue py-8 md:py-6 flex justify-center">
     <flux:modal.trigger name="booking-modal">
-        <flux:button class="button secondary">{{ __('Pieteikties') }}</flux:button>
+        <flux:button class="button large secondary">{{ __('Pieteikties') }}</flux:button>
     </flux:modal.trigger>
 </div>

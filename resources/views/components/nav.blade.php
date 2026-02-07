@@ -36,7 +36,11 @@
         </div>
 
         <flux:navlist>
-            <flux:navlist.item href="#services" @click="open = false">{{ __('Pieteikties') }}</flux:navlist.item>
+            <flux:navlist>
+                <flux:modal.trigger name="booking-modal">
+                    <flux:navlist.item @click="open = false">{{ __('Pieteikties') }}</flux:navlist.item>
+                </flux:modal.trigger>
+            </flux:navlist>
         </flux:navlist>
         <flux:navlist>
             <flux:navlist.item href="#about-us" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
