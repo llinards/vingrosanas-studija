@@ -51,7 +51,7 @@
     <x-banner-with-cta />
 
     {{-- FORM --}}
-    <x-contactForm />
+    <x-contact-form />
 
     {{-- FOOTER --}}
     <x-footer />
