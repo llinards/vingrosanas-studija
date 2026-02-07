@@ -1,7 +1,9 @@
 <x-layouts.main :title="__('Sākums')">
 
     {{-- HEADER --}}
-    <x-header />
+    <x-header>
+        <x-nav />
+    </x-header>
 
     {{-- WORKOUT CAROUSEL --}}
     <div>
@@ -19,16 +21,10 @@
     <x-image-quote />
 
     {{-- ACCORDION WRAPPER --}}
-    <div class="mx-auto max-w-7xl px-4 pb-12">
-        <flux:heading level="2" class="">{{ __('Pakalpojumi un cenas') }}</flux:heading>
-        <flux:accordion transition>
-            <livewire:services-price-table />
-        </flux:accordion>
-    </div>
+    <livewire:services-price-table />
 
     {{-- VIDEO BANNER --}}
     <x-video-banner />
-
 
     {{-- SLOGAN AND ACHIEVEMENT COUNTER --}}
     <x-achievement />
@@ -37,9 +33,13 @@
     <x-banner-with-cta />
 
     {{-- COACHES --}}
+    <div id="coaches"></div>
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
     <x-banner-with-cta />
+
+    {{-- COACHES --}}
+    <div id="about-us"></div>
 
     {{-- GALLERY CAROUSEL --}}
     <x-gallery-carousel />
@@ -51,7 +51,7 @@
     <x-banner-with-cta />
 
     {{-- FORM --}}
-    <x-form />
+    <x-contactForm />
 
     {{-- FOOTER --}}
     <x-footer />
