@@ -33,7 +33,7 @@
     <x-banner-with-cta />
 
     {{-- COACHES --}}
-    <div id="coaches"></div>
+    <x-coaches/>
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
     <x-banner-with-cta />
@@ -51,7 +51,7 @@
     <x-banner-with-cta />
 
     {{-- FORM --}}
-    <x-contactForm />
+    <x-contact-form />
 
     {{-- FOOTER --}}
     <x-footer />

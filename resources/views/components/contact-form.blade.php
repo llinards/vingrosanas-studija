@@ -2,19 +2,19 @@
 
     {{-- LEFT PANEL: CONTACT DETAILS --}}
     <div id="contactDetails" class="flex flex-col text-center lg:text-start space-y-6 lg:space-y-9">
-        <ul class="md:text-xl lg:text-3xl">
+        <ul>
             <li class="list-heading">{{ __('Tālrunis') }}</li>
             <li>
                 <flux:link href="tel:+37126620757">+371 26620757</flux:link>
             </li>
         </ul>
-        <ul class="md:text-xl lg:text-3xl">
+        <ul>
             <li class="list-heading">{{ __('E-pasts') }}</li>
             <li>
                 <flux:link href="mailto:vingrosanas@studija.lv">vingrosanas@studija.lv</flux:link>
             </li>
         </ul>
-        <ul class="md:text-xl lg:text-3xl">
+        <ul>
             <li class="list-heading">{{ __('Adrese') }}</li>
             <li>
                 <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">Strēlnieku iela 20
@@ -22,7 +22,7 @@
                 </flux:link>
             </li>
         </ul>
-        <ul class="md:text-xl lg:text-3xl">
+        <ul>
             <li class="list-heading">{{ __('Pieseko') }}</li>
             <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-2">
                 <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"

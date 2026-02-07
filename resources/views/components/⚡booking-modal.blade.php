@@ -305,7 +305,7 @@ new class extends Component {
 };
 ?>
 
-<div>
+<div id="bookingModal">
     <flux:modal name="booking-modal" class="w-full max-w-lg" @close="$wire.resetModal()">
         <div class="space-y-6 md:p-6">
 
