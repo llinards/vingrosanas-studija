@@ -1,4 +1,4 @@
-<div class="pb-12 grid lg:grid-cols-2 gap-x-6 lg:relative">
+<div class="py-12 grid lg:grid-cols-2 gap-x-6 lg:relative">
     <div class="flex lg:justify-end">
         <div class="lg:h-156 lg:max-w-157 flex flex-col justify-center pb-12 lg:pb-0 space-y-6 px-4">
             <flux:heading level="2">{{ __('Jaunas telpas, jaunas iespējas') }}</flux:heading>
