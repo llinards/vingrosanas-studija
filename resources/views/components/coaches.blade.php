@@ -7,35 +7,41 @@
     <div class="hidden py-12 lg:grid grid-cols-3 divide-x">
 
         {{-- anete-platkevica --}}
-        <x-coach-card>
-            <x-slot name="coachModalName">anete-platkevica</x-slot>
-            <x-slot name="coachCardImg">{{ asset('images/anete_platkevica_10.jpg') }}</x-slot>
-            <x-slot name="coachName">Anete Platkeviča</x-slot>
-            <x-slot name="coachTitle">{{__('“Vingrošanas studija” dibinātāja,
-                veselības vingrošanas trerenere') }}</x-slot>
-        </x-coach-card>
+        <div class="h-full">
+            <x-coach-card>
+                <x-slot name="coachModalName">anete-platkevica</x-slot>
+                <x-slot name="coachCardImg">{{ asset('images/anete_platkevica_10.jpg') }}</x-slot>
+                <x-slot name="coachName">Anete Platkeviča</x-slot>
+                <x-slot name="coachTitle">{{__('“Vingrošanas studija” dibinātāja,
+                    veselības vingrošanas trerenere') }}</x-slot>
+            </x-coach-card>
+        </div>
 
         {{-- aiva-skutele --}}
-        <x-coach-card>
-            <x-slot name="coachModalName">aiva-skutele</x-slot>
-            <x-slot name="coachCardImg">{{ asset('images/aiva_skutele_1.jpg') }}</x-slot>
-            <x-slot name="coachName">Aiva Skutele</x-slot>
-            <x-slot name="coachTitle">{{__('Bērnu fizioterapeite') }}</x-slot>
-        </x-coach-card>
+        <div class="h-full">
+            <x-coach-card>
+                <x-slot name="coachModalName">aiva-skutele</x-slot>
+                <x-slot name="coachCardImg">{{ asset('images/aiva_skutele_1.jpg') }}</x-slot>
+                <x-slot name="coachName">Aiva Skutele</x-slot>
+                <x-slot name="coachTitle">{{__('Bērnu fizioterapeite') }}</x-slot>
+            </x-coach-card>
+        </div>
 
         {{-- elina-nagle --}}
-        <x-coach-card>
-            <x-slot name="coachModalName">elina-nagle</x-slot>
-            <x-slot name="coachCardImg">{{ asset('images/elina_nagle_2.jpg') }}</x-slot>
-            <x-slot name="coachName">Elīna Nagle</x-slot>
-            <x-slot name="coachTitle">{{__('Jogas pasniedzēja') }}</x-slot>
-        </x-coach-card>
+        <div class="h-full">
+            <x-coach-card>
+                <x-slot name="coachModalName">elina-nagle</x-slot>
+                <x-slot name="coachCardImg">{{ asset('images/elina_nagle_2.jpg') }}</x-slot>
+                <x-slot name="coachName">Elīna Nagle</x-slot>
+                <x-slot name="coachTitle">{{__('Jogas pasniedzēja') }}</x-slot>
+            </x-coach-card>
+        </div>
     </div>
 
-
+    {{-- COACH CARD WRAPPER - MOBILE --}}
     <div class="px-4 py-12 lg:hidden">
-        <div class="f-carousel" id="coachCarousel">
-            <div class="f-carousel__slide">
+        <div class="f-carousel " id="coachCarousel">
+            <div class="f-carousel__slide ">
                 <x-coach-card>
                     <x-slot name="coachModalName">anete-platkevica</x-slot>
                     <x-slot name="coachCardImg">{{ asset('images/anete_platkevica_10.jpg') }}</x-slot>
