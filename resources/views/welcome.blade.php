@@ -33,7 +33,14 @@
     <x-banner-with-cta />
 
     {{-- COACHES --}}
-    <div id="coaches"></div>
+    <div id="coaches" class="container mx-auto py-12">
+        <div class="md:grid grid-cols-3">
+            <div class="bg-black h-196"></div>
+            <div class="bg-black h-196"></div>
+            <div class="bg-black h-196"></div>
+        </div>
+
+    </div>
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
     <x-banner-with-cta />

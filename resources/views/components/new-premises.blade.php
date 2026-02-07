@@ -1,4 +1,4 @@
-<div class="py-12 grid lg:grid-cols-2 gap-x-6 lg:relative">
+<div id="newPremises" class="py-12 grid lg:grid-cols-2 gap-x-6 lg:relative">
     <div class="flex lg:justify-end">
         <div class="lg:h-156 lg:max-w-157 flex flex-col justify-center pb-12 lg:pb-0 px-4">
             <flux:heading level="2">{{ __('Jaunas telpas, jaunas iespējas') }}</flux:heading>
@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <div class="lg:absolute lg:w-3/7 md:inset-y-0 md:right-0">
+    <div class="lg:absolute lg:w-3/7 md:inset-y-0 md:right-0 mt-12">
         <div class="f-carousel" id="ownerCarousel">
             <div class="f-carousel__slide">
                 <img src="{{ asset('images/anete_platkevica_1.jpg') }}" alt="">
