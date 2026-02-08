@@ -580,21 +580,13 @@ button {
 }
 
 @media screen and (max-width: 640px) {
-    .f-carousel__slide {
-        opacity: .35;
-        transition: opacity .3s ease;
+    #coaches .f-carousel__slide {
+        opacity: 0.35;
+        transition: opacity 0.3s ease;
     }
 
-    .f-carousel__slide.is-in {
-        opacity: 1;
-    }
-
-    .f-carousel__slide {
-        opacity: .35;
-        transition: opacity .3s ease;
-    }
-
-    .f-carousel__slide.is-selected {
+    #coaches .f-carousel__slide.is-in,
+    #coaches .f-carousel__slide.is-selected {
         opacity: 1;
     }
 }
