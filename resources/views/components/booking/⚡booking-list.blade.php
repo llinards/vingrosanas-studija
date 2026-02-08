@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -11,12 +12,26 @@ use Livewire\WithPagination;
 new class extends Component {
     use WithPagination;
 
+    public bool $paidOnly = false;
+
+    public function updatedPaidOnly(): void
+    {
+        $this->resetPage();
+    }
+
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
+            ->when($this->paidOnly, fn ($query) => $query->where('payment_status', PaymentStatus::Paid))
             ->latest()
             ->paginate(10);
+    }
+
+    #[Computed]
+    public function hasAnyBookings(): bool
+    {
+        return Booking::exists();
     }
 
     public function destroy(Booking $booking): void
@@ -44,13 +59,20 @@ new class extends Component {
 ?>
 
 <div>
-    @if($this->bookings->isEmpty())
+    @if(!$this->hasAnyBookings)
         <div class="flex flex-col items-center">
             <flux:heading class="mb-2" level="2" size="xl">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:heading>
             <flux:button href="{{ route('booking-create') }}" wire:navigate class="mb-4">{{ __('Pievienot jaunu rezervāciju') }}
             </flux:button>
         </div>
     @else
+        <div class="mb-4">
+            <flux:checkbox wire:model.live="paidOnly" label="{{ __('Rādīt tikai apmaksātās rezervācijas') }}" />
+        </div>
+
+        @if($this->bookings->isEmpty())
+            <flux:text class="text-center py-8">{{ __('Nav nevienas apmaksātas rezervācijas.') }}</flux:text>
+        @else
         <flux:table>
             <flux:table.columns>
                 <flux:table.column>{{ __('Klients') }}</flux:table.column>
@@ -98,5 +120,6 @@ new class extends Component {
         <div class="mt-4">
             {{ $this->bookings->links() }}
         </div>
+        @endif
     @endif
 </div>

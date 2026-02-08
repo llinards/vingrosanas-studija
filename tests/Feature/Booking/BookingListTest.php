@@ -106,3 +106,45 @@ test('booking list can navigate to second page', function () {
         ->call('gotoPage', 2)
         ->assertSet('paginators.page', 2);
 });
+
+test('booking list can filter to show only paid bookings', function () {
+    Booking::factory()->create(['payment_status' => PaymentStatus::Paid]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paidOnly', true);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->payment_status)->toBe(PaymentStatus::Paid);
+});
+
+test('booking list shows all bookings when filter is disabled', function () {
+    Booking::factory()->create(['payment_status' => PaymentStatus::Paid]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paidOnly', false);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(2);
+});
+
+test('booking list resets page when filter changes', function () {
+    Booking::factory()->count(15)->create(['payment_status' => PaymentStatus::Paid]);
+
+    Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2)
+        ->set('paidOnly', true)
+        ->assertSet('paginators.page', 1);
+});
+
+test('booking list shows empty message when filter returns no results', function () {
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+
+    Livewire::test('booking.booking-list')
+        ->set('paidOnly', true)
+        ->assertSee('Nav nevienas apmaksātas rezervācijas.');
+});
