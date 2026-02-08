@@ -13,18 +13,18 @@ new class extends Component {
     public function services(): Collection
     {
         return Service::with(['serviceType', 'coach'])
-            ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
-            ->orderBy('service_types.position')
-            ->orderBy('services.position')
-            ->select('services.*')
-            ->get();
+                      ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
+                      ->orderBy('service_types.position')
+                      ->orderBy('services.position')
+                      ->select('services.*')
+                      ->get();
     }
 
     public function updateServiceTypePosition(int $id, int $position): void
     {
-        $serviceType = ServiceType::findOrFail($id);
+        $serviceType  = ServiceType::findOrFail($id);
         $serviceTypes = ServiceType::query()->orderBy('position')->get();
-        $serviceTypes = $serviceTypes->reject(fn ($st) => $st->id === $id);
+        $serviceTypes = $serviceTypes->reject(fn($st) => $st->id === $id);
         $serviceTypes->splice($position, 0, [$serviceType]);
         $serviceTypes->each(function ($st, $index) {
             $st->update(['position' => $index]);
@@ -40,12 +40,12 @@ new class extends Component {
 
     public function updateServicePosition(int $id, int $position): void
     {
-        $service = Service::findOrFail($id);
+        $service  = Service::findOrFail($id);
         $services = Service::query()
-            ->where('service_type_id', $service->service_type_id)
-            ->orderBy('position')
-            ->get();
-        $services = $services->reject(fn ($s) => $s->id === $id);
+                           ->where('service_type_id', $service->service_type_id)
+                           ->orderBy('position')
+                           ->get();
+        $services = $services->reject(fn($s) => $s->id === $id);
         $services->splice($position, 0, [$service]);
         $services->each(function ($s, $index) {
             $s->update(['position' => $index]);
@@ -98,7 +98,7 @@ new class extends Component {
 <div>
     @if($this->services->isEmpty())
         <div class="flex flex-col items-center">
-            <flux:heading class="mb-2" level="2" size="xl">Šobrīd nav neviena pakalpojuma!</flux:heading>
+            <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena pakalpojuma!') }}</flux:text>
             <flux:button href="{{ route('service-create') }}" wire:navigate class="mb-4">Pievienot jaunu pakalpojumu
             </flux:button>
         </div>
@@ -124,7 +124,8 @@ new class extends Component {
                             </flux:table.columns>
                             <flux:table.rows wire:sort="updateServicePosition">
                                 @foreach($typeServices as $service)
-                                    <flux:table.row wire:key="service-{{ $service->id }}" wire:sort:item="{{ $service->id }}">
+                                    <flux:table.row wire:key="service-{{ $service->id }}"
+                                                    wire:sort:item="{{ $service->id }}">
                                         <flux:table.cell>
                                             <div wire:sort:handle class="cursor-move">
                                                 <flux:icon.bars-3 class="size-5 text-zinc-400 hover:text-zinc-600"/>
@@ -134,17 +135,20 @@ new class extends Component {
                                         <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
                                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
                                         <flux:table.cell>
-                                            <flux:switch wire:click="toggleActive({{ $service->id }})" :checked="$service->is_active"/>
+                                            <flux:switch wire:click="toggleActive({{ $service->id }})"
+                                                         :checked="$service->is_active"/>
                                         </flux:table.cell>
                                         <flux:table.cell>
                                             <div class="flex gap-2">
-                                                <flux:button href="{{ route('service.edit', $service) }}" variant="primary" size="sm">
+                                                <flux:button href="{{ route('service.edit', $service) }}"
+                                                             variant="primary" size="sm">
                                                     {{ __('Rediģēt') }}
                                                 </flux:button>
-                                                <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst pakalpojumu?') }}"
-                                                             variant="danger"
-                                                             size="sm"
-                                                             wire:click="destroy({{ $service->id }})">
+                                                <flux:button
+                                                    wire:confirm="{{ __('Vai tiešām vēlies dzēst pakalpojumu?') }}"
+                                                    variant="danger"
+                                                    size="sm"
+                                                    wire:click="destroy({{ $service->id }})">
                                                     {{ __('Dzēst') }}
                                                 </flux:button>
                                             </div>

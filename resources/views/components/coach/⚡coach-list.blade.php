@@ -60,7 +60,7 @@ new class extends Component {
 <div>
     @if($this->coaches->isEmpty())
         <div class="flex flex-col items-center">
-            <flux:heading class="mb-2" level="2" size="xl">Šobrīd nav neviena aktīva trenera!</flux:heading>
+            <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena aktīva trenera!') }}</flux:text>
             <flux:button href="{{route('coach-create')}}" wire:navigate class="mb-4">Pievienot jaunu treneri
             </flux:button>
         </div>

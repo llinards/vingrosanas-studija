@@ -12,14 +12,14 @@ new class extends Component {
     public function schedules(): Collection
     {
         return Schedule::with(['service.coach'])
-            ->join('services', 'schedules.service_id', '=', 'services.id')
-            ->join('coaches', 'services.coach_id', '=', 'coaches.id')
-            ->orderBy('coaches.name')
-            ->orderBy('schedules.day_of_week')
-            ->orderBy('schedules.date')
-            ->orderBy('schedules.start_time')
-            ->select('schedules.*')
-            ->get();
+                       ->join('services', 'schedules.service_id', '=', 'services.id')
+                       ->join('coaches', 'services.coach_id', '=', 'coaches.id')
+                       ->orderBy('coaches.name')
+                       ->orderBy('schedules.day_of_week')
+                       ->orderBy('schedules.date')
+                       ->orderBy('schedules.start_time')
+                       ->select('schedules.*')
+                       ->get();
     }
 
     public function toggleActive(Schedule $schedule): void
@@ -61,8 +61,9 @@ new class extends Component {
 <div>
     @if($this->schedules->isEmpty())
         <div class="flex flex-col items-center">
-            <flux:heading class="mb-2" level="2" size="xl">{{ __('Šobrīd nav neviena grafika!') }}</flux:heading>
-            <flux:button href="{{ route('schedule-create') }}" wire:navigate class="mb-4">{{ __('Pievienot jaunu grafiku') }}
+            <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena grafika!') }}</flux:text>
+            <flux:button href="{{ route('schedule-create') }}" wire:navigate
+                         class="mb-4">{{ __('Pievienot jaunu grafiku') }}
             </flux:button>
         </div>
     @else
@@ -101,11 +102,13 @@ new class extends Component {
                                     <flux:table.cell>{{ substr($schedule->start_time, 0, 5) }}</flux:table.cell>
                                     <flux:table.cell>{{ $schedule->max_capacity }}</flux:table.cell>
                                     <flux:table.cell>
-                                        <flux:switch wire:click="toggleActive({{ $schedule->id }})" :checked="$schedule->is_active"/>
+                                        <flux:switch wire:click="toggleActive({{ $schedule->id }})"
+                                                     :checked="$schedule->is_active"/>
                                     </flux:table.cell>
                                     <flux:table.cell>
                                         <div class="flex gap-2">
-                                            <flux:button href="{{ route('schedule.edit', $schedule) }}" variant="primary" size="sm">
+                                            <flux:button href="{{ route('schedule.edit', $schedule) }}"
+                                                         variant="primary" size="sm">
                                                 {{ __('Rediģēt') }}
                                             </flux:button>
                                             <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst grafiku?') }}"

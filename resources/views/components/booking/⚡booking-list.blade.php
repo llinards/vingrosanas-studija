@@ -61,7 +61,6 @@ new class extends Component {
 <div>
     @if(!$this->hasAnyBookings)
         <div class="flex flex-col items-center">
-            <flux:heading class="mb-2" level="2" size="xl">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:heading>
             <flux:text class="text-center py-8">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:text>
             <flux:button href="{{ route('booking-create') }}" wire:navigate
                          class="mb-4">{{ __('Pievienot jaunu rezervāciju') }}
