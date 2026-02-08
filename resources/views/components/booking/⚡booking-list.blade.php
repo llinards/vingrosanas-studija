@@ -2,18 +2,21 @@
 
 use App\Models\Booking;
 use Flux\Flux;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new class extends Component {
+    use WithPagination;
+
     #[Computed]
-    public function bookings(): Collection
+    public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
             ->latest()
-            ->get();
+            ->paginate(10);
     }
 
     public function destroy(Booking $booking): void
@@ -91,5 +94,9 @@ new class extends Component {
                 @endforeach
             </flux:table.rows>
         </flux:table>
+
+        <div class="mt-4">
+            {{ $this->bookings->links() }}
+        </div>
     @endif
 </div>

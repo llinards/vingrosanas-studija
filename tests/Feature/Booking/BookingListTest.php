@@ -77,3 +77,32 @@ test('bookings list refreshes after deletion', function () {
     $component->assertDontSee($bookings[0]->name)
         ->assertSee($bookings[1]->name);
 });
+
+test('booking list displays bookings with newest first', function () {
+    $oldBooking = Booking::factory()->create(['created_at' => now()->subDays(2)]);
+    $newBooking = Booking::factory()->create(['created_at' => now()]);
+
+    $component = Livewire::test('booking.booking-list');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings->first()->id)->toBe($newBooking->id);
+    expect($bookings->last()->id)->toBe($oldBooking->id);
+});
+
+test('booking list paginates results', function () {
+    Booking::factory()->count(15)->create();
+
+    $component = Livewire::test('booking.booking-list');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(10);
+    expect($bookings->total())->toBe(15);
+});
+
+test('booking list can navigate to second page', function () {
+    Booking::factory()->count(15)->create();
+
+    Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2);
+});
