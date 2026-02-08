@@ -2,61 +2,61 @@
 
     {{-- HEADER --}}
     <x-header>
-        <x-nav />
+        <x-nav/>
     </x-header>
 
     {{-- WORKOUT CAROUSEL --}}
     <div>
         <div class="f-carousel" id="workoutCarousel">
-            <x-workout-carousel-slides />
-            <x-workout-carousel-slides />
-            <x-workout-carousel-slides />
-            <x-workout-carousel-slides />
-            <x-workout-carousel-slides />
-            <x-workout-carousel-slides />
+            <x-workout-carousel-slides/>
+            <x-workout-carousel-slides/>
+            <x-workout-carousel-slides/>
+            <x-workout-carousel-slides/>
+            <x-workout-carousel-slides/>
+            <x-workout-carousel-slides/>
         </div>
     </div>
 
     {{-- IMAGES WITH QUOTE --}}
-    <x-image-quote />
+    <x-image-quote/>
 
     {{-- ACCORDION WRAPPER --}}
-    <livewire:services-price-table />
+    <livewire:services-price-table/>
 
     {{-- VIDEO BANNER --}}
-    <x-video-banner />
+    <x-video-banner/>
 
     {{-- SLOGAN AND ACHIEVEMENT COUNTER --}}
-    <x-achievement />
+    <x-achievement/>
 
     {{-- CTA --}}
-    <x-banner-with-cta />
+    <x-banner-with-cta/>
 
     {{-- COACHES --}}
-    <x-coaches/>
+    <livewire:coaches/>
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
-    <x-banner-with-cta />
+    <x-banner-with-cta/>
 
     {{-- COACHES --}}
     <div id="about-us"></div>
 
     {{-- GALLERY CAROUSEL --}}
-    <x-gallery-carousel />
+    <x-gallery-carousel/>
 
     {{-- NEW PREMISES --}}
-    <x-new-premises />
+    <x-new-premises/>
 
     {{-- BANNER ROW WITH CTA BUTTON --}}
-    <x-banner-with-cta />
+    <x-banner-with-cta/>
 
     {{-- FORM --}}
-    <x-contact-form />
+    <x-contact-form/>
 
     {{-- FOOTER --}}
-    <x-footer />
+    <x-footer/>
 
     {{-- BOOKING MODAL --}}
-    <livewire:booking-modal />
+    <livewire:booking-modal/>
 
 </x-layouts.main>

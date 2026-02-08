@@ -17,14 +17,14 @@ class CoachFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->boolean(70) ? fake()->unique()->safeEmail() : null,
-            'phone' => fake()->boolean(70) ? fake()->unique()->phoneNumber() : null,
-            'title' => fake()->jobTitle(),
-            'image' => fake()->imageUrl(640, 640, 'people'),
-            'bio' => fake()->sentence(12),
-            'is_active' => fake()->boolean(85),
-            'position' => 0,
+            'name'      => fake()->name(),
+            'email'     => fake()->unique()->safeEmail(),
+            'phone'     => fake()->unique()->phoneNumber(),
+            'title'     => fake()->jobTitle(),
+            'image'     => fake()->imageUrl(640, 640, 'people'),
+            'bio'       => fake()->sentence(12),
+            'is_active' => 1,
+            'position'  => 0,
         ];
     }
 }

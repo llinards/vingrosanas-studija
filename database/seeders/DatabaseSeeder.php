@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'linards@slmedia.lv',
         ]);
 
-        Coach::factory()->count(4)->create();
+        Coach::factory()->count(3)->create();
 
         $this->call([
             ServiceTypeSeeder::class,
