@@ -24,6 +24,7 @@ class ServiceFactory extends Factory
             'name' => fake()->words(3, true),
             'price' => fake()->numberBetween(500, 10000),
             'is_active' => true,
+            'position' => 0,
         ];
     }
 }

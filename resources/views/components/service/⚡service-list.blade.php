@@ -15,7 +15,7 @@ new class extends Component {
         return Service::with(['serviceType', 'coach'])
             ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
             ->orderBy('service_types.position')
-            ->orderBy('services.name')
+            ->orderBy('services.position')
             ->select('services.*')
             ->get();
     }
@@ -34,6 +34,27 @@ new class extends Component {
 
         Flux::toast(
             text: __('Pakalpojumu veidu secība veiksmīgi atjaunināta!'),
+            variant: 'success',
+        );
+    }
+
+    public function updateServicePosition(int $id, int $position): void
+    {
+        $service = Service::findOrFail($id);
+        $services = Service::query()
+            ->where('service_type_id', $service->service_type_id)
+            ->orderBy('position')
+            ->get();
+        $services = $services->reject(fn ($s) => $s->id === $id);
+        $services->splice($position, 0, [$service]);
+        $services->each(function ($s, $index) {
+            $s->update(['position' => $index]);
+        });
+
+        unset($this->services);
+
+        Flux::toast(
+            text: __('Pakalpojumu secība veiksmīgi atjaunināta!'),
             variant: 'success',
         );
     }
@@ -91,18 +112,24 @@ new class extends Component {
                         </div>
                         <flux:heading level="2" size="lg">{{ $typeServices->first()->serviceType->name }}</flux:heading>
                     </div>
-                    <div wire:sort:ignore>
+                    <div>
                         <flux:table>
                             <flux:table.columns>
+                                <flux:table.column class="w-10"></flux:table.column>
                                 <flux:table.column>{{ __('Nosaukums') }}</flux:table.column>
                                 <flux:table.column>{{ __('Treneris') }}</flux:table.column>
                                 <flux:table.column>{{ __('Cena') }}</flux:table.column>
                                 <flux:table.column>{{ __('Statuss') }}</flux:table.column>
                                 <flux:table.column>{{ __('Darbības') }}</flux:table.column>
                             </flux:table.columns>
-                            <flux:table.rows>
+                            <flux:table.rows wire:sort="updateServicePosition">
                                 @foreach($typeServices as $service)
-                                    <flux:table.row wire:key="service-{{ $service->id }}">
+                                    <flux:table.row wire:key="service-{{ $service->id }}" wire:sort:item="{{ $service->id }}">
+                                        <flux:table.cell>
+                                            <div wire:sort:handle class="cursor-move">
+                                                <flux:icon.bars-3 class="size-5 text-zinc-400 hover:text-zinc-600"/>
+                                            </div>
+                                        </flux:table.cell>
                                         <flux:table.cell>{{ $service->name }}</flux:table.cell>
                                         <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
                                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
