@@ -11,6 +11,7 @@ new class extends Component {
     {
         return ServiceType::with(['services' => fn ($query) => $query->where('is_active', true)])
             ->whereHas('services', fn ($query) => $query->where('is_active', true))
+            ->orderBy('position')
             ->get();
     }
 };

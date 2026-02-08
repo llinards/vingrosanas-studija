@@ -18,6 +18,7 @@ class ServiceTypeFactory extends Factory
     {
         return [
             'name' => fake()->word(),
+            'position' => 0,
         ];
     }
 }
