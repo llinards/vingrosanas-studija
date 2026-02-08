@@ -11,7 +11,12 @@ new class extends Component {
     #[Computed]
     public function services(): Collection
     {
-        return Service::with(['serviceType', 'coach'])->get();
+        return Service::with(['serviceType', 'coach'])
+            ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
+            ->orderBy('service_types.name')
+            ->orderBy('services.name')
+            ->select('services.*')
+            ->get();
     }
 
     public function toggleActive(Service $service): void
@@ -58,41 +63,46 @@ new class extends Component {
             </flux:button>
         </div>
     @else
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>{{ __('Nosaukums') }}</flux:table.column>
-                <flux:table.column>{{ __('Veids') }}</flux:table.column>
-                <flux:table.column>{{ __('Treneris') }}</flux:table.column>
-                <flux:table.column>{{ __('Cena') }}</flux:table.column>
-                <flux:table.column>{{ __('Statuss') }}</flux:table.column>
-                <flux:table.column>{{ __('Darbības') }}</flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @foreach($this->services as $service)
-                    <flux:table.row wire:key="service-{{ $service->id }}">
-                        <flux:table.cell>{{ $service->name }}</flux:table.cell>
-                        <flux:table.cell>{{ $service->serviceType->name }}</flux:table.cell>
-                        <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
-                        <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
-                        <flux:table.cell>
-                            <flux:switch wire:click="toggleActive({{ $service->id }})" :checked="$service->is_active"/>
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <div class="flex gap-2">
-                                <flux:button href="{{ route('service.edit', $service) }}" variant="primary" size="sm">
-                                    {{ __('Rediģēt') }}
-                                </flux:button>
-                                <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst pakalpojumu?') }}"
-                                             variant="danger"
-                                             size="sm"
-                                             wire:click="destroy({{ $service->id }})">
-                                    {{ __('Dzēst') }}
-                                </flux:button>
-                            </div>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforeach
-            </flux:table.rows>
-        </flux:table>
+        <div class="flex flex-col gap-6">
+            @foreach($this->services->groupBy(fn ($service) => $service->serviceType->name) as $serviceTypeName => $typeServices)
+                <div>
+                    <flux:heading level="2" size="lg" class="mb-3">{{ $serviceTypeName }}</flux:heading>
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column>{{ __('Nosaukums') }}</flux:table.column>
+                            <flux:table.column>{{ __('Treneris') }}</flux:table.column>
+                            <flux:table.column>{{ __('Cena') }}</flux:table.column>
+                            <flux:table.column>{{ __('Statuss') }}</flux:table.column>
+                            <flux:table.column>{{ __('Darbības') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach($typeServices as $service)
+                                <flux:table.row wire:key="service-{{ $service->id }}">
+                                    <flux:table.cell>{{ $service->name }}</flux:table.cell>
+                                    <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
+                                    <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:switch wire:click="toggleActive({{ $service->id }})" :checked="$service->is_active"/>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        <div class="flex gap-2">
+                                            <flux:button href="{{ route('service.edit', $service) }}" variant="primary" size="sm">
+                                                {{ __('Rediģēt') }}
+                                            </flux:button>
+                                            <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst pakalpojumu?') }}"
+                                                         variant="danger"
+                                                         size="sm"
+                                                         wire:click="destroy({{ $service->id }})">
+                                                {{ __('Dzēst') }}
+                                            </flux:button>
+                                        </div>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+            @endforeach
+        </div>
     @endif
 </div>

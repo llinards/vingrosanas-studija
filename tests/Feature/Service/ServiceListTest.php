@@ -39,17 +39,28 @@ test('service list shows empty state when no services exist', function () {
         ->assertSee('Šobrīd nav neviena pakalpojuma!');
 });
 
-test('service list displays service type and coach', function () {
-    $serviceType = ServiceType::factory()->create(['name' => 'Grupu nodarbības']);
+test('service list groups services by service type', function () {
+    $serviceTypeA = ServiceType::factory()->create(['name' => 'Grupu nodarbības']);
+    $serviceTypeB = ServiceType::factory()->create(['name' => 'Individuālās nodarbības']);
     $coach = Coach::factory()->create(['name' => 'Jānis Bērziņš']);
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
+
+    Service::factory()->create([
+        'name' => 'Joga',
+        'service_type_id' => $serviceTypeA->id,
+        'coach_id' => $coach->id,
+    ]);
+    Service::factory()->create([
+        'name' => 'Personālais treniņš',
+        'service_type_id' => $serviceTypeB->id,
         'coach_id' => $coach->id,
     ]);
 
     $this->get(route('service-list'))
         ->assertSuccessful()
         ->assertSee('Grupu nodarbības')
+        ->assertSee('Individuālās nodarbības')
+        ->assertSee('Joga')
+        ->assertSee('Personālais treniņš')
         ->assertSee('Jānis Bērziņš');
 });
 
