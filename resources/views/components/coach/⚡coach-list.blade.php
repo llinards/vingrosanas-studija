@@ -11,7 +11,25 @@ new class extends Component {
     #[Computed]
     public function coaches(): Collection
     {
-        return Coach::all();
+        return Coach::query()->orderBy('position')->get();
+    }
+
+    public function updatePosition(int $id, int $position): void
+    {
+        $coach   = Coach::findOrFail($id);
+        $coaches = Coach::query()->orderBy('position')->get();
+        $coaches = $coaches->reject(fn($c) => $c->id === $id);
+        $coaches->splice($position, 0, [$coach]);
+        $coaches->each(function ($coach, $index) {
+            $coach->update(['position' => $index]);
+        });
+
+        unset($this->coaches);
+
+        Flux::toast(
+            text: __('Treneru secība veiksmīgi atjaunināta!'),
+            variant: 'success',
+        );
     }
 
     public function destroy(Coach $coach): void
@@ -47,10 +65,15 @@ new class extends Component {
             </flux:button>
         </div>
     @else
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4" wire:sort="updatePosition">
             @foreach($this->coaches as $coach)
-                <flux:card wire:key="coach-{{ $coach->id }}" class="flex flex-col p-4">
-                    <div class="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-100">
+                <flux:card wire:key="coach-{{ $coach->id }}" wire:sort:item="{{ $coach->id }}"
+                           class="flex flex-col p-4 cursor-move">
+                    <div wire:sort:handle class="mb-2 flex justify-center">
+                        <flux:icon.bars-3 class="size-6 text-zinc-400 hover:text-zinc-600"/>
+                    </div>
+
+                    <div class="relative mb-4 aspect-square overflow-hidden rounded-lg bg-zinc-100" wire:sort:ignore>
                         @if($coach->image_url)
                             <img
                                 src="{{ $coach->image_url }}"
@@ -65,7 +88,7 @@ new class extends Component {
                         @endif
                     </div>
 
-                    <div class="flex-1">
+                    <div class="flex-1" wire:sort:ignore>
                         <flux:badge :color="$coach->is_active ? 'green' : 'red'" size="sm">
                             {{ $coach->is_active ? 'Aktīvs' : 'Neaktīvs' }}
                         </flux:badge>
@@ -74,7 +97,7 @@ new class extends Component {
                         </flux:heading>
                     </div>
 
-                    <div class="mt-4 flex gap-2">
+                    <div class="mt-4 flex gap-2" wire:sort:ignore>
                         <flux:button href="{{ route('coach.edit', $coach) }}" variant="primary" class="flex-1">
                             {{ __('Rediģēt') }}
                         </flux:button>

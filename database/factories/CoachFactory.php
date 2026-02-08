@@ -24,6 +24,7 @@ class CoachFactory extends Factory
             'image' => fake()->imageUrl(640, 640, 'people'),
             'bio' => fake()->sentence(12),
             'is_active' => fake()->boolean(85),
+            'position' => 0,
         ];
     }
 }
