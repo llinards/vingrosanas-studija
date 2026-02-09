@@ -78,9 +78,9 @@ test('bookings list refreshes after deletion', function () {
         ->assertSee($bookings[1]->name);
 });
 
-test('booking list displays bookings with newest first', function () {
-    $oldBooking = Booking::factory()->create(['created_at' => now()->subDays(2)]);
-    $newBooking = Booking::factory()->create(['created_at' => now()]);
+test('booking list displays bookings with newest booking date first by default', function () {
+    $oldBooking = Booking::factory()->create(['booking_date' => now()->subDays(2)]);
+    $newBooking = Booking::factory()->create(['booking_date' => now()]);
 
     $component = Livewire::test('booking.booking-list');
 
@@ -147,4 +147,83 @@ test('booking list shows empty message when filter returns no results', function
     Livewire::test('booking.booking-list')
         ->set('paidOnly', true)
         ->assertSee('Nav nevienas apmaksātas rezervācijas.');
+});
+
+test('booking list can sort by name ascending', function () {
+    $bookingA = Booking::factory()->create(['name' => 'Anna']);
+    $bookingZ = Booking::factory()->create(['name' => 'Zane']);
+
+    $component = Livewire::test('booking.booking-list')
+        ->call('sort', 'name');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings->first()->id)->toBe($bookingA->id);
+    expect($bookings->last()->id)->toBe($bookingZ->id);
+});
+
+test('booking list can sort by name descending', function () {
+    $bookingA = Booking::factory()->create(['name' => 'Anna']);
+    $bookingZ = Booking::factory()->create(['name' => 'Zane']);
+
+    $component = Livewire::test('booking.booking-list')
+        ->call('sort', 'name')
+        ->call('sort', 'name');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings->first()->id)->toBe($bookingZ->id);
+    expect($bookings->last()->id)->toBe($bookingA->id);
+});
+
+test('booking list can sort by booking date ascending', function () {
+    $oldBooking = Booking::factory()->create(['booking_date' => now()->subDays(2)]);
+    $newBooking = Booking::factory()->create(['booking_date' => now()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->call('sort', 'booking_date');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings->first()->id)->toBe($oldBooking->id);
+    expect($bookings->last()->id)->toBe($newBooking->id);
+});
+
+test('booking list can sort by payment status', function () {
+    $paidBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Paid]);
+    $pendingBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->call('sort', 'payment_status');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(2);
+    expect($component->get('sortBy'))->toBe('payment_status');
+    expect($component->get('sortDirection'))->toBe('asc');
+});
+
+test('clicking same column toggles sort direction', function () {
+    Livewire::test('booking.booking-list')
+        ->assertSet('sortBy', 'booking_date')
+        ->assertSet('sortDirection', 'desc')
+        ->call('sort', 'booking_date')
+        ->assertSet('sortDirection', 'asc')
+        ->call('sort', 'booking_date')
+        ->assertSet('sortDirection', 'desc');
+});
+
+test('clicking different column resets sort direction to ascending', function () {
+    Livewire::test('booking.booking-list')
+        ->assertSet('sortBy', 'booking_date')
+        ->assertSet('sortDirection', 'desc')
+        ->call('sort', 'name')
+        ->assertSet('sortBy', 'name')
+        ->assertSet('sortDirection', 'asc');
+});
+
+test('sorting resets pagination to first page', function () {
+    Booking::factory()->count(15)->create();
+
+    Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2)
+        ->call('sort', 'name')
+        ->assertSet('paginators.page', 1);
 });

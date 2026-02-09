@@ -14,8 +14,24 @@ new class extends Component {
 
     public bool $paidOnly = false;
 
+    public string $sortBy = 'booking_date';
+
+    public string $sortDirection = 'asc';
+
     public function updatedPaidOnly(): void
     {
+        $this->resetPage();
+    }
+
+    public function sort(string $column): void
+    {
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy        = $column;
+            $this->sortDirection = 'asc';
+        }
+
         $this->resetPage();
     }
 
@@ -24,7 +40,7 @@ new class extends Component {
     {
         return Booking::with(['schedule.service.coach'])
                       ->when($this->paidOnly, fn($query) => $query->where('payment_status', PaymentStatus::Paid))
-                      ->latest()
+                      ->orderBy($this->sortBy, $this->sortDirection)
                       ->paginate(10);
     }
 
@@ -76,12 +92,15 @@ new class extends Component {
         @else
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column>{{ __('Klients') }}</flux:table.column>
+                    <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
+                                       wire:click="sort('name')">{{ __('Klients') }}</flux:table.column>
                     <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
                     <flux:table.column>{{ __('Treneris') }}</flux:table.column>
-                    <flux:table.column>{{ __('Datums') }}</flux:table.column>
+                    <flux:table.column sortable :sorted="$sortBy === 'booking_date'" :direction="$sortDirection"
+                                       wire:click="sort('booking_date')">{{ __('Datums') }}</flux:table.column>
                     <flux:table.column>{{ __('Laiks') }}</flux:table.column>
-                    <flux:table.column>{{ __('Statuss') }}</flux:table.column>
+                    <flux:table.column sortable :sorted="$sortBy === 'payment_status'" :direction="$sortDirection"
+                                       wire:click="sort('payment_status')">{{ __('Statuss') }}</flux:table.column>
                     <flux:table.column>{{ __('Darbības') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
