@@ -14,11 +14,18 @@ new class extends Component {
 
     public bool $paidOnly = false;
 
+    public bool $pastOnly = false;
+
     public string $sortBy = 'booking_date';
 
     public string $sortDirection = 'asc';
 
     public function updatedPaidOnly(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPastOnly(): void
     {
         $this->resetPage();
     }
@@ -40,6 +47,8 @@ new class extends Component {
     {
         return Booking::with(['schedule.service.coach'])
                       ->when($this->paidOnly, fn($query) => $query->where('payment_status', PaymentStatus::Paid))
+                      ->when($this->pastOnly, fn($query) => $query->where('booking_date', '<', today()))
+                      ->when(! $this->pastOnly, fn($query) => $query->where('booking_date', '>=', today()))
                       ->orderBy($this->sortBy, $this->sortDirection)
                       ->paginate(10);
     }
@@ -83,8 +92,9 @@ new class extends Component {
             </flux:button>
         </div>
     @else
-        <div class="mb-4">
+        <div class="mb-4 flex flex-wrap gap-4">
             <flux:checkbox wire:model.live="paidOnly" label="{{ __('Rādīt tikai apmaksātās rezervācijas') }}"/>
+            <flux:checkbox wire:model.live="pastOnly" label="{{ __('Rādīt tikai pagātnes rezervācijas') }}"/>
         </div>
 
         @if($this->bookings->isEmpty())

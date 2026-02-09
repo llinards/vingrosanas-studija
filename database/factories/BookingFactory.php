@@ -38,4 +38,14 @@ class BookingFactory extends Factory
             'payment_status' => PaymentStatus::Paid,
         ]);
     }
+
+    /**
+     * Indicate a past booking.
+     */
+    public function past(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'booking_date' => fake()->dateTimeBetween('-4 weeks', '-1 day')->format('Y-m-d'),
+        ]);
+    }
 }
