@@ -14,6 +14,10 @@ new class extends Component {
         return Schedule::with(['service.coach'])
                        ->join('services', 'schedules.service_id', '=', 'services.id')
                        ->join('coaches', 'services.coach_id', '=', 'coaches.id')
+                       ->where(function ($query) {
+                           $query->whereNull('schedules.date')
+                                 ->orWhere('schedules.date', '>=', today());
+                       })
                        ->orderBy('coaches.name')
                        ->orderBy('schedules.day_of_week')
                        ->orderBy('schedules.date')

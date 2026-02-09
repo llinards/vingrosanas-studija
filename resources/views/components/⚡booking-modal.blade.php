@@ -84,9 +84,11 @@ new class extends Component {
         $today       = Carbon::today();
         $endDate     = $today->copy()->addWeeks(4);
         $unavailable = [];
+        $now         = now();
 
         for ($date = $today->copy(); $date->lte($endDate); $date->addDay()) {
             $hasAvailableSlot = false;
+            $isToday          = $date->isToday();
 
             foreach ($schedules as $schedule) {
                 $matchesDay = false;
@@ -98,6 +100,13 @@ new class extends Component {
                 }
 
                 if ($matchesDay) {
+                    if ($isToday) {
+                        $slotTime = Carbon::parse($schedule->start_time);
+                        if ($slotTime->format('H:i') <= $now->format('H:i')) {
+                            continue;
+                        }
+                    }
+
                     $bookedCount = Booking::where('schedule_id', $schedule->id)
                                           ->whereDate('booking_date', $date->toDateString())
                                           ->count();
@@ -130,6 +139,8 @@ new class extends Component {
         $date      = Carbon::parse($this->selectedDate);
         $schedules = $this->activeSchedules;
         $slots     = [];
+        $isToday   = $date->isToday();
+        $now       = now();
 
         foreach ($schedules as $schedule) {
             $matchesDay = false;
@@ -141,6 +152,13 @@ new class extends Component {
             }
 
             if ($matchesDay) {
+                if ($isToday) {
+                    $slotTime = Carbon::parse($schedule->start_time);
+                    if ($slotTime->format('H:i') <= $now->format('H:i')) {
+                        continue;
+                    }
+                }
+
                 $bookedCount = Booking::where('schedule_id', $schedule->id)
                                       ->whereDate('booking_date', $date->toDateString())
                                       ->count();

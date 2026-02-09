@@ -3,6 +3,7 @@
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 test('booking modal can be rendered on welcome page', function () {
@@ -109,4 +110,110 @@ test('validation messages are in latvian', function () {
         ->set('step', 3)
         ->call('nextStep')
         ->assertSee('Vārds ir obligāts.');
+});
+
+test('past time slots are not shown for today', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(10, 0));
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+
+    $todayDayOfWeek = today()->dayOfWeekIso;
+
+    $pastSchedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '09:00',
+        'is_active' => true,
+    ]);
+
+    $futureSchedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '11:00',
+        'is_active' => true,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', today()->toDateString());
+
+    $slots = $component->instance()->availableTimeSlots;
+    $slotScheduleIds = collect($slots)->pluck('schedule_id')->toArray();
+
+    expect($slotScheduleIds)->not->toContain($pastSchedule->id);
+    expect($slotScheduleIds)->toContain($futureSchedule->id);
+
+    Carbon::setTestNow();
+});
+
+test('future time slots are shown for tomorrow', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(10, 0));
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+
+    $tomorrowDayOfWeek = today()->addDay()->dayOfWeekIso;
+
+    $morningSchedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $tomorrowDayOfWeek,
+        'start_time' => '09:00',
+        'is_active' => true,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', today()->addDay()->toDateString());
+
+    $slots = $component->instance()->availableTimeSlots;
+    $slotScheduleIds = collect($slots)->pluck('schedule_id')->toArray();
+
+    expect($slotScheduleIds)->toContain($morningSchedule->id);
+
+    Carbon::setTestNow();
+});
+
+test('today is marked unavailable when all time slots have passed', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(20, 0));
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+
+    $todayDayOfWeek = today()->dayOfWeekIso;
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '09:00',
+        'is_active' => true,
+    ]);
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '14:00',
+        'is_active' => true,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id);
+
+    $unavailableDates = $component->instance()->unavailableDates;
+
+    expect($unavailableDates)->toContain(today()->toDateString());
+
+    Carbon::setTestNow();
 });

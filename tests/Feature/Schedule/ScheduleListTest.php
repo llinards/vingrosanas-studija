@@ -101,3 +101,47 @@ test('schedules list refreshes after deletion', function () {
     $component->assertDontSee($schedules[0]->service->name)
         ->assertSee($schedules[1]->service->name);
 });
+
+test('schedule list hides past specific date schedules', function () {
+    $pastSchedule = Schedule::factory()->create([
+        'day_of_week' => null,
+        'date' => now()->subDay(),
+    ]);
+    $futureSchedule = Schedule::factory()->create([
+        'day_of_week' => null,
+        'date' => now()->addDay(),
+    ]);
+
+    $component = Livewire::test('schedule.schedule-list');
+
+    $scheduleIds = $component->instance()->schedules->pluck('id')->toArray();
+
+    expect($scheduleIds)->not->toContain($pastSchedule->id);
+    expect($scheduleIds)->toContain($futureSchedule->id);
+});
+
+test('schedule list shows todays specific date schedules', function () {
+    $todaySchedule = Schedule::factory()->create([
+        'day_of_week' => null,
+        'date' => today(),
+    ]);
+
+    $component = Livewire::test('schedule.schedule-list');
+
+    $scheduleIds = $component->instance()->schedules->pluck('id')->toArray();
+
+    expect($scheduleIds)->toContain($todaySchedule->id);
+});
+
+test('schedule list shows recurring schedules regardless of day', function () {
+    $recurringSchedule = Schedule::factory()->create([
+        'day_of_week' => DayOfWeek::Monday->value,
+        'date' => null,
+    ]);
+
+    $component = Livewire::test('schedule.schedule-list');
+
+    $scheduleIds = $component->instance()->schedules->pluck('id')->toArray();
+
+    expect($scheduleIds)->toContain($recurringSchedule->id);
+});
