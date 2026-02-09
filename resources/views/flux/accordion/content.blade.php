@@ -7,7 +7,7 @@
 
 @php
 $classes = Flux::classes()
-    ->add('pt-2 text-sm text-zinc-500 dark:text-zinc-300')
+    ->add('pt-2 text-sm text-black')
     ;
 @endphp
 

@@ -372,6 +372,10 @@ footer h2 {
     @apply text-4xl md:text-6xl lg:text-7xl;
 }
 
+[data-flux-accordion-item] h2 {
+    @apply pb-0;
+}
+
 /* ============================================================================
    Layout Components
    ========================================================================== */
@@ -504,7 +508,7 @@ button {
     @apply uppercase;
 }
 
-[data-flux-modal] > dialog::backdrop {
+[data-flux-modal]>dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
 }
 

@@ -38,8 +38,8 @@
     {{-- BANNER ROW WITH CTA BUTTON --}}
     <x-banner-with-cta/>
 
-    {{-- COACHES --}}
-    <div id="about-us"></div>
+    {{-- ABOUT US --}}
+    <x-about-us/>
 
     {{-- GALLERY CAROUSEL --}}
     <x-gallery-carousel/>
