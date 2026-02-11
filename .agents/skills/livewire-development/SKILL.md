@@ -1,10 +1,9 @@
 ---
 name: livewire-development
-description: >-
-  Develops reactive Livewire 4 components. Activates when creating, updating, or modifying
-  Livewire components; working with wire:model, wire:click, wire:loading, or any wire: directives;
-  adding real-time updates, loading states, or reactivity; debugging component behavior;
-  writing Livewire tests; or when the user mentions Livewire, component, counter, or reactive UI.
+description: "Develops reactive Livewire 4 components. Activates when creating, updating, or modifying Livewire components; working with wire:model, wire:click, wire:loading, or any wire: directives; adding real-time updates, loading states, or reactivity; debugging component behavior; writing Livewire tests; or when the user mentions Livewire, component, counter, or reactive UI."
+license: MIT
+metadata:
+  author: laravel
 ---
 
 # Livewire Development
@@ -26,7 +25,8 @@ Use `search-docs` for detailed Livewire 4 patterns and documentation.
 
 ### Creating Components
 
-<code-snippet name="Component Creation Commands" lang="bash">
+<!-- Component Creation Commands -->
+```bash
 
 # Single-file component (default in v4)
 
@@ -43,8 +43,7 @@ Use `search-docs` for detailed Livewire 4 patterns and documentation.
 # With namespace
 
 {{ $assist->artisanCommand('make:livewire Posts/CreatePost') }}
-
-</code-snippet>
+```
 
 ### Converting Between Formats
 
@@ -61,8 +60,8 @@ Use `php artisan livewire:convert create-post` to convert between single-file, m
 
 ### Single-File Component Example
 
-<code-snippet name="Single-File Component Example" lang="php">
-
+<!-- Single-File Component Example -->
+```php
 <?php
 use Livewire\Component;
 
@@ -79,8 +78,7 @@ new class extends Component {
 <div>
     <button wire:click="increment">Count: @{{ $count }}</button>
 </div>
-
-</code-snippet>
+```
 
 ## Livewire 4 Specifics
 
@@ -139,14 +137,13 @@ For interceptors and hooks, see [reference/javascript-hooks.md](reference/javasc
 
 ## Testing
 
-<code-snippet name="Testing Example" lang="php">
-
+<!-- Testing Example -->
+```php
 Livewire::test(Counter::class)
     ->assertSet('count', 0)
     ->call('increment')
     ->assertSet('count', 1);
-
-</code-snippet>
+```
 
 ## Verification
 

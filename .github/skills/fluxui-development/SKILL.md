@@ -1,10 +1,9 @@
 ---
 name: fluxui-development
-description: >-
-  Develops UIs with Flux UI Pro components. Activates when creating buttons, forms, modals,
-  inputs, tables, charts, date pickers, or UI components; replacing HTML elements with Flux;
-  working with flux: components; or when the user mentions Flux, component library, UI components,
-  form fields, or asks about available Flux components.
+description: "Develops UIs with Flux UI Pro components. Activates when creating buttons, forms, modals, inputs, tables, charts, date pickers, or UI components; replacing HTML elements with Flux; working with flux: components; or when the user mentions Flux, component library, UI components, form fields, or asks about available Flux components."
+license: MIT
+metadata:
+  author: laravel
 ---
 
 # Flux UI Development
@@ -30,9 +29,10 @@ Flux UI is a component library for Livewire built with Tailwind CSS. It provides
 
 Use Flux UI components when available. Fall back to standard Blade components when no Flux component exists for your needs.
 
-<code-snippet name="Basic Button" lang="blade">
+<!-- Basic Button -->
+```blade
 <flux:button variant="primary">Click me</flux:button>
-</code-snippet>
+```
 
 ## Available Components (Pro Edition)
 
@@ -42,9 +42,10 @@ Available: accordion, autocomplete, avatar, badge, brand, breadcrumbs, button, c
 
 Flux includes [Heroicons](https://heroicons.com/) as its default icon set. Search for exact icon names on the Heroicons site - do not guess or invent icon names.
 
-<code-snippet name="Icon Button" lang="blade">
+<!-- Icon Button -->
+```blade
 <flux:button icon="arrow-down-tray">Export</flux:button>
-</code-snippet>
+```
 
 For icons not available in Heroicons, use [Lucide](https://lucide.dev/). Import the icons you need with the Artisan command:
 
@@ -56,17 +57,19 @@ php artisan flux:icon crown grip-vertical github
 
 ### Form Fields
 
-<code-snippet name="Form Field" lang="blade">
+<!-- Form Field -->
+```blade
 <flux:field>
     <flux:label>Email</flux:label>
     <flux:input type="email" wire:model="email" />
     <flux:error name="email" />
 </flux:field>
-</code-snippet>
+```
 
 ### Tables
 
-<code-snippet name="Table" lang="blade">
+<!-- Table -->
+```blade
 <flux:table>
     <flux:table.head>
         <flux:table.row>
@@ -74,7 +77,7 @@ php artisan flux:icon crown grip-vertical github
         </flux:table.row>
     </flux:table.head>
 </flux:table>
-</code-snippet>
+```
 
 ## Verification
 
