@@ -24,7 +24,7 @@
         </ul>
         <ul>
             <li class="list-heading">{{ __('Pieseko') }}</li>
-            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-2">
+            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-4">
                 <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                     rel="noopener noreferrer">
                     <flux:icon.instagram />

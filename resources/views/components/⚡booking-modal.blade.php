@@ -325,7 +325,7 @@ new class extends Component {
 
 <div id="bookingModal">
     <flux:modal name="booking-modal" class="w-[calc(100vw-2rem)] max-w-lg" @close="$wire.resetModal()">
-        <div class="space-y-6 p-6">
+        <div class="space-y-6 p-6 md:p-8">
 
             @if($bookingComplete)
             {{-- SUCCESS STATE --}}

@@ -46,9 +46,9 @@
                 </li>
             </ul>
             <div class="md:w-full flex flex-col md:items-end">
-                <ul class="list-heading">
+                <ul class="list-heading text-end">
                     <li>{{ __('Pieseko') }}</li>
-                    <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-2">
+                    <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-4">
                         <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                             rel="noopener noreferrer">
                             <flux:icon.instagram />
