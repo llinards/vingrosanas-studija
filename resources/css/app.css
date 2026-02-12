@@ -376,6 +376,10 @@ footer h2 {
     @apply pb-0;
 }
 
+#aboutUs h2 {
+    @apply lg:text-8xl;
+}
+
 /* ============================================================================
    Layout Components
    ========================================================================== */
@@ -494,6 +498,11 @@ button {
 #bookingModal .close-button [data-flux-icon],
 #coaches .close-button [data-flux-icon] {
     @apply hover:text-white size-6;
+}
+
+#aboutUs button {
+    @apply text-start md:opacity-70 hover:opacity-100;
+    @apply focus-visible:opacity-100 transition-all duration-300;
 }
 
 /* ============================================================================
