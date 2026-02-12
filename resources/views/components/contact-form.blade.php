@@ -40,7 +40,7 @@
     {{-- RIGHT PANEL: FORM --}}
     <form action="#" method="POST" class="flex flex-col items-center justify-center w-full">
         <div
-            class="w-full border-6 border-blue rounded-4xl bg-white shadow-2xl p-6 md:p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
+            class="w-full border-6 border-blue rounded-4xl bg-white shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
             <flux:input type="test" :label="__('Vārds*')" required />
             <flux:input type="test" :label="__('Uzvārds*')" required />
             <flux:input type="email" :label="__('E-pasts*')" required />
