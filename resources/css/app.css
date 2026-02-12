@@ -144,6 +144,15 @@ body {
    ========================================================================== */
 
 /* Form Fields */
+[data-flux-label] {
+    font-family: var(--font-heading);
+    @apply uppercase text-base font-bold;
+}
+
+ui-checkbox {
+    @apply border-blue;
+}
+
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
