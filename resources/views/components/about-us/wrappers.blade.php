@@ -56,28 +56,28 @@
         <div class="pt-6 md:pt-0">
             <template x-if="active === 'about'">
                 <div x-data="{ shown: false }" x-init="requestAnimationFrame(() => { shown = true })"
-                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6 pb-6">
+                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6">
                     <x-about-us.content section="about" />
                 </div>
             </template>
 
             <template x-if="active === 'goal'">
                 <div x-data="{ shown: false }" x-init="requestAnimationFrame(() => { shown = true })"
-                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6 pb-6">
+                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6">
                     <x-about-us.content section="goal" />
                 </div>
             </template>
 
             <template x-if="active === 'vision'">
                 <div x-data="{ shown: false }" x-init="requestAnimationFrame(() => { shown = true })"
-                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6 pb-6">
+                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6">
                     <x-about-us.content section="vision" />
                 </div>
             </template>
 
             <template x-if="active === 'mission'">
                 <div x-data="{ shown: false }" x-init="requestAnimationFrame(() => { shown = true })"
-                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6 pb-6">
+                    :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6">
                     <x-about-us.content section="mission" />
                 </div>
             </template>
