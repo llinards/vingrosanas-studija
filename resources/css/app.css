@@ -201,28 +201,14 @@ ui-checkbox {
     @apply uppercase text-center
 }
 
-#counter [data-flux-text].counter-number {
+#counter [data-flux-text].counter-number,
+#counter [data-flux-text].counter-indicator {
     font-family: var(--font-heading-bold);
     @apply uppercase text-7xl text-center;
 }
 
-.counter-label {
-    line-height: 1.1em;
-    font-family: var(--font-heading-bold);
-    @apply text-7xl;
-    display: inline-block;
-    vertical-align: baseline;
-}
-
-/* Counter suffixes (K, +) without affecting Odometer's number parsing */
-#counter .counter-number[data-suffix] {
-    @apply inline-flex items-baseline;
-}
-
-#counter .counter-number[data-suffix]::after {
-    content: attr(data-suffix);
-    @apply inline-block;
-    @apply ml-[0.1em] leading-[1.1em];
+#counter [data-flux-text].counter-indicator {
+    @apply mb-1
 }
 
 /* Odometer inserts a block-level .odometer-inside wrapper; make it inline so the suffix stays on the same line. */
