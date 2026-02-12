@@ -24,7 +24,7 @@
         </ul>
         <ul>
             <li class="list-heading">{{ __('Pieseko') }}</li>
-            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-2">
+            <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-4">
                 <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                     rel="noopener noreferrer">
                     <flux:icon.instagram />
@@ -40,7 +40,7 @@
     {{-- RIGHT PANEL: FORM --}}
     <form action="#" method="POST" class="flex flex-col items-center justify-center w-full">
         <div
-            class="w-full border-gray border bg-beige rounded-md shadow-2xl p-6 md:p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
+            class="w-full border-6 border-blue rounded-4xl bg-white shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
             <flux:input type="test" :label="__('Vārds*')" required />
             <flux:input type="test" :label="__('Uzvārds*')" required />
             <flux:input type="email" :label="__('E-pasts*')" required />

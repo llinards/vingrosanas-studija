@@ -35,7 +35,7 @@
     </flux:accordion>
 
     <div class="hidden lg:grid md:grid-cols-2 md:gap-x-6" x-data="{ active: 'about' }">
-        <div class="flex flex-col w-fit">
+        <div class="flex flex-col w-fit space-y-12">
             <button type="button" @mouseenter="active = 'about'" @focus="active = 'about'">
                 <flux:heading level="2">{{ __('Par mums') }}</flux:heading>
             </button>

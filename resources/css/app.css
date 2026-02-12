@@ -144,6 +144,15 @@ body {
    ========================================================================== */
 
 /* Form Fields */
+[data-flux-label] {
+    font-family: var(--font-heading);
+    @apply uppercase text-base font-bold;
+}
+
+ui-checkbox {
+    @apply border-blue;
+}
+
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
 }
@@ -206,10 +215,14 @@ body {
 }
 
 /* Counter suffixes (K, +) without affecting Odometer's number parsing */
+#counter .counter-number[data-suffix] {
+    @apply inline-flex items-baseline;
+}
+
 #counter .counter-number[data-suffix]::after {
     content: attr(data-suffix);
-    @apply inline-block align-baseline relative;
-    @apply ml-[0.1em] leading-[1.1em] top-[0.085em];
+    @apply inline-block;
+    @apply ml-[0.1em] leading-[1.1em];
 }
 
 /* Odometer inserts a block-level .odometer-inside wrapper; make it inline so the suffix stays on the same line. */
@@ -377,7 +390,7 @@ footer h2 {
 }
 
 #aboutUs h2 {
-    @apply lg:text-8xl;
+    @apply lg:text-8xl pb-0;
 }
 
 /* ============================================================================

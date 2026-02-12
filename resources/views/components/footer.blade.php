@@ -8,7 +8,7 @@
             <flux:heading level="2">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
         </div>
 
-        <div class="pt-12 pb-12 md:flex md:flex-row space-y-6 md:space-y-0 gap-x-24">
+        <div class="pt-12 pb-12 md:flex md:flex-row space-y-6 md:space-y-0 md:gap-x-12 lg:gap-x-24">
             <ul>
                 <li class="list-heading">{{ __('Menu') }}</li>
                 <li>
@@ -46,9 +46,9 @@
                 </li>
             </ul>
             <div class="md:w-full flex flex-col md:items-end">
-                <ul class="list-heading">
+                <ul class="list-heading md:text-end">
                     <li>{{ __('Pieseko') }}</li>
-                    <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-2">
+                    <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-4">
                         <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
                             rel="noopener noreferrer">
                             <flux:icon.instagram />
