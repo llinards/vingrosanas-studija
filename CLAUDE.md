@@ -17,7 +17,9 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - livewire/flux (FLUXUI_FREE) - v2
 - livewire/flux-pro (FLUXUI_PRO) - v2
 - livewire/livewire (LIVEWIRE) - v4
+- laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
+- laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
 - pestphp/pest (PEST) - v4
@@ -275,4 +277,5 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - Fortify is a headless authentication backend that provides authentication routes and controllers for Laravel applications.
 - IMPORTANT: Always use the `search-docs` tool for detailed Laravel Fortify patterns and documentation.
 - IMPORTANT: Activate `developing-with-fortify` skill when working with Fortify authentication features.
+
 </laravel-boost-guidelines>
