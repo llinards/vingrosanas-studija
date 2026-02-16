@@ -29,7 +29,7 @@
                 <flux:date-picker min="today" placeholder="Izvēlies datumu" :label="__('Datums')" wire:model="date"/>
             @endif
 
-            <flux:time-picker wire:model="start_time" interval="15" placeholder="Izvēlies laiku"
+            <flux:time-picker min="06:00" max="22:00" wire:model="start_time" interval="30" placeholder="Izvēlies laiku"
                               :label="__('Sākuma laiks')"/>
 
             <flux:input
