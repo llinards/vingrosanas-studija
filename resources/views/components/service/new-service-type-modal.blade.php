@@ -1,4 +1,4 @@
-<flux:modal name="create-service-type" class="md:w-96">
+<flux:modal name="create-service-type" class="p-5 md:w-96">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('Jauns pakalpojuma veids') }}</flux:heading>
