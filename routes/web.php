@@ -17,27 +17,28 @@ Route::group([
         return view('welcome');
     })->name('home');
 
-    Route::middleware(['auth'])->group(function () {
-        Route::view('dashboard', 'dashboard.dashboard')->name('dashboard');
-        Route::view('coaches', 'dashboard.coach-list')->name('coach-list');
-        Route::livewire('coach/add', 'coach.coach-create')->name('coach-create');
-        Route::livewire('coach/{coach}/edit', 'coach.coach-edit')->name('coach.edit');
+    Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+        Route::view('/', 'dashboard.dashboard')->name('dashboard');
 
-        Route::view('services', 'dashboard.service-list')->name('service-list');
-        Route::livewire('service/add', 'service.service-create')->name('service-create');
-        Route::livewire('service/{service}/edit', 'service.service-edit')->name('service.edit');
+        Route::view('coaches', 'dashboard.coach-list')->name('coaches.index');
+        Route::livewire('coaches/create', 'coach.coach-create')->name('coaches.create');
+        Route::livewire('coaches/{coach}/edit', 'coach.coach-edit')->name('coaches.edit');
 
-        Route::view('schedules', 'dashboard.schedule-list')->name('schedule-list');
-        Route::livewire('schedule/add', 'schedule.schedule-create')->name('schedule-create');
-        Route::livewire('schedule/{schedule}/edit', 'schedule.schedule-edit')->name('schedule.edit');
+        Route::view('services', 'dashboard.service-list')->name('services.index');
+        Route::livewire('services/create', 'service.service-create')->name('services.create');
+        Route::livewire('services/{service}/edit', 'service.service-edit')->name('services.edit');
 
-        Route::view('bookings', 'dashboard.booking-list')->name('booking-list');
-        Route::livewire('booking/add', 'booking.booking-create')->name('booking-create');
-        Route::livewire('booking/{booking}/edit', 'booking.booking-edit')->name('booking.edit');
+        Route::view('schedules', 'dashboard.schedule-list')->name('schedules.index');
+        Route::livewire('schedules/create', 'schedule.schedule-create')->name('schedules.create');
+        Route::livewire('schedules/{schedule}/edit', 'schedule.schedule-edit')->name('schedules.edit');
+
+        Route::view('bookings', 'dashboard.booking-list')->name('bookings.index');
+        Route::livewire('bookings/create', 'booking.booking-create')->name('bookings.create');
+        Route::livewire('bookings/{booking}/edit', 'booking.booking-edit')->name('bookings.edit');
 
         Route::redirect('settings', 'settings/profile');
-        Route::livewire('settings/profile', Profile::class)->name('profile.edit');
-        Route::livewire('settings/password', Password::class)->name('user-password.edit');
+        Route::livewire('settings/profile', Profile::class)->name('settings.profile');
+        Route::livewire('settings/password', Password::class)->name('settings.password');
         Route::livewire('settings/two-factor', TwoFactor::class)
             ->middleware(
                 when(
@@ -47,6 +48,6 @@ Route::group([
                     [],
                 ),
             )
-            ->name('two-factor.show');
+            ->name('settings.two-factor');
     });
 });

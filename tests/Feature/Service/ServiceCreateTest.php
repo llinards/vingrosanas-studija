@@ -11,7 +11,7 @@ beforeEach(function () {
 });
 
 test('service create page can be rendered', function () {
-    $this->get(route('service-create'))
+    $this->get(route('admin.services.create'))
         ->assertSuccessful()
         ->assertSeeLivewire('service.service-create');
 });
@@ -19,7 +19,7 @@ test('service create page can be rendered', function () {
 test('service create page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('service-create'))
+    $this->get(route('admin.services.create'))
         ->assertRedirect(route('login'));
 });
 
@@ -34,7 +34,7 @@ test('can create a service with valid data', function () {
         ->set('price', '25.00')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('service-list'));
+        ->assertRedirect(route('admin.services.index'));
 
     $this->assertDatabaseHas('services', [
         'name' => 'Jogas nodarbība',
@@ -120,7 +120,7 @@ test('can create a service with is_active enabled', function () {
         ->set('is_active', true)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('service-list'));
+        ->assertRedirect(route('admin.services.index'));
 
     $this->assertDatabaseHas('services', [
         'name' => 'Aktīvs pakalpojums',

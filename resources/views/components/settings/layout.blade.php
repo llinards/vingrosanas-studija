@@ -1,11 +1,11 @@
 <div class="flex items-start max-md:flex-col">
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <flux:navlist>
-            <flux:navlist.item :href="route('profile.edit')" wire:navigate>{{ __('Profils') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('user-password.edit')"
+            <flux:navlist.item :href="route('admin.settings.profile')" wire:navigate>{{ __('Profils') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('admin.settings.password')"
                                wire:navigate>{{ __('Parole') }}</flux:navlist.item>
             @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                <flux:navlist.item :href="route('two-factor.show')"
+                <flux:navlist.item :href="route('admin.settings.two-factor')"
                                    wire:navigate>{{ __('Divu faktoru autentifikācija') }}</flux:navlist.item>
             @endif
         </flux:navlist>

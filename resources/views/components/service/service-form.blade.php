@@ -103,7 +103,7 @@
                          :description="__('Ja ieslēgts, pēc vienas rezervācijas laiks vairs nav pieejams citiem.')"/>
 
             <div class="flex items-center justify-end gap-4">
-                <flux:button href="{{ route('service-list') }}" wire:navigate variant="ghost">
+                <flux:button href="{{ route('admin.services.index') }}" wire:navigate variant="ghost">
                     {{ __('Atcelt') }}
                 </flux:button>
                 <flux:button type="submit" variant="primary">

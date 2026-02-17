@@ -129,7 +129,7 @@ new class extends Component
                 variant: 'success',
             );
 
-            $this->redirect(route('booking-list'), navigate: true);
+            $this->redirect(route('admin.bookings.index'), navigate: true);
         } catch (\Exception $e) {
             Log::error($e);
 

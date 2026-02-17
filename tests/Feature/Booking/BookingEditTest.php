@@ -14,7 +14,7 @@ beforeEach(function () {
 test('booking edit page can be rendered', function () {
     $booking = Booking::factory()->create();
 
-    $this->get(route('booking.edit', $booking))
+    $this->get(route('admin.bookings.edit', $booking))
         ->assertSuccessful()
         ->assertSeeLivewire('booking.booking-edit');
 });
@@ -24,7 +24,7 @@ test('booking edit page requires authentication', function () {
 
     auth()->logout();
 
-    $this->get(route('booking.edit', $booking))
+    $this->get(route('admin.bookings.edit', $booking))
         ->assertRedirect(route('login'));
 });
 
@@ -62,7 +62,7 @@ test('can update a booking', function () {
         ->set('payment_status', 'paid')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('booking-list'));
+        ->assertRedirect(route('admin.bookings.index'));
 
     $this->assertDatabaseHas('bookings', [
         'id' => $booking->id,
@@ -80,7 +80,7 @@ test('can update payment status', function () {
         ->set('payment_status', 'paid')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('booking-list'));
+        ->assertRedirect(route('admin.bookings.index'));
 
     $this->assertDatabaseHas('bookings', [
         'id' => $booking->id,

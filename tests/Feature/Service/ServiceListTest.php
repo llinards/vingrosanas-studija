@@ -12,21 +12,21 @@ beforeEach(function () {
 });
 
 test('service list page can be rendered', function () {
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertSuccessful();
 });
 
 test('service list page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertRedirect(route('login'));
 });
 
 test('service list displays all services', function () {
     $services = Service::factory()->count(3)->create();
 
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertSuccessful()
         ->assertSee($services[0]->name)
         ->assertSee($services[1]->name)
@@ -34,7 +34,7 @@ test('service list displays all services', function () {
 });
 
 test('service list shows empty state when no services exist', function () {
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertSuccessful()
         ->assertSee('Šobrīd nav neviena pakalpojuma!');
 });
@@ -55,7 +55,7 @@ test('service list groups services by service type', function () {
         'coach_id' => $coach->id,
     ]);
 
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertSuccessful()
         ->assertSee('Grupu nodarbības')
         ->assertSee('Individuālās nodarbības')
@@ -68,7 +68,7 @@ test('service list shows active status badge', function () {
     Service::factory()->create(['name' => 'Aktīvs pakalpojums', 'is_active' => true]);
     Service::factory()->create(['name' => 'Neaktīvs pakalpojums', 'is_active' => false]);
 
-    $this->get(route('service-list'))
+    $this->get(route('admin.services.index'))
         ->assertSuccessful()
         ->assertSee('Aktīvs pakalpojums')
         ->assertSee('Neaktīvs pakalpojums');

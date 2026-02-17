@@ -14,7 +14,7 @@ beforeEach(function () {
 test('service edit page can be rendered', function () {
     $service = Service::factory()->create();
 
-    $this->get(route('service.edit', $service))
+    $this->get(route('admin.services.edit', $service))
         ->assertSuccessful()
         ->assertSeeLivewire('service.service-edit');
 });
@@ -24,7 +24,7 @@ test('service edit page requires authentication', function () {
 
     auth()->logout();
 
-    $this->get(route('service.edit', $service))
+    $this->get(route('admin.services.edit', $service))
         ->assertRedirect(route('login'));
 });
 
@@ -59,7 +59,7 @@ test('can update a service', function () {
         ->set('price', '30.00')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('service-list'));
+        ->assertRedirect(route('admin.services.index'));
 
     $this->assertDatabaseHas('services', [
         'id' => $service->id,
@@ -133,7 +133,7 @@ test('can toggle is_active on a service', function () {
         ->set('is_active', false)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('service-list'));
+        ->assertRedirect(route('admin.services.index'));
 
     $this->assertDatabaseHas('services', [
         'id' => $service->id,

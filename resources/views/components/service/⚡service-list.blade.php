@@ -100,7 +100,7 @@ new class extends Component
     @if($this->services->isEmpty())
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena pakalpojuma!') }}</flux:text>
-            <flux:button href="{{ route('service-create') }}" wire:navigate class="mb-4">Pievienot jaunu pakalpojumu
+            <flux:button href="{{ route('admin.services.create') }}" wire:navigate class="mb-4">Pievienot jaunu pakalpojumu
             </flux:button>
         </div>
     @else
@@ -148,7 +148,7 @@ new class extends Component
                                         </flux:table.cell>
                                         <flux:table.cell>
                                             <div class="flex gap-2">
-                                                <flux:button href="{{ route('service.edit', $service) }}"
+                                                <flux:button href="{{ route('admin.services.edit', $service) }}"
                                                              variant="primary" size="sm">
                                                     {{ __('Rediģēt') }}
                                                 </flux:button>

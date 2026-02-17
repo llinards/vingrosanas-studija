@@ -14,7 +14,7 @@ beforeEach(function () {
 test('schedule edit page can be rendered', function () {
     $schedule = Schedule::factory()->create();
 
-    $this->get(route('schedule.edit', $schedule))
+    $this->get(route('admin.schedules.edit', $schedule))
         ->assertSuccessful()
         ->assertSeeLivewire('schedule.schedule-edit');
 });
@@ -24,7 +24,7 @@ test('schedule edit page requires authentication', function () {
 
     auth()->logout();
 
-    $this->get(route('schedule.edit', $schedule))
+    $this->get(route('admin.schedules.edit', $schedule))
         ->assertRedirect(route('login'));
 });
 
@@ -70,7 +70,7 @@ test('can update a recurring schedule', function () {
         ->set('max_capacity', '15')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'id' => $schedule->id,
@@ -92,7 +92,7 @@ test('can update a schedule from recurring to specific date', function () {
         ->set('max_capacity', '6')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $schedule->refresh();
     expect($schedule->day_of_week)->toBeNull()
@@ -109,7 +109,7 @@ test('can update a schedule from specific date to recurring', function () {
         ->set('max_capacity', '10')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'id' => $schedule->id,
@@ -152,7 +152,7 @@ test('can toggle is_active on a schedule', function () {
         ->set('is_active', false)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'id' => $schedule->id,

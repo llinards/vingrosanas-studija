@@ -48,7 +48,7 @@ new class extends Component
                 variant: 'success',
             );
 
-            $this->redirect(route('service-list'), navigate: true);
+            $this->redirect(route('admin.services.index'), navigate: true);
         } catch (\Exception $e) {
             Log::error($e);
 

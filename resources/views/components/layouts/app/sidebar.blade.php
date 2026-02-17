@@ -7,24 +7,24 @@
 <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50">
     <flux:sidebar.toggle class="lg:hidden" icon="x-mark"/>
 
-    <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+    <a href="{{ route('admin.dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
         <x-app-logo/>
     </a>
 
     <flux:navlist variant="outline">
         <flux:navlist.group class="grid">
-            <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+            <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
                                wire:navigate>{{ __('Sākums') }}</flux:navlist.item>
-            <flux:navlist.item icon="user" :href="route('coach-list')" :current="request()->routeIs('coach-list')"
+            <flux:navlist.item icon="user" :href="route('admin.coaches.index')" :current="request()->routeIs('admin.coaches.*')"
                                wire:navigate>{{ __('Treneri') }}</flux:navlist.item>
-            <flux:navlist.item icon="wrench" :href="route('service-list')"
-                               :current="request()->routeIs('service-list')"
+            <flux:navlist.item icon="wrench" :href="route('admin.services.index')"
+                               :current="request()->routeIs('admin.services.*')"
                                wire:navigate>{{ __('Pakalpojumi') }}</flux:navlist.item>
-            <flux:navlist.item icon="calendar-days" :href="route('schedule-list')"
-                               :current="request()->routeIs('schedule-list')"
+            <flux:navlist.item icon="calendar-days" :href="route('admin.schedules.index')"
+                               :current="request()->routeIs('admin.schedules.*')"
                                wire:navigate>{{ __('Grafiks') }}</flux:navlist.item>
-            <flux:navlist.item icon="ticket" :href="route('booking-list')"
-                               :current="request()->routeIs('booking-list')"
+            <flux:navlist.item icon="ticket" :href="route('admin.bookings.index')"
+                               :current="request()->routeIs('admin.bookings.*')"
                                wire:navigate>{{ __('Rezervācijas') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
@@ -62,7 +62,7 @@
             <flux:menu.separator/>
 
             <flux:menu.radio.group>
-                <flux:menu.item :href="route('profile.edit')" icon="cog"
+                <flux:menu.item :href="route('admin.settings.profile')" icon="cog"
                                 wire:navigate>{{ __('Iestatījumi') }}</flux:menu.item>
             </flux:menu.radio.group>
 
@@ -113,7 +113,7 @@
             <flux:menu.separator/>
 
             <flux:menu.radio.group>
-                <flux:menu.item :href="route('profile.edit')" icon="cog"
+                <flux:menu.item :href="route('admin.settings.profile')" icon="cog"
                                 wire:navigate>{{ __('Iestatījumi') }}</flux:menu.item>
             </flux:menu.radio.group>
 

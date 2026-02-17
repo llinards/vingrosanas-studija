@@ -6,7 +6,8 @@ use Flux\Flux;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use HasScheduleForm;
 
     public function save(): void
@@ -15,12 +16,12 @@ new class extends Component {
 
         try {
             Schedule::create([
-                'service_id'   => $this->service_id,
-                'day_of_week'  => $this->schedule_type === 'recurring' ? $this->day_of_week : null,
-                'date'         => $this->schedule_type === 'specific' ? $this->date : null,
-                'start_time'   => $this->start_time,
+                'service_id' => $this->service_id,
+                'day_of_week' => $this->schedule_type === 'recurring' ? $this->day_of_week : null,
+                'date' => $this->schedule_type === 'specific' ? $this->date : null,
+                'start_time' => $this->start_time,
                 'max_capacity' => $this->max_capacity,
-                'is_active'    => $this->is_active,
+                'is_active' => $this->is_active,
             ]);
 
             Flux::toast(
@@ -28,7 +29,7 @@ new class extends Component {
                 variant: 'success',
             );
 
-            $this->redirect(route('schedule-list'), navigate: true);
+            $this->redirect(route('admin.schedules.index'), navigate: true);
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -43,7 +44,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title(__('Pievienot jaunu grafiku'));
+            ->title(__('Pievienot jaunu grafiku'));
     }
 };
 ?>

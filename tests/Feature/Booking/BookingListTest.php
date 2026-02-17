@@ -11,21 +11,21 @@ beforeEach(function () {
 });
 
 test('booking list page can be rendered', function () {
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful();
 });
 
 test('booking list page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertRedirect(route('login'));
 });
 
 test('booking list displays all bookings', function () {
     $bookings = Booking::factory()->count(3)->create();
 
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee($bookings[0]->name)
         ->assertSee($bookings[1]->name)
@@ -33,7 +33,7 @@ test('booking list displays all bookings', function () {
 });
 
 test('booking list shows empty state when no bookings exist', function () {
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee('Šobrīd nav nevienas rezervācijas!');
 });
@@ -41,7 +41,7 @@ test('booking list shows empty state when no bookings exist', function () {
 test('booking list displays customer and service names', function () {
     $booking = Booking::factory()->create();
 
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee($booking->name)
         ->assertSee($booking->schedule->service->name);
@@ -50,7 +50,7 @@ test('booking list displays customer and service names', function () {
 test('booking list shows payment status badge', function () {
     Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
 
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee('Gaida apmaksu');
 });
@@ -131,7 +131,7 @@ test('booking list shows both past and future bookings', function () {
 test('booking list displays participant count', function () {
     Booking::factory()->create(['participant_count' => 3]);
 
-    $this->get(route('booking-list'))
+    $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee('Dalībnieki');
 });

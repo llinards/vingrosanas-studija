@@ -7,7 +7,8 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component {
+new class extends Component
+{
     use WithFileUploads;
 
     #[Locked]
@@ -31,43 +32,43 @@ new class extends Component {
 
     public function mount(Coach $coach): void
     {
-        $this->coachId       = $coach->id;
-        $this->name          = $coach->name;
-        $this->email         = $coach->email ?? '';
-        $this->phone         = $coach->phone ?? '';
-        $this->title         = $coach->title;
+        $this->coachId = $coach->id;
+        $this->name = $coach->name;
+        $this->email = $coach->email ?? '';
+        $this->phone = $coach->phone ?? '';
+        $this->title = $coach->title;
         $this->existingImage = $coach->image;
-        $this->bio           = $coach->bio;
-        $this->is_active     = $coach->is_active;
+        $this->bio = $coach->bio;
+        $this->is_active = $coach->is_active;
     }
 
     protected function rules(): array
     {
         return [
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:coaches,email,'.$this->coachId],
-            'phone'    => ['nullable', 'string', 'max:255', 'unique:coaches,phone,'.$this->coachId],
-            'title'    => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:coaches,email,'.$this->coachId],
+            'phone' => ['nullable', 'string', 'max:255', 'unique:coaches,phone,'.$this->coachId],
+            'title' => ['required', 'string', 'max:255'],
             'newImage' => ['nullable', 'image', 'max:400'],
-            'bio'      => ['required', 'string', 'max:10000'],
+            'bio' => ['required', 'string', 'max:10000'],
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'name.required'  => __('Vārds un uzvārds ir obligāts.'),
-            'name.max'       => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'name.required' => __('Vārds un uzvārds ir obligāts.'),
+            'name.max' => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
             'email.required' => __('E-pasts ir obligāts.'),
-            'email.email'    => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
-            'email.unique'   => __('Šis e-pasts jau ir reģistrēts.'),
-            'phone.unique'   => __('Šis telefona numurs jau ir reģistrēts.'),
+            'email.email' => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
+            'email.unique' => __('Šis e-pasts jau ir reģistrēts.'),
+            'phone.unique' => __('Šis telefona numurs jau ir reģistrēts.'),
             'title.required' => __('Amats ir obligāts.'),
-            'title.max'      => __('Amats nedrīkst pārsniegt 255 rakstzīmes.'),
+            'title.max' => __('Amats nedrīkst pārsniegt 255 rakstzīmes.'),
             'newImage.image' => __('Failam jābūt attēlam.'),
-            'newImage.max'   => __('Attēls nedrīkst pārsniegt 400KB.'),
-            'bio.required'   => __('Biogrāfija ir obligāta.'),
-            'bio.max'        => __('Biogrāfija nedrīkst pārsniegt 10000 rakstzīmes.'),
+            'newImage.max' => __('Attēls nedrīkst pārsniegt 400KB.'),
+            'bio.required' => __('Biogrāfija ir obligāta.'),
+            'bio.max' => __('Biogrāfija nedrīkst pārsniegt 10000 rakstzīmes.'),
         ];
     }
 
@@ -86,14 +87,14 @@ new class extends Component {
     {
         $this->validate();
 
-        if ( ! $this->existingImage && ! $this->newImage) {
+        if (! $this->existingImage && ! $this->newImage) {
             $this->addError('newImage', __('Attēls ir obligāts.'));
 
             return;
         }
 
         try {
-            $coach     = Coach::findOrFail($this->coachId);
+            $coach = Coach::findOrFail($this->coachId);
             $imagePath = $coach->image;
 
             if ($this->newImage) {
@@ -101,7 +102,7 @@ new class extends Component {
 
                 $newPath = $this->newImage->store('coaches', 'public');
 
-                if ( ! $newPath) {
+                if (! $newPath) {
                     Flux::toast(
                         text: __('Neizdevās saglabāt attēlu. Lūdzu, mēģini vēlreiz.'),
                         heading: __('Kļūda!'),
@@ -112,18 +113,18 @@ new class extends Component {
                 }
 
                 $imagePath = 'storage/'.$newPath;
-            } elseif ( ! $this->existingImage) {
+            } elseif (! $this->existingImage) {
                 $coach->deleteImage();
                 $imagePath = null;
             }
 
             $coach->update([
-                'name'      => $this->name,
-                'email'     => $this->email ?: null,
-                'phone'     => $this->phone ?: null,
-                'title'     => $this->title,
-                'image'     => $imagePath,
-                'bio'       => $this->bio,
+                'name' => $this->name,
+                'email' => $this->email ?: null,
+                'phone' => $this->phone ?: null,
+                'title' => $this->title,
+                'image' => $imagePath,
+                'bio' => $this->bio,
                 'is_active' => $this->is_active,
             ]);
 
@@ -132,7 +133,7 @@ new class extends Component {
                 variant: 'success',
             );
 
-            $this->redirect(route('coach-list'), navigate: true);
+            $this->redirect(route('admin.coaches.index'), navigate: true);
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -147,7 +148,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title(__('Rediģēt treneri'));
+            ->title(__('Rediģēt treneri'));
     }
 };
 ?>

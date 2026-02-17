@@ -11,7 +11,7 @@ beforeEach(function () {
 });
 
 test('schedule create page can be rendered', function () {
-    $this->get(route('schedule-create'))
+    $this->get(route('admin.schedules.create'))
         ->assertSuccessful()
         ->assertSeeLivewire('schedule.schedule-create');
 });
@@ -19,7 +19,7 @@ test('schedule create page can be rendered', function () {
 test('schedule create page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('schedule-create'))
+    $this->get(route('admin.schedules.create'))
         ->assertRedirect(route('login'));
 });
 
@@ -34,7 +34,7 @@ test('can create a recurring schedule with valid data', function () {
         ->set('max_capacity', '8')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'service_id' => $service->id,
@@ -57,7 +57,7 @@ test('can create a specific date schedule with valid data', function () {
         ->set('max_capacity', '10')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'service_id' => $service->id,
@@ -165,7 +165,7 @@ test('can create a schedule with is_active enabled', function () {
         ->set('is_active', true)
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('schedule-list'));
+        ->assertRedirect(route('admin.schedules.index'));
 
     $this->assertDatabaseHas('schedules', [
         'service_id' => $service->id,

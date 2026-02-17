@@ -12,21 +12,21 @@ beforeEach(function () {
 });
 
 test('coach list page can be rendered', function () {
-    $this->get(route('coach-list'))
+    $this->get(route('admin.coaches.index'))
         ->assertSuccessful();
 });
 
 test('coach list page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('coach-list'))
+    $this->get(route('admin.coaches.index'))
         ->assertRedirect(route('login'));
 });
 
 test('coach list displays all coaches', function () {
     $coaches = Coach::factory()->count(3)->create();
 
-    $this->get(route('coach-list'))
+    $this->get(route('admin.coaches.index'))
         ->assertSuccessful()
         ->assertSee($coaches[0]->name)
         ->assertSee($coaches[1]->name)
@@ -34,7 +34,7 @@ test('coach list displays all coaches', function () {
 });
 
 test('coach list shows empty state when no coaches exist', function () {
-    $this->get(route('coach-list'))
+    $this->get(route('admin.coaches.index'))
         ->assertSuccessful()
         ->assertSee('Šobrīd nav neviena aktīva trenera!');
 });

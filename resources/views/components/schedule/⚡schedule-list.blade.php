@@ -7,23 +7,24 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Computed]
     public function schedules(): Collection
     {
         return Schedule::with(['service.coach'])
-                       ->join('services', 'schedules.service_id', '=', 'services.id')
-                       ->join('coaches', 'services.coach_id', '=', 'coaches.id')
-                       ->where(function ($query) {
-                           $query->whereNull('schedules.date')
-                                 ->orWhere('schedules.date', '>=', today());
-                       })
-                       ->orderBy('coaches.name')
-                       ->orderBy('schedules.day_of_week')
-                       ->orderBy('schedules.date')
-                       ->orderBy('schedules.start_time')
-                       ->select('schedules.*')
-                       ->get();
+            ->join('services', 'schedules.service_id', '=', 'services.id')
+            ->join('coaches', 'services.coach_id', '=', 'coaches.id')
+            ->where(function ($query) {
+                $query->whereNull('schedules.date')
+                    ->orWhere('schedules.date', '>=', today());
+            })
+            ->orderBy('coaches.name')
+            ->orderBy('schedules.day_of_week')
+            ->orderBy('schedules.date')
+            ->orderBy('schedules.start_time')
+            ->select('schedules.*')
+            ->get();
     }
 
     public function toggleActive(Schedule $schedule): void
@@ -66,7 +67,7 @@ new class extends Component {
     @if($this->schedules->isEmpty())
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena grafika!') }}</flux:text>
-            <flux:button href="{{ route('schedule-create') }}" wire:navigate
+            <flux:button href="{{ route('admin.schedules.create') }}" wire:navigate
                          class="mb-4">{{ __('Pievienot jaunu grafiku') }}
             </flux:button>
         </div>
@@ -111,7 +112,7 @@ new class extends Component {
                                     </flux:table.cell>
                                     <flux:table.cell>
                                         <div class="flex gap-2">
-                                            <flux:button href="{{ route('schedule.edit', $schedule) }}"
+                                            <flux:button href="{{ route('admin.schedules.edit', $schedule) }}"
                                                          variant="primary" size="sm">
                                                 {{ __('Rediģēt') }}
                                             </flux:button>

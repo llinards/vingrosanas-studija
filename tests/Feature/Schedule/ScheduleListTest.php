@@ -11,21 +11,21 @@ beforeEach(function () {
 });
 
 test('schedule list page can be rendered', function () {
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful();
 });
 
 test('schedule list page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertRedirect(route('login'));
 });
 
 test('schedule list displays all schedules', function () {
     $schedules = Schedule::factory()->count(3)->create();
 
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful()
         ->assertSee($schedules[0]->service->name)
         ->assertSee($schedules[1]->service->name)
@@ -33,7 +33,7 @@ test('schedule list displays all schedules', function () {
 });
 
 test('schedule list shows empty state when no schedules exist', function () {
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful()
         ->assertSee('Šobrīd nav neviena grafika!');
 });
@@ -41,7 +41,7 @@ test('schedule list shows empty state when no schedules exist', function () {
 test('schedule list displays service and coach names', function () {
     $schedule = Schedule::factory()->create();
 
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful()
         ->assertSee($schedule->service->name)
         ->assertSee($schedule->service->coach->name);
@@ -50,7 +50,7 @@ test('schedule list displays service and coach names', function () {
 test('schedule list shows recurring badge for recurring schedules', function () {
     Schedule::factory()->create(['day_of_week' => DayOfWeek::Monday->value]);
 
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful()
         ->assertSee('Regulārs');
 });
@@ -58,7 +58,7 @@ test('schedule list shows recurring badge for recurring schedules', function () 
 test('schedule list shows specific badge for specific date schedules', function () {
     Schedule::factory()->specificDate()->create();
 
-    $this->get(route('schedule-list'))
+    $this->get(route('admin.schedules.index'))
         ->assertSuccessful()
         ->assertSee('Vienreizējs');
 });

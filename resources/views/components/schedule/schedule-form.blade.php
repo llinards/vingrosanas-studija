@@ -43,7 +43,7 @@
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
 
             <div class="flex items-center justify-end gap-4">
-                <flux:button href="{{ route('schedule-list') }}" wire:navigate variant="ghost">
+                <flux:button href="{{ route('admin.schedules.index') }}" wire:navigate variant="ghost">
                     {{ __('Atcelt') }}
                 </flux:button>
                 <flux:button type="submit" variant="primary">

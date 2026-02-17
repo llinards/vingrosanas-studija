@@ -14,7 +14,7 @@ beforeEach(function () {
 });
 
 test('dashboard page can be rendered', function () {
-    $this->get('/dashboard')
+    $this->get('/admin')
         ->assertSuccessful();
 });
 
@@ -233,7 +233,7 @@ test('available spots today excludes other days schedules', function () {
 test('dashboard displays stats in the UI', function () {
     Booking::factory()->create(['booking_date' => today()]);
 
-    $this->get('/dashboard')
+    $this->get('/admin')
         ->assertSuccessful()
         ->assertSee('Šodienas rezervācijas')
         ->assertSee('Šodienas ieņēmumi')

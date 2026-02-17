@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Computed]
     public function coaches(): Collection
     {
@@ -16,9 +17,9 @@ new class extends Component {
 
     public function updatePosition(int $id, int $position): void
     {
-        $coach   = Coach::findOrFail($id);
+        $coach = Coach::findOrFail($id);
         $coaches = Coach::query()->orderBy('position')->get();
-        $coaches = $coaches->reject(fn($c) => $c->id === $id);
+        $coaches = $coaches->reject(fn ($c) => $c->id === $id);
         $coaches->splice($position, 0, [$coach]);
         $coaches->each(function ($coach, $index) {
             $coach->update(['position' => $index]);
@@ -61,7 +62,7 @@ new class extends Component {
     @if($this->coaches->isEmpty())
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena aktīva trenera!') }}</flux:text>
-            <flux:button href="{{route('coach-create')}}" wire:navigate class="mb-4">Pievienot jaunu treneri
+            <flux:button href="{{route('admin.coaches.create')}}" wire:navigate class="mb-4">Pievienot jaunu treneri
             </flux:button>
         </div>
     @else
@@ -98,7 +99,7 @@ new class extends Component {
                     </div>
 
                     <div class="mt-4 flex gap-2" wire:sort:ignore>
-                        <flux:button href="{{ route('coach.edit', $coach) }}" variant="primary" class="flex-1">
+                        <flux:button href="{{ route('admin.coaches.edit', $coach) }}" variant="primary" class="flex-1">
                             {{ __('Rediģēt') }}
                         </flux:button>
                         <flux:button wire:confirm="{{__('Vai tiešām vēlies dzēst treneri?')}}" class="flex-1"

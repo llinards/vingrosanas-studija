@@ -12,7 +12,7 @@ beforeEach(function () {
 });
 
 test('booking create page can be rendered', function () {
-    $this->get(route('booking-create'))
+    $this->get(route('admin.bookings.create'))
         ->assertSuccessful()
         ->assertSeeLivewire('booking.booking-create');
 });
@@ -20,7 +20,7 @@ test('booking create page can be rendered', function () {
 test('booking create page requires authentication', function () {
     auth()->logout();
 
-    $this->get(route('booking-create'))
+    $this->get(route('admin.bookings.create'))
         ->assertRedirect(route('login'));
 });
 
@@ -39,7 +39,7 @@ test('can create a booking with valid data', function () {
         ->set('payment_status', 'paid')
         ->call('save')
         ->assertHasNoErrors()
-        ->assertRedirect(route('booking-list'));
+        ->assertRedirect(route('admin.bookings.index'));
 
     $this->assertDatabaseHas('bookings', [
         'schedule_id' => $schedule->id,

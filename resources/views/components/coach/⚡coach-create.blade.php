@@ -1,12 +1,13 @@
 <?php
 
 use App\Models\Coach;
-use Livewire\Component;
-use Livewire\WithFileUploads;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
-new class extends Component {
+new class extends Component
+{
     use WithFileUploads;
 
     public string $name = '';
@@ -26,31 +27,31 @@ new class extends Component {
     protected function rules(): array
     {
         return [
-            'name'  => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:coaches,email'],
             'phone' => ['nullable', 'string', 'max:255', 'unique:coaches,phone'],
             'title' => ['required', 'string', 'max:255'],
             'image' => ['required', 'image', 'max:400'],
-            'bio'   => ['required', 'string', 'max:10000'],
+            'bio' => ['required', 'string', 'max:10000'],
         ];
     }
 
     protected function messages(): array
     {
         return [
-            'name.required'  => __('Vārds un uzvārds ir obligāts.'),
-            'name.max'       => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'name.required' => __('Vārds un uzvārds ir obligāts.'),
+            'name.max' => __('Vārds un uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
             'email.required' => __('E-pasts ir obligāts.'),
-            'email.email'    => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
-            'email.unique'   => __('Šis e-pasts jau ir reģistrēts.'),
-            'phone.unique'   => __('Šis telefona numurs jau ir reģistrēts.'),
+            'email.email' => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
+            'email.unique' => __('Šis e-pasts jau ir reģistrēts.'),
+            'phone.unique' => __('Šis telefona numurs jau ir reģistrēts.'),
             'title.required' => __('Amats ir obligāts.'),
-            'title.max'      => __('Amats nedrīkst pārsniegt 255 rakstzīmes.'),
+            'title.max' => __('Amats nedrīkst pārsniegt 255 rakstzīmes.'),
             'image.required' => __('Attēls ir obligāts.'),
-            'image.image'    => __('Failam jābūt attēlam.'),
-            'image.max'      => __('Attēls nedrīkst pārsniegt 400KB.'),
-            'bio.required'   => __('Biogrāfija ir obligāta.'),
-            'bio.max'        => __('Biogrāfija nedrīkst pārsniegt 1000 rakstzīmes.'),
+            'image.image' => __('Failam jābūt attēlam.'),
+            'image.max' => __('Attēls nedrīkst pārsniegt 400KB.'),
+            'bio.required' => __('Biogrāfija ir obligāta.'),
+            'bio.max' => __('Biogrāfija nedrīkst pārsniegt 1000 rakstzīmes.'),
         ];
     }
 
@@ -67,7 +68,7 @@ new class extends Component {
         try {
             $imagePath = $this->image->store('coaches', 'public');
 
-            if ( ! $imagePath) {
+            if (! $imagePath) {
                 Flux::toast(
                     text: __('Neizdevās izveidot treneri. Lūdzu, mēģini vēlreiz.'),
                     heading: __('Kļūda!'),
@@ -78,12 +79,12 @@ new class extends Component {
             }
 
             Coach::create([
-                'name'      => $this->name,
-                'email'     => $this->email ?: null,
-                'phone'     => $this->phone ?: null,
-                'title'     => $this->title,
-                'image'     => 'storage/'.$imagePath,
-                'bio'       => $this->bio,
+                'name' => $this->name,
+                'email' => $this->email ?: null,
+                'phone' => $this->phone ?: null,
+                'title' => $this->title,
+                'image' => 'storage/'.$imagePath,
+                'bio' => $this->bio,
                 'is_active' => $this->is_active,
             ]);
 
@@ -92,7 +93,7 @@ new class extends Component {
                 variant: 'success',
             );
 
-            $this->redirect(route('coach-list'), navigate: true);
+            $this->redirect(route('admin.coaches.index'), navigate: true);
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -107,7 +108,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title('Pievienot jaunu treneri');
+            ->title('Pievienot jaunu treneri');
     }
 };
 ?>

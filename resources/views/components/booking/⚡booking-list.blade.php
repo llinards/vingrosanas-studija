@@ -54,7 +54,7 @@ new class extends Component
     @if(!$this->hasAnyBookings)
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:text>
-            <flux:button href="{{ route('booking-create') }}" wire:navigate
+            <flux:button href="{{ route('admin.bookings.create') }}" wire:navigate
                          class="mb-4">{{ __('Pievienot jaunu rezervāciju') }}
             </flux:button>
         </div>
@@ -92,7 +92,7 @@ new class extends Component
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex gap-2">
-                                    <flux:button href="{{ route('booking.edit', $booking) }}" variant="primary"
+                                    <flux:button href="{{ route('admin.bookings.edit', $booking) }}" variant="primary"
                                                  size="sm">
                                         {{ __('Rediģēt') }}
                                     </flux:button>
