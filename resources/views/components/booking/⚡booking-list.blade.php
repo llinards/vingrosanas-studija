@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -13,44 +12,11 @@ new class extends Component
 {
     use WithPagination;
 
-    public bool $paidOnly = false;
-
-    public bool $pastOnly = false;
-
-    public string $sortBy = 'booking_date';
-
-    public string $sortDirection = 'asc';
-
-    public function updatedPaidOnly(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatedPastOnly(): void
-    {
-        $this->resetPage();
-    }
-
-    public function sort(string $column): void
-    {
-        if ($this->sortBy === $column) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortBy = $column;
-            $this->sortDirection = 'asc';
-        }
-
-        $this->resetPage();
-    }
-
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
-            ->when($this->paidOnly, fn ($query) => $query->where('payment_status', PaymentStatus::Paid))
-            ->when($this->pastOnly, fn ($query) => $query->where('booking_date', '<', today()))
-            ->when(! $this->pastOnly, fn ($query) => $query->where('booking_date', '>=', today()))
-            ->orderBy($this->sortBy, $this->sortDirection)
+            ->orderBy('booking_date', 'asc')
             ->paginate(10);
     }
 
@@ -93,27 +59,18 @@ new class extends Component
             </flux:button>
         </div>
     @else
-        <div class="mb-4 flex flex-wrap gap-4">
-            <flux:checkbox wire:model.live="paidOnly" label="{{ __('Rādīt tikai apmaksātās rezervācijas') }}"/>
-            <flux:checkbox wire:model.live="pastOnly" label="{{ __('Rādīt tikai pagātnes rezervācijas') }}"/>
-        </div>
-
         @if($this->bookings->isEmpty())
-            <flux:text class="text-center py-8">{{ __('Nav nevienas apmaksātas rezervācijas.') }}</flux:text>
+            <flux:text class="text-center py-8">{{ __('Nav nevienas rezervācijas.') }}</flux:text>
         @else
             <flux:table>
                 <flux:table.columns>
-                    <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection"
-                                       wire:click="sort('name')">{{ __('Klients') }}</flux:table.column>
+                    <flux:table.column>{{ __('Klients') }}</flux:table.column>
                     <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
                     <flux:table.column>{{ __('Treneris') }}</flux:table.column>
-                    <flux:table.column sortable :sorted="$sortBy === 'booking_date'" :direction="$sortDirection"
-                                       wire:click="sort('booking_date')">{{ __('Datums') }}</flux:table.column>
+                    <flux:table.column>{{ __('Datums') }}</flux:table.column>
                     <flux:table.column>{{ __('Laiks') }}</flux:table.column>
-                    <flux:table.column sortable :sorted="$sortBy === 'participant_count'" :direction="$sortDirection"
-                                       wire:click="sort('participant_count')">{{ __('Dalībnieki') }}</flux:table.column>
-                    <flux:table.column sortable :sorted="$sortBy === 'payment_status'" :direction="$sortDirection"
-                                       wire:click="sort('payment_status')">{{ __('Statuss') }}</flux:table.column>
+                    <flux:table.column>{{ __('Dalībnieki') }}</flux:table.column>
+                    <flux:table.column>{{ __('Statuss') }}</flux:table.column>
                     <flux:table.column>{{ __('Darbības') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
