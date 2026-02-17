@@ -3,10 +3,12 @@
 use App\Livewire\Concerns\HasServiceForm;
 use App\Models\Service;
 use Flux\Flux;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use HasServiceForm;
 
     public function save(): void
@@ -14,13 +16,31 @@ new class extends Component {
         $this->validate();
 
         try {
-            Service::create([
-                'name'            => $this->name,
-                'service_type_id' => $this->service_type_id,
-                'coach_id'        => $this->coach_id,
-                'price'           => (int) round($this->price * 100),
-                'is_active'       => $this->is_active,
-            ]);
+            DB::transaction(function () {
+                $service = Service::create([
+                    'name' => $this->name,
+                    'service_type_id' => $this->service_type_id,
+                    'coach_id' => $this->coach_id,
+                    'price' => (int) round($this->price * 100),
+                    'is_active' => $this->is_active,
+                ]);
+
+                // Create price tier for 1 participant using the base price
+                $service->priceTiers()->create([
+                    'participant_count' => 1,
+                    'price' => (int) round($this->price * 100),
+                ]);
+
+                // Create additional price tiers
+                foreach ($this->priceTiers as $tier) {
+                    if (! empty($tier['participant_count']) && ! empty($tier['price'])) {
+                        $service->priceTiers()->updateOrCreate(
+                            ['participant_count' => (int) $tier['participant_count']],
+                            ['price' => (int) round((float) $tier['price'] * 100)],
+                        );
+                    }
+                }
+            });
 
             Flux::toast(
                 text: __('Pakalpojums izveidots!'),
@@ -42,7 +62,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title('Pievienot jaunu pakalpojumu');
+            ->title('Pievienot jaunu pakalpojumu');
     }
 };
 ?>

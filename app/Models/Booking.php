@@ -25,6 +25,7 @@ class Booking extends Model
         return [
             'payment_status' => PaymentStatus::class,
             'booking_date' => 'date',
+            'participant_count' => 'integer',
         ];
     }
 }

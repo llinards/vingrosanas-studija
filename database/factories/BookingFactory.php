@@ -26,7 +26,18 @@ class BookingFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->safeEmail(),
             'payment_status' => PaymentStatus::Pending,
+            'participant_count' => 1,
         ];
+    }
+
+    /**
+     * Create a booking with a specific number of participants.
+     */
+    public function withParticipants(int $count): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'participant_count' => $count,
+        ]);
     }
 
     /**

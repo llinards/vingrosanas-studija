@@ -36,6 +36,22 @@ class Service extends Model
         return $this->hasMany(Schedule::class);
     }
 
+    /**
+     * @return HasMany<ServicePriceTier, $this>
+     */
+    public function priceTiers(): HasMany
+    {
+        return $this->hasMany(ServicePriceTier::class)->orderBy('participant_count');
+    }
+
+    /**
+     * Get the maximum number of participants allowed for this service.
+     */
+    public function maxParticipants(): int
+    {
+        return $this->priceTiers()->max('participant_count') ?? 1;
+    }
+
     protected function casts(): array
     {
         return [

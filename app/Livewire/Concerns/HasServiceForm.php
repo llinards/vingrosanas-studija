@@ -22,6 +22,11 @@ trait HasServiceForm
 
     public string $newServiceTypeName = '';
 
+    /**
+     * @var array<int, array{participant_count: string, price: string}>
+     */
+    public array $priceTiers = [];
+
     #[Computed]
     public function serviceTypes(): Collection
     {
@@ -41,6 +46,9 @@ trait HasServiceForm
             'service_type_id' => ['required', 'exists:service_types,id'],
             'coach_id' => ['required', 'exists:coaches,id'],
             'price' => ['required', 'numeric', 'min:0'],
+            'priceTiers' => ['array'],
+            'priceTiers.*.participant_count' => ['required', 'integer', 'min:1'],
+            'priceTiers.*.price' => ['required', 'numeric', 'min:0'],
         ];
     }
 
@@ -56,7 +64,35 @@ trait HasServiceForm
             'price.required' => __('Cena ir obligāta.'),
             'price.numeric' => __('Cenai jābūt skaitlim.'),
             'price.min' => __('Cena nedrīkst būt negatīva.'),
+            'priceTiers.*.participant_count.required' => __('Dalībnieku skaits ir obligāts.'),
+            'priceTiers.*.participant_count.integer' => __('Dalībnieku skaitam jābūt veselam skaitlim.'),
+            'priceTiers.*.participant_count.min' => __('Dalībnieku skaitam jābūt vismaz 1.'),
+            'priceTiers.*.price.required' => __('Cena ir obligāta.'),
+            'priceTiers.*.price.numeric' => __('Cenai jābūt skaitlim.'),
+            'priceTiers.*.price.min' => __('Cena nedrīkst būt negatīva.'),
         ];
+    }
+
+    public function addPriceTier(): void
+    {
+        // Start at 2 since 1 is the base price
+        $nextCount = 2;
+
+        if (count($this->priceTiers) > 0) {
+            $maxCount = max(array_column($this->priceTiers, 'participant_count'));
+            $nextCount = (int) $maxCount + 1;
+        }
+
+        $this->priceTiers[] = [
+            'participant_count' => (string) $nextCount,
+            'price' => '',
+        ];
+    }
+
+    public function removePriceTier(int $index): void
+    {
+        unset($this->priceTiers[$index]);
+        $this->priceTiers = array_values($this->priceTiers);
     }
 
     public function saveServiceType(): void
