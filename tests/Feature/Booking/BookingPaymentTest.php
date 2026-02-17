@@ -75,7 +75,7 @@ test('booking success page shows processing message for pending bookings', funct
 
     $this->get(route('booking.success', $booking))
         ->assertSuccessful()
-        ->assertSee(__('Jūsu maksājums tiek apstrādāts'));
+        ->assertSee(__('Maksājums tiek apstrādāts'));
 });
 
 test('expire pending bookings command deletes expired bookings', function () {
