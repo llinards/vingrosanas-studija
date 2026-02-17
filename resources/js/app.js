@@ -5,6 +5,40 @@ import { Autoscroll } from "@fancyapps/ui/dist/carousel/carousel.autoscroll.js";
 import Odometer from 'odometer';
 
 document.addEventListener('DOMContentLoaded', () => {
+    const isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    if (isFinePointer) {
+        const cursor = document.createElement('div');
+        cursor.className = 'custom-cursor';
+        cursor.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(cursor);
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let rafId = null;
+        let isActive = false;
+
+        const render = () => {
+            rafId = null;
+            cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+        };
+
+        window.addEventListener('mousemove', (event) => {
+            if (!isActive) {
+                isActive = true;
+                document.body.classList.add('custom-cursor-active');
+                cursor.style.opacity = '1';
+            }
+
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+
+            if (rafId === null) {
+                rafId = window.requestAnimationFrame(render);
+            }
+        }, { passive: true });
+    }
+
     const galleryCarousel = document.getElementById('galleryCarousel');
     const ownerCarousel = document.getElementById('ownerCarousel');
     const workoutCarousel = document.getElementById('workoutCarousel');
@@ -16,8 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 pauseOnHover: false,
                 showProgressbar: false,
                 timeout: 3000,
-            },
-            gestures: false,
+            }
         }, {
             Autoplay,
             Dots,
@@ -26,8 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (ownerCarousel) {
         Carousel(ownerCarousel, {
-            // Your custom options
+            Autoplay: {
+                pauseOnHover: false,
+                showProgressbar: false,
+                timeout: 3000,
+            }
         }, {
+            Autoplay,
             Dots,
         }).init();
     }
@@ -52,31 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {
         }).init();
     }
-
-
-const createOdometer = (el, value) => {
-    const odometer = new Odometer({
-        el: el,
-        value: 0,
-    });
-    odometer.update(value)
-};
-
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-            entry.target.dataset.odometerInitialized = '1';
-            observer.unobserve(entry.target);
-
-            createOdometer(entry.target, entry.target.textContent)
-        }
-    });
-}, { threshold: 0.6 })
-
-const odometerNumbers = document.querySelectorAll('.counter-number')
-odometerNumbers.forEach((el) => observer.observe(el));
-
 });
 
 const contactForm = document.getElementById('contactForm');

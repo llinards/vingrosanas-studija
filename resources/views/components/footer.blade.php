@@ -2,8 +2,8 @@
     <div class="container mx-auto px-4">
         <div
             class="flex flex-col space-y-2 md:space-y-0 md:flex-row text-center md:text-right items-center justify-between border-y border-black py-3">
-            <div class="w-36">
-                <img src="{{ asset('images/vingrosanas_studija_logo.svg') }}" alt="">
+            <div class="w-26">
+                <img src="{{ asset('images/vingrosanas_studija_logo-blue.svg') }}" alt="">
             </div>
             <flux:heading level="2">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
         </div>
@@ -62,7 +62,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-black py-6">
+    <div class="bg-blue py-6">
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}
             </flux:text>

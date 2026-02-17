@@ -26,11 +26,8 @@
     {{-- VIDEO BANNER --}}
     <x-video-banner />
 
-    {{-- SLOGAN AND ACHIEVEMENT COUNTER --}}
-    <x-achievement />
-
-    {{-- CTA --}}
-    <x-banner-with-cta />
+    {{-- SLOGAN --}}
+    <x-slogan />
 
     {{-- COACHES --}}
     <livewire:coaches />

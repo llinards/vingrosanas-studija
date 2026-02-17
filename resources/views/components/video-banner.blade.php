@@ -1,4 +1,4 @@
-<div id="videoBanner" class="full-width-banner relative" x-data="{ playing: false }">
+<div class="video-banner full-width-banner relative" x-data="{ playing: false }">
     {{-- Thumbnail --}}
     <div x-show="!playing" @click="playing = true; $refs.video.play()" class="cursor-pointer relative h-full w-full">
         <img class="h-full w-full object-cover" src="{{ asset('images/anete_platkevica_9.jpg') }}" alt="">

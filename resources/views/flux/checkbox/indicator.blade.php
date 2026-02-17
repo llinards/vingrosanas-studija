@@ -15,7 +15,7 @@ $classes = Flux::classes()
         '[print-color-adjust:exact]',
     ])
     ->add([
-        'bg-white dark:bg-white/10',
+        'bg-beige dark:bg-beige/10',
         '[ui-checkbox[data-checked]_&]:bg-[var(--color-accent)]',
         'hover:[ui-checkbox[data-checked]_&]:bg-(--color-accent)',
         'focus:[ui-checkbox[data-checked]_&]:bg-(--color-accent)',
