@@ -11,6 +11,11 @@ new class extends Component
 {
     use HasServiceForm;
 
+    /**
+     * Validate and create a new service with its price tiers.
+     *
+     * Creates the base price tier and any additional participant count tiers.
+     */
     public function save(): void
     {
         $this->validate();
@@ -60,6 +65,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

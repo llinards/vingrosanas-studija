@@ -10,6 +10,9 @@ new class extends Component
 {
     use HasBookingForm;
 
+    /**
+     * Reset dependent fields when service type changes.
+     */
     public function updatedServiceTypeId(): void
     {
         $this->service_id = null;
@@ -24,6 +27,9 @@ new class extends Component
         );
     }
 
+    /**
+     * Reset dependent fields when service changes.
+     */
     public function updatedServiceId(): void
     {
         $this->schedule_id = null;
@@ -37,17 +43,26 @@ new class extends Component
         );
     }
 
+    /**
+     * Reset participant count and capacity when schedule changes.
+     */
     public function updatedScheduleId(): void
     {
         $this->participant_count = 1;
         unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
     }
 
+    /**
+     * Recalculate capacity when booking date changes.
+     */
     public function updatedBookingDate(): void
     {
         unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
     }
 
+    /**
+     * Validate and create a new booking.
+     */
     public function save(): void
     {
         $this->validate();
@@ -81,6 +96,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

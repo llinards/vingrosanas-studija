@@ -23,6 +23,9 @@ trait HasScheduleForm
 
     public bool $is_active = false;
 
+    /**
+     * Get all services with their coaches for the dropdown.
+     */
     #[Computed]
     public function services(): Collection
     {
@@ -43,6 +46,14 @@ trait HasScheduleForm
             ->all();
     }
 
+    /**
+     * Get the validation rules for the schedule form.
+     *
+     * Rules vary based on schedule type: recurring schedules require day_of_week,
+     * while one-time schedules require a specific date.
+     *
+     * @return array<string, array<int, mixed>>
+     */
     protected function rules(): array
     {
         $rules = [
@@ -60,6 +71,11 @@ trait HasScheduleForm
         return $rules;
     }
 
+    /**
+     * Get the custom validation messages for the schedule form.
+     *
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [

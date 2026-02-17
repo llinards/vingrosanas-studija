@@ -14,6 +14,9 @@ new class extends Component
     #[Locked]
     public int $bookingId;
 
+    /**
+     * Initialize the component with existing booking data.
+     */
     public function mount(Booking $booking): void
     {
         $booking->load('schedule.service');
@@ -31,6 +34,9 @@ new class extends Component
         $this->payment_status = $booking->payment_status->value;
     }
 
+    /**
+     * Reset dependent fields when service type changes.
+     */
     public function updatedServiceTypeId(): void
     {
         $this->service_id = null;
@@ -45,6 +51,9 @@ new class extends Component
         );
     }
 
+    /**
+     * Reset dependent fields when service changes.
+     */
     public function updatedServiceId(): void
     {
         $this->schedule_id = null;
@@ -58,12 +67,18 @@ new class extends Component
         );
     }
 
+    /**
+     * Reset participant count and capacity when schedule changes.
+     */
     public function updatedScheduleId(): void
     {
         $this->participant_count = 1;
         unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
     }
 
+    /**
+     * Recalculate capacity when booking date changes.
+     */
     public function updatedBookingDate(): void
     {
         unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
@@ -106,6 +121,9 @@ new class extends Component
         return max(0, $schedule->max_capacity - $bookedParticipants);
     }
 
+    /**
+     * Validate and save the updated booking data.
+     */
     public function save(): void
     {
         $this->validate();
@@ -141,6 +159,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

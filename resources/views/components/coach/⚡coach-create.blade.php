@@ -24,6 +24,11 @@ new class extends Component
 
     public bool $is_active = false;
 
+    /**
+     * Get the validation rules for the coach form.
+     *
+     * @return array<string, array<int, mixed>>
+     */
     protected function rules(): array
     {
         return [
@@ -36,6 +41,11 @@ new class extends Component
         ];
     }
 
+    /**
+     * Get the custom validation messages for the coach form.
+     *
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [
@@ -55,12 +65,18 @@ new class extends Component
         ];
     }
 
+    /**
+     * Remove the uploaded image from temporary storage.
+     */
     public function removeImage(): void
     {
         $this->image?->delete();
         $this->image = null;
     }
 
+    /**
+     * Validate and create a new coach with their profile image.
+     */
     public function save(): void
     {
         $this->validate();
@@ -105,6 +121,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

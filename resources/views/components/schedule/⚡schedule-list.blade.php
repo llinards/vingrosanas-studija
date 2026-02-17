@@ -9,6 +9,11 @@ use Livewire\Component;
 
 new class extends Component
 {
+    /**
+     * Get all active and upcoming schedules grouped by coach.
+     *
+     * Excludes past one-time schedules and orders by coach name, day, date, and time.
+     */
     #[Computed]
     public function schedules(): Collection
     {
@@ -27,6 +32,9 @@ new class extends Component
             ->get();
     }
 
+    /**
+     * Toggle the active status of a schedule.
+     */
     public function toggleActive(Schedule $schedule): void
     {
         $schedule->update(['is_active' => ! $schedule->is_active]);
@@ -39,6 +47,9 @@ new class extends Component
         unset($this->schedules);
     }
 
+    /**
+     * Delete a schedule from the database.
+     */
     public function destroy(Schedule $schedule): void
     {
         try {

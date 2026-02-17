@@ -9,12 +9,20 @@ use Livewire\Component;
 
 new class extends Component
 {
+    /**
+     * Get all coaches ordered by their display position.
+     */
     #[Computed]
     public function coaches(): Collection
     {
         return Coach::query()->orderBy('position')->get();
     }
 
+    /**
+     * Update the display position of a coach in the list.
+     *
+     * Reorders all coaches to maintain sequential positions.
+     */
     public function updatePosition(int $id, int $position): void
     {
         $coach = Coach::findOrFail($id);
@@ -33,6 +41,9 @@ new class extends Component
         );
     }
 
+    /**
+     * Delete a coach and their associated image from storage.
+     */
     public function destroy(Coach $coach): void
     {
         try {

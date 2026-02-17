@@ -12,6 +12,9 @@ new class extends Component
 {
     use WithPagination;
 
+    /**
+     * Get paginated bookings ordered by date ascending.
+     */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
@@ -20,12 +23,20 @@ new class extends Component
             ->paginate(10);
     }
 
+    /**
+     * Check if any bookings exist in the database.
+     *
+     * Used to determine whether to show the empty state or the list.
+     */
     #[Computed]
     public function hasAnyBookings(): bool
     {
         return Booking::exists();
     }
 
+    /**
+     * Delete a booking from the database.
+     */
     public function destroy(Booking $booking): void
     {
         try {

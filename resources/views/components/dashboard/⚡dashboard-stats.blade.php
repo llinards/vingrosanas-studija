@@ -4,17 +4,23 @@ use App\Enums\DayOfWeek;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Schedule;
-use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
+    /**
+     * Get the total number of bookings for today.
+     */
     #[Computed]
     public function todaysBookingsCount(): int
     {
         return Booking::whereDate('booking_date', today())->count();
     }
 
+    /**
+     * Get the total revenue from paid bookings today (in cents).
+     */
     #[Computed]
     public function todaysRevenue(): int
     {
@@ -26,12 +32,18 @@ new class extends Component {
             ->sum('services.price');
     }
 
+    /**
+     * Get the count of bookings with pending payment status.
+     */
     #[Computed]
     public function pendingPaymentsCount(): int
     {
         return Booking::where('payment_status', PaymentStatus::Pending)->count();
     }
 
+    /**
+     * Get the total number of bookings for the current week.
+     */
     #[Computed]
     public function thisWeekBookings(): int
     {
@@ -41,6 +53,9 @@ new class extends Component {
         ])->count();
     }
 
+    /**
+     * Get the total number of bookings for the previous week.
+     */
     #[Computed]
     public function lastWeekBookings(): int
     {
@@ -131,7 +146,7 @@ new class extends Component {
             ->where('is_active', true)
             ->withCount('bookings')
             ->get()
-            ->filter(fn($schedule) => $schedule->bookings_count >= $schedule->max_capacity)
+            ->filter(fn ($schedule) => $schedule->bookings_count >= $schedule->max_capacity)
             ->count();
     }
 
@@ -148,7 +163,7 @@ new class extends Component {
             }])
             ->get();
 
-        return $schedules->sum(fn($schedule) => max(0, $schedule->max_capacity - $schedule->bookings_count));
+        return $schedules->sum(fn ($schedule) => max(0, $schedule->max_capacity - $schedule->bookings_count));
     }
 };
 ?>
