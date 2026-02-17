@@ -343,8 +343,12 @@ footer [data-flux-icon] {
 h1 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-[5rem];
-    @apply uppercase text-white tracking-wide;
+    @apply uppercase tracking-wide text-gray;
     @apply leading-tight;
+}
+
+header h1 {
+    @apply text-white
 }
 
 h2 {

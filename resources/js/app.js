@@ -106,10 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }, {
         }).init();
     }
+
+    const contactForm = document.getElementById('contactForm');
+    if (coachCarousel) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            Flux.modal('confirm').show()
+        })
+    }
 });
 
-const contactForm = document.getElementById('contactForm');
-contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    Flux.modal('confirm').show()
-})

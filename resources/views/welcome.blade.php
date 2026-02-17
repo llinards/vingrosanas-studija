@@ -1,9 +1,7 @@
 <x-layouts.main :title="__('Sākums')">
 
     {{-- HEADER --}}
-    <x-header>
-        <x-nav />
-    </x-header>
+    <x-header />
 
     {{-- WORKOUT CAROUSEL --}}
     <div>
@@ -50,12 +48,9 @@
     {{-- FORM --}}
     <x-contact-form />
 
-    {{-- FOOTER --}}
-    <x-footer />
-
     {{-- BOOKING MODAL --}}
     <livewire:booking-modal />
 
-    <x-EXTRA-booking-modal/>
+    <x-EXTRA-booking-modal />
 
 </x-layouts.main>

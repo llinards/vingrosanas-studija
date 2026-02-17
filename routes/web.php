@@ -16,6 +16,9 @@ Route::group([
     Route::get('/', static function () {
         return view('welcome');
     })->name('home');
+    Route::get('/privacy-policy', static function () {
+        return view('privacy-policy');
+    })->name('privacy-policy');
 
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
         Route::view('/', 'dashboard.dashboard')->name('dashboard');
