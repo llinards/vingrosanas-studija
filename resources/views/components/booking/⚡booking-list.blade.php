@@ -9,7 +9,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component {
+new class extends Component
+{
     use WithPagination;
 
     public bool $paidOnly = false;
@@ -35,7 +36,7 @@ new class extends Component {
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            $this->sortBy        = $column;
+            $this->sortBy = $column;
             $this->sortDirection = 'asc';
         }
 
@@ -46,11 +47,11 @@ new class extends Component {
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
-                      ->when($this->paidOnly, fn($query) => $query->where('payment_status', PaymentStatus::Paid))
-                      ->when($this->pastOnly, fn($query) => $query->where('booking_date', '<', today()))
-                      ->when(! $this->pastOnly, fn($query) => $query->where('booking_date', '>=', today()))
-                      ->orderBy($this->sortBy, $this->sortDirection)
-                      ->paginate(10);
+            ->when($this->paidOnly, fn ($query) => $query->where('payment_status', PaymentStatus::Paid))
+            ->when($this->pastOnly, fn ($query) => $query->where('booking_date', '<', today()))
+            ->when(! $this->pastOnly, fn ($query) => $query->where('booking_date', '>=', today()))
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate(10);
     }
 
     #[Computed]
@@ -109,6 +110,8 @@ new class extends Component {
                     <flux:table.column sortable :sorted="$sortBy === 'booking_date'" :direction="$sortDirection"
                                        wire:click="sort('booking_date')">{{ __('Datums') }}</flux:table.column>
                     <flux:table.column>{{ __('Laiks') }}</flux:table.column>
+                    <flux:table.column sortable :sorted="$sortBy === 'participant_count'" :direction="$sortDirection"
+                                       wire:click="sort('participant_count')">{{ __('Dalībnieki') }}</flux:table.column>
                     <flux:table.column sortable :sorted="$sortBy === 'payment_status'" :direction="$sortDirection"
                                        wire:click="sort('payment_status')">{{ __('Statuss') }}</flux:table.column>
                     <flux:table.column>{{ __('Darbības') }}</flux:table.column>
@@ -121,6 +124,7 @@ new class extends Component {
                             <flux:table.cell>{{ $booking->schedule->service->coach->name }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->booking_date->format('d.m.Y') }}</flux:table.cell>
                             <flux:table.cell>{{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
+                            <flux:table.cell>{{ $booking->participant_count }}</flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="match($booking->payment_status->value) {
                                 'paid' => 'green',
