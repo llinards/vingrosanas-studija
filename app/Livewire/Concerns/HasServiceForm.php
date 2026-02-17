@@ -20,6 +20,8 @@ trait HasServiceForm
 
     public bool $is_active = false;
 
+    public bool $is_exclusive = false;
+
     public string $newServiceTypeName = '';
 
     /**

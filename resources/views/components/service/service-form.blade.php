@@ -99,6 +99,9 @@
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
 
+            <flux:switch wire:model="is_exclusive" :label="__('Individuāls (viena rezervācija aizņem visu laiku)')"
+                         :description="__('Ja ieslēgts, pēc vienas rezervācijas laiks vairs nav pieejams citiem.')"/>
+
             <div class="flex items-center justify-end gap-4">
                 <flux:button href="{{ route('service-list') }}" wire:navigate variant="ghost">
                     {{ __('Atcelt') }}

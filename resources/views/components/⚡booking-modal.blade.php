@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     public int $step = 1;
 
     public ?int $service_type_id = null;
@@ -39,12 +40,12 @@ new class extends Component {
     public bool $bookingComplete = false;
 
     /**
-     * Check if the selected service has price tiers (exclusive booking mode).
+     * Check if the selected service is exclusive (one booking per slot).
      */
     #[Computed]
     public function isExclusiveService(): bool
     {
-        return $this->selectedService?->priceTiers()->exists() ?? false;
+        return $this->selectedService?->is_exclusive ?? false;
     }
 
     #[Computed]
@@ -52,28 +53,28 @@ new class extends Component {
     {
         return ServiceType::whereHas('services', function ($query) {
             $query->where('is_active', true)
-                  ->whereHas('schedules', fn($q) => $q->where('is_active', true));
+                ->whereHas('schedules', fn ($q) => $q->where('is_active', true));
         })->get();
     }
 
     #[Computed]
     public function filteredServices(): Collection
     {
-        if ( ! $this->service_type_id) {
+        if (! $this->service_type_id) {
             return new Collection;
         }
 
         return Service::with(['coach', 'priceTiers'])
-                      ->where('is_active', true)
-                      ->where('service_type_id', $this->service_type_id)
-                      ->whereHas('schedules', fn($query) => $query->where('is_active', true))
-                      ->get();
+            ->where('is_active', true)
+            ->where('service_type_id', $this->service_type_id)
+            ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
+            ->get();
     }
 
     #[Computed]
     public function selectedService(): ?Service
     {
-        if ( ! $this->service_id) {
+        if (! $this->service_id) {
             return null;
         }
 
@@ -88,10 +89,10 @@ new class extends Component {
     #[Computed]
     public function availablePriceTiers(): \Illuminate\Support\Collection
     {
-        $service  = $this->selectedService;
+        $service = $this->selectedService;
         $schedule = $this->selectedSchedule;
 
-        if ( ! $service) {
+        if (! $service) {
             return collect();
         }
 
@@ -108,14 +109,14 @@ new class extends Component {
     #[Computed]
     public function activeSchedules(): Collection
     {
-        if ( ! $this->service_id) {
+        if (! $this->service_id) {
             return new Collection;
         }
 
         return Schedule::with('service.coach')
-                       ->where('service_id', $this->service_id)
-                       ->where('is_active', true)
-                       ->get();
+            ->where('service_id', $this->service_id)
+            ->where('is_active', true)
+            ->get();
     }
 
     #[Computed]
@@ -127,15 +128,15 @@ new class extends Component {
             return '';
         }
 
-        $today       = Carbon::today();
-        $endDate     = $today->copy()->addWeeks(4);
+        $today = Carbon::today();
+        $endDate = $today->copy()->addWeeks(4);
         $unavailable = [];
-        $now         = now();
+        $now = now();
         $isExclusive = $this->isExclusiveService;
 
         for ($date = $today->copy(); $date->lte($endDate); $date->addDay()) {
             $hasAvailableSlot = false;
-            $isToday          = $date->isToday();
+            $isToday = $date->isToday();
 
             foreach ($schedules as $schedule) {
                 $matchesDay = false;
@@ -157,18 +158,18 @@ new class extends Component {
                     if ($isExclusive) {
                         // For exclusive services: check if ANY booking exists
                         $hasBooking = Booking::where('schedule_id', $schedule->id)
-                                             ->whereDate('booking_date', $date->toDateString())
-                                             ->exists();
+                            ->whereDate('booking_date', $date->toDateString())
+                            ->exists();
 
-                        if ( ! $hasBooking) {
+                        if (! $hasBooking) {
                             $hasAvailableSlot = true;
                             break;
                         }
                     } else {
                         // For regular services: check remaining capacity
                         $bookedParticipants = Booking::where('schedule_id', $schedule->id)
-                                                     ->whereDate('booking_date', $date->toDateString())
-                                                     ->sum('participant_count');
+                            ->whereDate('booking_date', $date->toDateString())
+                            ->sum('participant_count');
 
                         $remaining = $schedule->max_capacity - $bookedParticipants;
 
@@ -180,7 +181,7 @@ new class extends Component {
                 }
             }
 
-            if ( ! $hasAvailableSlot) {
+            if (! $hasAvailableSlot) {
                 $unavailable[] = $date->toDateString();
             }
         }
@@ -194,15 +195,15 @@ new class extends Component {
     #[Computed]
     public function availableTimeSlots(): array
     {
-        if ( ! $this->selectedDate || ! $this->service_id) {
+        if (! $this->selectedDate || ! $this->service_id) {
             return [];
         }
 
-        $date        = Carbon::parse($this->selectedDate);
-        $schedules   = $this->activeSchedules;
-        $slots       = [];
-        $isToday     = $date->isToday();
-        $now         = now();
+        $date = Carbon::parse($this->selectedDate);
+        $schedules = $this->activeSchedules;
+        $slots = [];
+        $isToday = $date->isToday();
+        $now = now();
         $isExclusive = $this->isExclusiveService;
 
         foreach ($schedules as $schedule) {
@@ -225,32 +226,32 @@ new class extends Component {
                 if ($isExclusive) {
                     // For exclusive services: hide slot if ANY booking exists
                     $hasBooking = Booking::where('schedule_id', $schedule->id)
-                                         ->whereDate('booking_date', $date->toDateString())
-                                         ->exists();
+                        ->whereDate('booking_date', $date->toDateString())
+                        ->exists();
 
-                    if ( ! $hasBooking) {
+                    if (! $hasBooking) {
                         $slots[] = [
-                            'schedule_id'  => $schedule->id,
-                            'start_time'   => substr((string) $schedule->start_time, 0, 5),
-                            'coach_name'   => $schedule->service->coach->name,
-                            'remaining'    => $schedule->max_capacity,
+                            'schedule_id' => $schedule->id,
+                            'start_time' => substr((string) $schedule->start_time, 0, 5),
+                            'coach_name' => $schedule->service->coach->name,
+                            'remaining' => $schedule->max_capacity,
                             'max_capacity' => $schedule->max_capacity,
                         ];
                     }
                 } else {
                     // For regular services: check remaining capacity
                     $bookedParticipants = Booking::where('schedule_id', $schedule->id)
-                                                 ->whereDate('booking_date', $date->toDateString())
-                                                 ->sum('participant_count');
+                        ->whereDate('booking_date', $date->toDateString())
+                        ->sum('participant_count');
 
                     $remaining = $schedule->max_capacity - $bookedParticipants;
 
                     if ($remaining >= 1) {
                         $slots[] = [
-                            'schedule_id'  => $schedule->id,
-                            'start_time'   => substr((string) $schedule->start_time, 0, 5),
-                            'coach_name'   => $schedule->service->coach->name,
-                            'remaining'    => $remaining,
+                            'schedule_id' => $schedule->id,
+                            'start_time' => substr((string) $schedule->start_time, 0, 5),
+                            'coach_name' => $schedule->service->coach->name,
+                            'remaining' => $remaining,
                             'max_capacity' => $schedule->max_capacity,
                         ];
                     }
@@ -258,7 +259,7 @@ new class extends Component {
             }
         }
 
-        usort($slots, fn($a, $b) => strcmp($a['start_time'], $b['start_time']));
+        usort($slots, fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
 
         return $slots;
     }
@@ -266,7 +267,7 @@ new class extends Component {
     #[Computed]
     public function selectedSchedule(): ?Schedule
     {
-        if ( ! $this->schedule_id) {
+        if (! $this->schedule_id) {
             return null;
         }
 
@@ -282,8 +283,8 @@ new class extends Component {
     public function updatedServiceId(): void
     {
         $this->participant_count = 1;
-        $this->selectedDate      = null;
-        $this->schedule_id       = null;
+        $this->selectedDate = null;
+        $this->schedule_id = null;
         unset(
             $this->activeSchedules,
             $this->unavailableDates,
@@ -295,7 +296,7 @@ new class extends Component {
 
     public function updatedSelectedDate(): void
     {
-        $this->schedule_id       = null;
+        $this->schedule_id = null;
         $this->participant_count = 1;
         unset($this->availableTimeSlots, $this->availablePriceTiers);
     }
@@ -316,27 +317,27 @@ new class extends Component {
         if ($this->step === 1) {
             $this->validate([
                 'service_type_id' => ['required', 'exists:service_types,id'],
-                'service_id'      => ['required', 'exists:services,id'],
+                'service_id' => ['required', 'exists:services,id'],
             ], [
                 'service_type_id.required' => __('Jums ir jāizvēlās nodarbība.'),
-                'service_id.required'      => __('Jums ir jāizvēlās treniņš.'),
+                'service_id.required' => __('Jums ir jāizvēlās treniņš.'),
             ]);
         }
 
         if ($this->step === 2) {
             $rules = [
                 'selectedDate' => ['required', 'date'],
-                'schedule_id'  => ['required', 'exists:schedules,id'],
+                'schedule_id' => ['required', 'exists:schedules,id'],
             ];
 
             $messages = [
                 'selectedDate.required' => __('Datums ir obligāts.'),
-                'schedule_id.required'  => __('Laika slots ir obligāts.'),
+                'schedule_id.required' => __('Laika slots ir obligāts.'),
             ];
 
             // For exclusive services, validate participant count
             if ($this->isExclusiveService && count($this->availablePriceTiers) > 1) {
-                $rules['participant_count']             = ['required', 'integer', 'min:1'];
+                $rules['participant_count'] = ['required', 'integer', 'min:1'];
                 $messages['participant_count.required'] = __('Dalībnieku skaits ir obligāts.');
             }
 
@@ -345,20 +346,20 @@ new class extends Component {
 
         if ($this->step === 3) {
             $this->validate([
-                'name'    => ['required', 'string', 'max:255'],
+                'name' => ['required', 'string', 'max:255'],
                 'surname' => ['required', 'string', 'max:255'],
-                'phone'   => ['required', 'string', 'max:50'],
-                'email'   => ['required', 'email', 'max:255'],
+                'phone' => ['required', 'string', 'max:50'],
+                'email' => ['required', 'email', 'max:255'],
             ], [
-                'name.required'    => __('Vārds ir obligāts.'),
-                'name.max'         => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
+                'name.required' => __('Vārds ir obligāts.'),
+                'name.max' => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
                 'surname.required' => __('Uzvārds ir obligāts.'),
-                'surname.max'      => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
-                'phone.required'   => __('Tālrunis ir obligāts.'),
-                'phone.max'        => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
-                'email.required'   => __('E-pasts ir obligāts.'),
-                'email.email'      => __('E-pastam jābūt derīgai e-pasta adresei.'),
-                'email.max'        => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
+                'surname.max' => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+                'phone.required' => __('Tālrunis ir obligāts.'),
+                'phone.max' => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
+                'email.required' => __('E-pasts ir obligāts.'),
+                'email.email' => __('E-pastam jābūt derīgai e-pasta adresei.'),
+                'email.max' => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
             ]);
         }
 
@@ -380,9 +381,9 @@ new class extends Component {
             if ($isExclusive) {
                 // For exclusive services: fail if ANY booking exists
                 $hasBooking = Booking::where('schedule_id', $this->schedule_id)
-                                     ->whereDate('booking_date', $this->selectedDate)
-                                     ->lockForUpdate()
-                                     ->exists();
+                    ->whereDate('booking_date', $this->selectedDate)
+                    ->lockForUpdate()
+                    ->exists();
 
                 if ($hasBooking) {
                     return null;
@@ -395,9 +396,9 @@ new class extends Component {
             } else {
                 // For regular services: check remaining capacity
                 $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
-                                             ->whereDate('booking_date', $this->selectedDate)
-                                             ->lockForUpdate()
-                                             ->sum('participant_count');
+                    ->whereDate('booking_date', $this->selectedDate)
+                    ->lockForUpdate()
+                    ->sum('participant_count');
 
                 $remaining = $schedule->max_capacity - $bookedParticipants;
 
@@ -407,18 +408,18 @@ new class extends Component {
             }
 
             return Booking::create([
-                'schedule_id'       => $this->schedule_id,
-                'booking_date'      => $this->selectedDate,
-                'name'              => $this->name,
-                'surname'           => $this->surname,
-                'phone'             => $this->phone,
-                'email'             => $this->email,
+                'schedule_id' => $this->schedule_id,
+                'booking_date' => $this->selectedDate,
+                'name' => $this->name,
+                'surname' => $this->surname,
+                'phone' => $this->phone,
+                'email' => $this->email,
                 'participant_count' => $this->participant_count,
-                'payment_status'    => PaymentStatus::Pending,
+                'payment_status' => PaymentStatus::Pending,
             ]);
         });
 
-        if ( ! $booking) {
+        if (! $booking) {
             $this->addError('schedule_id', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
             $this->step = 2;
 
@@ -461,13 +462,13 @@ new class extends Component {
     {
         $service = $this->selectedService;
 
-        if ( ! $service) {
+        if (! $service) {
             return 0;
         }
 
         $tier = $service->priceTiers()
-                        ->where('participant_count', $this->participant_count)
-                        ->first();
+            ->where('participant_count', $this->participant_count)
+            ->first();
 
         return $tier?->price ?? $service->price;
     }

@@ -24,7 +24,18 @@ class ServiceFactory extends Factory
             'name' => fake()->words(3, true),
             'price' => fake()->numberBetween(500, 10000),
             'is_active' => true,
+            'is_exclusive' => false,
             'position' => 0,
         ];
+    }
+
+    /**
+     * Mark the service as exclusive (one booking per slot).
+     */
+    public function exclusive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_exclusive' => true,
+        ]);
     }
 }

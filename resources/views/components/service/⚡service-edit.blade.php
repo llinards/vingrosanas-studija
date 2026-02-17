@@ -23,6 +23,7 @@ new class extends Component
         $this->coach_id = $service->coach_id;
         $this->price = (string) ($service->price / 100);
         $this->is_active = $service->is_active;
+        $this->is_exclusive = $service->is_exclusive;
 
         // Load existing price tiers (excluding the base 1-participant tier)
         $this->priceTiers = $service->priceTiers()
@@ -49,6 +50,7 @@ new class extends Component
                     'coach_id' => $this->coach_id,
                     'price' => (int) round($this->price * 100),
                     'is_active' => $this->is_active,
+                    'is_exclusive' => $this->is_exclusive,
                 ]);
 
                 // Update the base 1-participant tier

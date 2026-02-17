@@ -23,6 +23,7 @@ new class extends Component
                     'coach_id' => $this->coach_id,
                     'price' => (int) round($this->price * 100),
                     'is_active' => $this->is_active,
+                    'is_exclusive' => $this->is_exclusive,
                 ]);
 
                 // Create price tier for 1 participant using the base price

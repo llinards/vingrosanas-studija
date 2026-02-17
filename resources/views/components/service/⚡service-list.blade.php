@@ -8,23 +8,24 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     #[Computed]
     public function services(): Collection
     {
         return Service::with(['serviceType', 'coach'])
-                      ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
-                      ->orderBy('service_types.position')
-                      ->orderBy('services.position')
-                      ->select('services.*')
-                      ->get();
+            ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
+            ->orderBy('service_types.position')
+            ->orderBy('services.position')
+            ->select('services.*')
+            ->get();
     }
 
     public function updateServiceTypePosition(int $id, int $position): void
     {
-        $serviceType  = ServiceType::findOrFail($id);
+        $serviceType = ServiceType::findOrFail($id);
         $serviceTypes = ServiceType::query()->orderBy('position')->get();
-        $serviceTypes = $serviceTypes->reject(fn($st) => $st->id === $id);
+        $serviceTypes = $serviceTypes->reject(fn ($st) => $st->id === $id);
         $serviceTypes->splice($position, 0, [$serviceType]);
         $serviceTypes->each(function ($st, $index) {
             $st->update(['position' => $index]);
@@ -40,12 +41,12 @@ new class extends Component {
 
     public function updateServicePosition(int $id, int $position): void
     {
-        $service  = Service::findOrFail($id);
+        $service = Service::findOrFail($id);
         $services = Service::query()
-                           ->where('service_type_id', $service->service_type_id)
-                           ->orderBy('position')
-                           ->get();
-        $services = $services->reject(fn($s) => $s->id === $id);
+            ->where('service_type_id', $service->service_type_id)
+            ->orderBy('position')
+            ->get();
+        $services = $services->reject(fn ($s) => $s->id === $id);
         $services->splice($position, 0, [$service]);
         $services->each(function ($s, $index) {
             $s->update(['position' => $index]);
@@ -131,7 +132,14 @@ new class extends Component {
                                                 <flux:icon.bars-3 class="size-5 text-zinc-400 hover:text-zinc-600"/>
                                             </div>
                                         </flux:table.cell>
-                                        <flux:table.cell>{{ $service->name }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            <div class="flex items-center gap-2">
+                                                {{ $service->name }}
+                                                @if($service->is_exclusive)
+                                                    <flux:badge size="sm" color="purple">{{ __('Individuāls') }}</flux:badge>
+                                                @endif
+                                            </div>
+                                        </flux:table.cell>
                                         <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
                                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
                                         <flux:table.cell>

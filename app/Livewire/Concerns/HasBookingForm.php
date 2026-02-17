@@ -82,12 +82,12 @@ trait HasBookingForm
     }
 
     /**
-     * Check if the selected service has price tiers (exclusive booking mode).
+     * Check if the selected service is exclusive (one booking per slot).
      */
     #[Computed]
     public function isExclusiveService(): bool
     {
-        return $this->selectedService?->priceTiers()->exists() ?? false;
+        return $this->selectedService?->is_exclusive ?? false;
     }
 
     /**

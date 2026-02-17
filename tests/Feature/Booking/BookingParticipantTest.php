@@ -14,7 +14,7 @@ test('booking with multiple participants saves correct participant count', funct
 
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
@@ -65,13 +65,13 @@ test('exclusive service slot is unavailable after any booking is made', function
 
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    // Service marked as exclusive
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
     ]);
 
-    // Service with price tiers = exclusive booking mode
     ServicePriceTier::factory()->create([
         'service_id' => $service->id,
         'participant_count' => 1,
@@ -115,7 +115,8 @@ test('exclusive booking is rejected when slot already has a booking', function (
 
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    // Service marked as exclusive
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
@@ -167,11 +168,12 @@ test('regular service allows multiple bookings until capacity is reached', funct
 
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    // Service WITHOUT price tiers = regular booking mode
+    // Service NOT marked as exclusive (regular booking mode)
     $service = Service::factory()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
+        'is_exclusive' => false,
     ]);
 
     $tomorrow = now()->addDay();
@@ -204,7 +206,7 @@ test('regular service allows multiple bookings until capacity is reached', funct
 test('available price tiers are filtered by schedule max capacity', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
@@ -294,7 +296,7 @@ test('selected price reflects chosen participant count', function () {
 test('changing schedule resets participant count', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
@@ -337,10 +339,11 @@ test('changing schedule resets participant count', function () {
         ->assertSet('participant_count', 1);
 });
 
-test('isExclusiveService returns true for services with price tiers', function () {
+test('isExclusiveService returns true for exclusive services', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
+    // Service marked as exclusive
+    $service = Service::factory()->exclusive()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
@@ -352,12 +355,6 @@ test('isExclusiveService returns true for services with price tiers', function (
         'is_active' => true,
     ]);
 
-    ServicePriceTier::factory()->create([
-        'service_id' => $service->id,
-        'participant_count' => 1,
-        'price' => 2000,
-    ]);
-
     $component = Livewire::test('booking-modal')
         ->set('service_type_id', $serviceType->id)
         ->set('service_id', $service->id);
@@ -365,13 +362,15 @@ test('isExclusiveService returns true for services with price tiers', function (
     expect($component->get('isExclusiveService'))->toBeTrue();
 });
 
-test('isExclusiveService returns false for services without price tiers', function () {
+test('isExclusiveService returns false for non-exclusive services', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
+    // Service NOT marked as exclusive
     $service = Service::factory()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
+        'is_exclusive' => false,
     ]);
 
     Schedule::factory()->create([
@@ -390,11 +389,12 @@ test('isExclusiveService returns false for services without price tiers', functi
 test('regular service capacity calculation sums participant counts from all bookings', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
-    // Service WITHOUT price tiers = regular booking mode
+    // Service NOT marked as exclusive (regular booking mode)
     $service = Service::factory()->create([
         'service_type_id' => $serviceType->id,
         'coach_id' => $coach->id,
         'is_active' => true,
+        'is_exclusive' => false,
     ]);
 
     $tomorrow = now()->addDay();
@@ -434,4 +434,50 @@ test('regular service capacity calculation sums participant counts from all book
     $slots = $component->get('availableTimeSlots');
     expect($slots)->toHaveCount(1)
         ->and($slots[0]['remaining'])->toBe(4);
+});
+
+test('non-exclusive service with price tiers still allows multiple bookings', function () {
+    Mail::fake();
+
+    $coach = Coach::factory()->create();
+    $serviceType = ServiceType::factory()->create();
+    // Service with price tiers but NOT exclusive
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'coach_id' => $coach->id,
+        'is_active' => true,
+        'is_exclusive' => false,
+    ]);
+
+    ServicePriceTier::factory()->create([
+        'service_id' => $service->id,
+        'participant_count' => 1,
+        'price' => 2000,
+    ]);
+
+    $tomorrow = now()->addDay();
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $tomorrow->dayOfWeekIso,
+        'start_time' => '10:00',
+        'is_active' => true,
+        'max_capacity' => 5,
+    ]);
+
+    // Create existing booking
+    Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => $tomorrow->toDateString(),
+        'participant_count' => 2,
+    ]);
+
+    // Slot should still be available (not exclusive, so multiple bookings allowed)
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', $tomorrow->toDateString());
+
+    $slots = $component->get('availableTimeSlots');
+    expect($slots)->toHaveCount(1)
+        ->and($slots[0]['remaining'])->toBe(3);
 });
