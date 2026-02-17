@@ -128,7 +128,6 @@ html {
 body {
     font-family: var(--font-body);
     @apply focus:outline-blue focus:ring-blue;
-
 }
 
 .custom-cursor {
@@ -421,17 +420,13 @@ ul {
 /* ============================================================================
    Footer Overrides
    ========================================================================== */
-
-footer h2 {
-    @apply pb-0;
-}
-
 footer .list-heading {
     @apply lg:text-xl
 }
 
 footer h2 {
-    @apply text-3xl md:text-4xl lg:text-5xl uppercase;
+    @apply pb-0 md:text-4xl lg:text-5xl;
+    @apply text-3xl uppercase;
 }
 
 footer ul {
@@ -444,14 +439,6 @@ footer [data-flux-text] {
 
 footer li [data-flux-link] {
     @apply text-black;
-}
-
-footer [data-flux-link] {
-    @apply text-black;
-}
-
-#copyright [data-flux-link] {
-    @apply text-white hover:text-black
 }
 
 /* ============================================================================
@@ -500,7 +487,7 @@ button {
 .close-button {
     @apply bg-blue rounded-full size-10 flex items-center;
     @apply justify-center transition-colors duration-300;
-    @apply flex items-center justify-center leading-none;
+    @apply leading-none;
 }
 
 .close-button [data-flux-icon] {
