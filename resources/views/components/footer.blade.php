@@ -27,7 +27,7 @@
             <ul>
                 <li class="list-heading">{{ __('Informācija') }}</li>
                 <li>
-                    <flux:link href="#privacy-policy">{{ __('Privātuma politika') }}</flux:link>
+                    <flux:link href="/privacy-policy">{{ __('Privātuma politika') }}</flux:link>
                 </li>
             </ul>
             <ul>

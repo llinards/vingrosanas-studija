@@ -135,6 +135,10 @@ body {
     @apply fixed top-0 left-0 size-6 bg-blue rounded-full;
     @apply pointer-events-none z-50 border;
     @apply opacity-0 border-white;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    max-height: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -157,6 +161,10 @@ body {
 /* ============================================================================
    Flux UI Component Overrides
    ========================================================================== */
+
+ui-modal {
+    display: contents;
+}
 
 /* Form Fields */
 [data-flux-label] {

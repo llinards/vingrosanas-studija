@@ -11,7 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const cursor = document.createElement('div');
         cursor.className = 'custom-cursor';
         cursor.setAttribute('aria-hidden', 'true');
+        // Use popover API to place cursor in the top layer so it appears above native dialogs
+        if (cursor.popover !== undefined) {
+             cursor.popover = "manual";
+        }
         document.body.appendChild(cursor);
+
+        if (cursor.showPopover) {
+            cursor.showPopover();
+        }
 
         let mouseX = 0;
         let mouseY = 0;
@@ -22,6 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
             rafId = null;
             cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
         };
+        
+        // Ensure cursor stays on top of new modals
+        document.addEventListener('toggle', (e) => {
+            if (e.target.tagName === 'DIALOG' && e.target.open && cursor.showPopover) {
+                cursor.hidePopover();
+                cursor.showPopover();
+            }
+        }, { capture: true }); 
 
         window.addEventListener('mousemove', (event) => {
             if (!isActive) {
