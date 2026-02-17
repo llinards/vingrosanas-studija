@@ -48,7 +48,7 @@
             <x-service.new-service-type-modal/>
 
             {{-- Price Tiers Section --}}
-            <flux:separator />
+            <flux:separator/>
 
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -59,7 +59,7 @@
                 </div>
 
                 <flux:text size="sm" class="text-zinc-500">
-                    {{ __('Pievienojiet cenas, ja vēlaties atļaut rezervāciju vairākām personām vienlaikus.') }}
+                    {{ __('Pievieno cenas, ja vēlies atļaut rezervāciju vairākām personām vienlaikus.') }}
                 </flux:text>
 
                 @foreach($this->priceTiers as $index => $tier)
@@ -76,14 +76,15 @@
                         <div class="flex-1">
                             <flux:input
                                 wire:model="priceTiers.{{ $index }}.price"
-                                :label="$index === 0 ? __('Cena (EUR)') : null"
+                                :label="$index === 0 ? __('Cena kopā (EUR)') : null"
                                 type="number"
                                 step="0.01"
                                 min="0"
                                 :placeholder="__('Cena')"
                             />
                         </div>
-                        <flux:button wire:click.prevent="removePriceTier({{ $index }})" variant="ghost" icon="trash" class="text-red-500" />
+                        <flux:button wire:click.prevent="removePriceTier({{ $index }})" variant="ghost" icon="trash"
+                                     class="text-red-500"/>
                     </div>
                 @endforeach
 
@@ -94,7 +95,7 @@
                 @endif
             </div>
 
-            <flux:separator />
+            <flux:separator/>
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
 
