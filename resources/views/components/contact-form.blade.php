@@ -38,9 +38,8 @@
     </div>
 
     {{-- RIGHT PANEL: FORM --}}
-    <form action="#" method="POST" class="flex flex-col items-center justify-center w-full">
-        <div
-            class="w-full border-6 border-blue rounded-4xl bg-white shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
+    <form id="contactForm" action="#" method="POST" class="flex flex-col items-center justify-center w-full">
+        <div class="w-full border-6 border-blue rounded-4xl bg-white shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
             <flux:input type="test" :label="__('Vārds*')" required />
             <flux:input type="test" :label="__('Uzvārds*')" required />
             <flux:input type="email" :label="__('E-pasts*')" required />
@@ -54,4 +53,11 @@
         </div>
         <flux:button type="submit" class="button large primary self-center">{{ __('Nosūtīt') }}</flux:button>
     </form>
+
+    <flux:modal id="confirmModal"
+        class="p-6 md:p-12 lg:p-24 flex flex-col items-center justify-center text-center space-y-6" name="confirm">
+        <flux:icon.check class="check mt-12 md:mt-0" />
+        <flux:heading level="2">{{ __('Tava ziņa ir veiksmīgi nosūtīta!') }}</flux:heading>
+        <flux:text>{{ __('Mēs drīz ar tevi sazināsimies — paldies, ka esi ceļā uz kustību kopā ar mums!') }}</flux:text>
+    </flux:modal>
 </div>

@@ -245,6 +245,11 @@ ui-checkbox {
     @apply text-2xl
 }
 
+#confirmModal [data-flux-text] {
+    font-family: var(--font-heading);
+    @apply uppercase font-semibold;
+}
+
 /* Links */
 [data-flux-link] {
     @apply transition-all duration-300 hover:text-blue;
@@ -252,11 +257,11 @@ ui-checkbox {
 
 /* Icons */
 [data-flux-icon] {
-    @apply hover:text-blue transition-all duration-300 cursor-pointer;
+    @apply transition-all duration-300 cursor-pointer;
 }
 
 header [data-flux-icon] {
-    @apply size-8 text-white;
+    @apply size-8 text-white hover:text-blue;
 }
 
 nav [data-flux-icon] {
@@ -292,6 +297,10 @@ footer [data-flux-icon] {
 
 #videoBanner [data-flux-icon].centered-icon {
     @apply text-blue fill-blue stroke-white hover:opacity-70
+}
+
+#confirmModal .check {
+    @apply bg-blue rounded-full p-2 size-10 md:size-14 flex items-center;
 }
 
 /* Accordion */
@@ -377,6 +386,10 @@ footer h2 {
 
 #aboutUs h2 {
     @apply lg:text-8xl pb-0;
+}
+
+#confirmModal h2 {
+    @apply pb-0;
 }
 
 /* ============================================================================

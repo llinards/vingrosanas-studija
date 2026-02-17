@@ -78,3 +78,9 @@ const odometerNumbers = document.querySelectorAll('.counter-number')
 odometerNumbers.forEach((el) => observer.observe(el));
 
 });
+
+const contactForm = document.getElementById('contactForm');
+contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    Flux.modal('confirm').show()
+})
