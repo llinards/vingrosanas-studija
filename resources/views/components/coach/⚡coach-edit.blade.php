@@ -30,6 +30,9 @@ new class extends Component
 
     public bool $is_active = false;
 
+    /**
+     * Initialize the component with existing coach data.
+     */
     public function mount(Coach $coach): void
     {
         $this->coachId = $coach->id;
@@ -42,6 +45,11 @@ new class extends Component
         $this->is_active = $coach->is_active;
     }
 
+    /**
+     * Get the validation rules for the coach form.
+     *
+     * @return array<string, array<int, mixed>>
+     */
     protected function rules(): array
     {
         return [
@@ -54,6 +62,11 @@ new class extends Component
         ];
     }
 
+    /**
+     * Get the custom validation messages for the coach form.
+     *
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [
@@ -72,17 +85,28 @@ new class extends Component
         ];
     }
 
+    /**
+     * Remove the newly uploaded image from temporary storage.
+     */
     public function removeNewImage(): void
     {
         $this->newImage?->delete();
         $this->newImage = null;
     }
 
+    /**
+     * Mark the existing image for removal on save.
+     */
     public function removeExistingImage(): void
     {
         $this->existingImage = null;
     }
 
+    /**
+     * Validate and save the updated coach data.
+     *
+     * Handles image upload/replacement and cleans up old images when necessary.
+     */
     public function save(): void
     {
         $this->validate();
@@ -145,6 +169,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

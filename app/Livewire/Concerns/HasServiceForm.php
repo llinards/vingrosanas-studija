@@ -29,18 +29,29 @@ trait HasServiceForm
      */
     public array $priceTiers = [];
 
+    /**
+     * Get all available service types for the dropdown.
+     */
     #[Computed]
     public function serviceTypes(): Collection
     {
         return ServiceType::all();
     }
 
+    /**
+     * Get all available coaches for the dropdown.
+     */
     #[Computed]
     public function coaches(): Collection
     {
         return Coach::all();
     }
 
+    /**
+     * Get the validation rules for the service form.
+     *
+     * @return array<string, array<int, mixed>>
+     */
     protected function rules(): array
     {
         return [
@@ -54,6 +65,11 @@ trait HasServiceForm
         ];
     }
 
+    /**
+     * Get the custom validation messages for the service form.
+     *
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [
@@ -75,6 +91,12 @@ trait HasServiceForm
         ];
     }
 
+    /**
+     * Add a new price tier to the service.
+     *
+     * Automatically increments the participant count based on existing tiers,
+     * starting at 2 since 1 is the base price.
+     */
     public function addPriceTier(): void
     {
         // Start at 2 since 1 is the base price
@@ -91,12 +113,22 @@ trait HasServiceForm
         ];
     }
 
+    /**
+     * Remove a price tier from the service by its index.
+     *
+     * Re-indexes the array after removal to maintain sequential keys.
+     */
     public function removePriceTier(int $index): void
     {
         unset($this->priceTiers[$index]);
         $this->priceTiers = array_values($this->priceTiers);
     }
 
+    /**
+     * Create and save a new service type from the modal form.
+     *
+     * After creation, automatically selects the new service type and closes the modal.
+     */
     public function saveServiceType(): void
     {
         $this->validate([

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Coach;
@@ -8,6 +9,16 @@ use App\Models\Service;
 use App\Models\ServiceType;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    // Mock the Stripe checkout session creation to avoid actual API calls
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldReceive('execute')
+        ->andReturn([
+            'url' => 'https://checkout.stripe.com/test',
+            'session_id' => 'cs_test_123',
+        ]);
+});
 
 test('booking is rejected when schedule is at full capacity', function () {
     Mail::fake();
@@ -83,7 +94,7 @@ test('booking succeeds when capacity is available', function () {
         ->set('phone', '+37120000000')
         ->set('email', 'janis@example.com')
         ->call('submitBooking')
-        ->assertSet('bookingComplete', true);
+        ->assertRedirect('https://checkout.stripe.com/test');
 
     expect(Booking::where('schedule_id', $schedule->id)->count())->toBe(4);
 });
@@ -152,7 +163,7 @@ test('available time slots show remaining capacity', function () {
         ->and($slots[0]['start_time'])->toBe('10:00');
 });
 
-test('booking creates record with pending payment status', function () {
+test('booking creates record with pending payment status and expires_at', function () {
     Mail::fake();
 
     $coach = Coach::factory()->create();
@@ -180,12 +191,14 @@ test('booking creates record with pending payment status', function () {
         ->set('surname', 'Bērziņš')
         ->set('phone', '+37120000000')
         ->set('email', 'janis@example.com')
-        ->call('submitBooking');
+        ->call('submitBooking')
+        ->assertRedirect('https://checkout.stripe.com/test');
 
     $booking = Booking::where('schedule_id', $schedule->id)->latest()->first();
     expect($booking)->not->toBeNull()
         ->and($booking->name)->toBe('Jānis')
         ->and($booking->surname)->toBe('Bērziņš')
         ->and($booking->payment_status)->toBe(PaymentStatus::Pending)
-        ->and($booking->booking_date->format('Y-m-d'))->toBe($bookingDate);
+        ->and($booking->booking_date->format('Y-m-d'))->toBe($bookingDate)
+        ->and($booking->expires_at)->not->toBeNull();
 });

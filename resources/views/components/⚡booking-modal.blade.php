@@ -1,8 +1,7 @@
 <?php
 
+use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\PaymentStatus;
-use App\Mail\BookingConfirmation;
-use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Schedule;
 use App\Models\Service;
@@ -11,7 +10,6 @@ use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -374,14 +372,25 @@ new class extends Component
     public function submitBooking(): void
     {
         $isExclusive = $this->isExclusiveService;
+        $price = $this->selectedPrice;
 
         $booking = DB::transaction(function () use ($isExclusive) {
             $schedule = Schedule::findOrFail($this->schedule_id);
 
             if ($isExclusive) {
-                // For exclusive services: fail if ANY booking exists
+                // For exclusive services: fail if ANY booking exists (excluding expired pending ones)
                 $hasBooking = Booking::where('schedule_id', $this->schedule_id)
                     ->whereDate('booking_date', $this->selectedDate)
+                    ->where(function ($query) {
+                        $query->where('payment_status', '!=', PaymentStatus::Pending)
+                            ->orWhere(function ($q) {
+                                $q->where('payment_status', PaymentStatus::Pending)
+                                    ->where(function ($inner) {
+                                        $inner->whereNull('expires_at')
+                                            ->orWhere('expires_at', '>', now());
+                                    });
+                            });
+                    })
                     ->lockForUpdate()
                     ->exists();
 
@@ -394,9 +403,19 @@ new class extends Component
                     return null;
                 }
             } else {
-                // For regular services: check remaining capacity
+                // For regular services: check remaining capacity (excluding expired pending bookings)
                 $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
                     ->whereDate('booking_date', $this->selectedDate)
+                    ->where(function ($query) {
+                        $query->where('payment_status', '!=', PaymentStatus::Pending)
+                            ->orWhere(function ($q) {
+                                $q->where('payment_status', PaymentStatus::Pending)
+                                    ->where(function ($inner) {
+                                        $inner->whereNull('expires_at')
+                                            ->orWhere('expires_at', '>', now());
+                                    });
+                            });
+                    })
                     ->lockForUpdate()
                     ->sum('participant_count');
 
@@ -416,6 +435,7 @@ new class extends Component
                 'email' => $this->email,
                 'participant_count' => $this->participant_count,
                 'payment_status' => PaymentStatus::Pending,
+                'expires_at' => now()->addMinutes(30),
             ]);
         });
 
@@ -426,16 +446,10 @@ new class extends Component
             return;
         }
 
-        $booking->load('schedule.service.coach');
+        // Create Stripe Checkout Session and redirect
+        $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $price);
 
-        Mail::to($this->email)->send(new BookingConfirmation($booking));
-
-        $coachEmail = $booking->schedule->service->coach->email ?? null;
-        if ($coachEmail) {
-            Mail::to($coachEmail)->send(new NewBookingNotification($booking));
-        }
-
-        $this->bookingComplete = true;
+        $this->redirect($checkout['url'], navigate: false);
     }
 
     public function resetModal(): void
@@ -661,9 +675,6 @@ new class extends Component
                             <flux:button wire:click="previousStep"
                                          class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <div class="flex flex-col gap-2">
-                                <flux:button wire:click="submitBooking"
-                                             class="button small primary">{{ __('Apmaksāt uz vietas') }}
-                                </flux:button>
                                 <flux:button wire:click="submitBooking"
                                              class="button small primary">{{ __('Apmaksāt ar karti') }}
                                 </flux:button>

@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\StripeWebhookController;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+
+// Stripe webhook (outside localization group, no CSRF)
+Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::group([
     'prefix' => LaravelLocalization::setLocale(), 'middleware' => [
@@ -19,6 +23,10 @@ Route::group([
     Route::get('/privacy-policy', static function () {
         return view('privacy-policy');
     })->name('privacy-policy');
+
+    Route::get('booking/{booking}/success', static function (App\Models\Booking $booking) {
+        return view('booking.success', ['booking' => $booking]);
+    })->name('booking.success');
 
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
         Route::view('/', 'dashboard.dashboard')->name('dashboard');

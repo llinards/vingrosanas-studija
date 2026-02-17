@@ -10,6 +10,11 @@ new class extends Component
 {
     use HasScheduleForm;
 
+    /**
+     * Validate and create a new schedule.
+     *
+     * Creates either a recurring (day_of_week) or specific date schedule.
+     */
     public function save(): void
     {
         $this->validate();
@@ -41,6 +46,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

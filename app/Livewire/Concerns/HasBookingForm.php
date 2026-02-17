@@ -33,12 +33,20 @@ trait HasBookingForm
 
     public string $payment_status = 'pending';
 
+    /**
+     * Get all available service types for the booking form dropdown.
+     */
     #[Computed]
     public function serviceTypes(): Collection
     {
         return ServiceType::all();
     }
 
+    /**
+     * Get active services filtered by the selected service type.
+     *
+     * Only returns services that have active schedules available.
+     */
     #[Computed]
     public function services(): Collection
     {
@@ -49,6 +57,9 @@ trait HasBookingForm
             ->get();
     }
 
+    /**
+     * Get the currently selected service with its price tiers.
+     */
     #[Computed]
     public function selectedService(): ?Service
     {
@@ -59,6 +70,9 @@ trait HasBookingForm
         return Service::with('priceTiers')->find($this->service_id);
     }
 
+    /**
+     * Get active schedules for the selected service.
+     */
     #[Computed]
     public function schedules(): Collection
     {
@@ -71,6 +85,9 @@ trait HasBookingForm
             ->get();
     }
 
+    /**
+     * Get the currently selected schedule.
+     */
     #[Computed]
     public function selectedSchedule(): ?Schedule
     {
@@ -166,6 +183,11 @@ trait HasBookingForm
             ->all();
     }
 
+    /**
+     * Get the validation rules for the booking form.
+     *
+     * @return array<string, array<int, mixed>>
+     */
     protected function rules(): array
     {
         return [
@@ -181,6 +203,11 @@ trait HasBookingForm
         ];
     }
 
+    /**
+     * Get the custom validation messages for the booking form.
+     *
+     * @return array<string, string>
+     */
     protected function messages(): array
     {
         return [

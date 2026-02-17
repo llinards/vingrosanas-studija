@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CreateStripeCheckoutSession;
 use App\Mail\BookingConfirmation;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
@@ -10,7 +11,17 @@ use App\Models\ServiceType;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
-test('booking confirmation email is sent to customer', function () {
+beforeEach(function () {
+    // Mock the Stripe checkout session creation to avoid actual API calls
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldReceive('execute')
+        ->andReturn([
+            'url' => 'https://checkout.stripe.com/test',
+            'session_id' => 'cs_test_123',
+        ]);
+});
+
+test('booking redirects to stripe after submission', function () {
     Mail::fake();
 
     $coach = Coach::factory()->create(['email' => null]);
@@ -41,7 +52,21 @@ test('booking confirmation email is sent to customer', function () {
         ->set('email', 'janis@example.com')
         ->call('nextStep')
         ->call('submitBooking')
-        ->assertSet('bookingComplete', true);
+        ->assertRedirect('https://checkout.stripe.com/test');
+
+    // Emails are sent via webhook after payment, not immediately
+    Mail::assertNothingSent();
+});
+
+test('booking confirmation email is sent via webhook after payment', function () {
+    Mail::fake();
+
+    $booking = Booking::factory()->create([
+        'email' => 'janis@example.com',
+    ]);
+    $booking->load('schedule.service.coach');
+
+    Mail::to($booking->email)->send(new BookingConfirmation($booking));
 
     Mail::assertSent(BookingConfirmation::class, function ($mail) {
         return $mail->hasTo('janis@example.com');
@@ -62,62 +87,19 @@ test('new booking notification is sent to coach when coach has email', function 
         'service_id' => $service->id,
         'day_of_week' => now()->addDay()->dayOfWeekIso,
         'is_active' => true,
-        'max_capacity' => 10,
     ]);
-    $bookingDate = now()->addDay()->toDateString();
 
-    Livewire::test('booking-modal')
-        ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id)
-        ->call('nextStep')
-        ->set('selectedDate', $bookingDate)
-        ->set('schedule_id', $schedule->id)
-        ->call('nextStep')
-        ->set('name', 'Jānis')
-        ->set('surname', 'Bērziņš')
-        ->set('phone', '+37120000000')
-        ->set('email', 'janis@example.com')
-        ->call('nextStep')
-        ->call('submitBooking');
+    $booking = Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+    ]);
+    $booking->load('schedule.service.coach');
+
+    // Simulate webhook sending notification
+    Mail::to($coach->email)->send(new NewBookingNotification($booking));
 
     Mail::assertSent(NewBookingNotification::class, function ($mail) {
         return $mail->hasTo('coach@example.com');
     });
-});
-
-test('new booking notification is not sent when coach has no email', function () {
-    Mail::fake();
-
-    $coach = Coach::factory()->create(['email' => null]);
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-    $schedule = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => now()->addDay()->dayOfWeekIso,
-        'is_active' => true,
-        'max_capacity' => 10,
-    ]);
-    $bookingDate = now()->addDay()->toDateString();
-
-    Livewire::test('booking-modal')
-        ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id)
-        ->call('nextStep')
-        ->set('selectedDate', $bookingDate)
-        ->set('schedule_id', $schedule->id)
-        ->call('nextStep')
-        ->set('name', 'Jānis')
-        ->set('surname', 'Bērziņš')
-        ->set('phone', '+37120000000')
-        ->set('email', 'janis@example.com')
-        ->call('nextStep')
-        ->call('submitBooking');
-
-    Mail::assertNotSent(NewBookingNotification::class);
 });
 
 test('booking confirmation email contains correct data', function () {

@@ -14,6 +14,11 @@ new class extends Component
     #[Locked]
     public int $scheduleId;
 
+    /**
+     * Initialize the component with existing schedule data.
+     *
+     * Determines schedule type (recurring vs specific) based on day_of_week presence.
+     */
     public function mount(Schedule $schedule): void
     {
         $this->scheduleId = $schedule->id;
@@ -26,6 +31,9 @@ new class extends Component
         $this->is_active = $schedule->is_active;
     }
 
+    /**
+     * Validate and save the updated schedule data.
+     */
     public function save(): void
     {
         $this->validate();
@@ -59,6 +67,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()

@@ -10,6 +10,9 @@ use Livewire\Component;
 
 new class extends Component
 {
+    /**
+     * Get all services ordered by service type position and service position.
+     */
     #[Computed]
     public function services(): Collection
     {
@@ -21,6 +24,11 @@ new class extends Component
             ->get();
     }
 
+    /**
+     * Update the position of a service type within the list.
+     *
+     * Reorders all service types to maintain sequential positions.
+     */
     public function updateServiceTypePosition(int $id, int $position): void
     {
         $serviceType = ServiceType::findOrFail($id);
@@ -39,6 +47,11 @@ new class extends Component
         );
     }
 
+    /**
+     * Update the position of a service within its service type group.
+     *
+     * Reorders services within the same service type to maintain sequential positions.
+     */
     public function updateServicePosition(int $id, int $position): void
     {
         $service = Service::findOrFail($id);
@@ -60,6 +73,9 @@ new class extends Component
         );
     }
 
+    /**
+     * Toggle the active status of a service.
+     */
     public function toggleActive(Service $service): void
     {
         $service->update(['is_active' => ! $service->is_active]);
@@ -72,6 +88,9 @@ new class extends Component
         unset($this->services);
     }
 
+    /**
+     * Delete a service from the database.
+     */
     public function destroy(Service $service): void
     {
         try {

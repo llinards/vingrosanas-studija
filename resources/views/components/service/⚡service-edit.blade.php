@@ -15,6 +15,11 @@ new class extends Component
     #[Locked]
     public int $serviceId;
 
+    /**
+     * Initialize the component with existing service data.
+     *
+     * Loads the service details and price tiers (excluding base tier) into the form.
+     */
     public function mount(Service $service): void
     {
         $this->serviceId = $service->id;
@@ -36,6 +41,11 @@ new class extends Component
             ->toArray();
     }
 
+    /**
+     * Validate and save the updated service data.
+     *
+     * Updates the service, syncs price tiers, and removes any deleted tiers.
+     */
     public function save(): void
     {
         $this->validate();
@@ -97,6 +107,9 @@ new class extends Component
         }
     }
 
+    /**
+     * Render the component view with the page title.
+     */
     public function render(): \Illuminate\View\View
     {
         return $this->view()
