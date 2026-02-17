@@ -21,7 +21,7 @@
             </flux:select>
 
             @if($this->service_id)
-                <flux:select wire:model="schedule_id" :label="__('Grafiks')">
+                <flux:select wire:model.live="schedule_id" :label="__('Grafiks')">
                     <flux:select.option value="">{{ __('Izvēlies grafiku') }}</flux:select.option>
                     @foreach($this->schedules as $schedule)
                         <flux:select.option :value="$schedule->id">
@@ -36,9 +36,40 @@
                     @endforeach
                 </flux:select>
             @endif
-            
+
             <flux:date-picker min="today" placeholder="Rezervācijas datums" :label="__('Rezervācijas datums')"
-                              wire:model="booking_date"/>
+                              wire:model.live="booking_date"/>
+
+            {{-- Warning for exclusive services if slot is already booked --}}
+            @if($this->schedule_id && $this->booking_date && $this->isExclusiveService && $this->isSlotAlreadyBooked)
+                <flux:callout variant="warning" icon="exclamation-triangle">
+                    <flux:callout.heading>{{ __('Uzmanību!') }}</flux:callout.heading>
+                    <flux:callout.text>
+                        {{ __('Šis laiks jau ir rezervēts. Izveidojot jaunu rezervāciju, tiks pievienota papildus rezervācija šim laikam.') }}
+                    </flux:callout.text>
+                </flux:callout>
+            @endif
+
+            {{-- Show remaining capacity for regular services --}}
+            @if($this->schedule_id && $this->booking_date && !$this->isExclusiveService)
+                <flux:text class="text-sm text-zinc-500">
+                    {{ __('Atlikušās vietas') }}: {{ $this->remainingCapacity }}
+                </flux:text>
+            @endif
+
+            {{-- Participant count selection --}}
+            @if($this->schedule_id && $this->isExclusiveService && count($this->availablePriceTiers) > 0)
+                <flux:radio.group wire:model.live="participant_count" :label="__('Dalībnieku skaits')" variant="cards">
+                    @foreach($this->availablePriceTiers as $tier)
+                        <flux:radio :value="$tier->participant_count"
+                                    :label="$tier->participant_count . ' ' . ($tier->participant_count === 1 ? __('persona') : __('personas'))"
+                                    :description="Number::currency($tier->price / 100, 'EUR')"/>
+                    @endforeach
+                </flux:radio.group>
+            @elseif($this->schedule_id && !$this->isExclusiveService)
+                <flux:input type="number" wire:model="participant_count" :label="__('Dalībnieku skaits')"
+                            min="1" :max="$this->remainingCapacity ?: 1"/>
+            @endif
 
             <flux:separator/>
 

@@ -3,8 +3,10 @@
 namespace App\Livewire\Concerns;
 
 use App\Enums\PaymentStatus;
+use App\Models\Booking;
 use App\Models\Schedule;
 use App\Models\Service;
+use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -18,6 +20,8 @@ trait HasBookingForm
     public ?int $schedule_id = null;
 
     public ?string $booking_date = null;
+
+    public int $participant_count = 1;
 
     public string $name = '';
 
@@ -38,11 +42,21 @@ trait HasBookingForm
     #[Computed]
     public function services(): Collection
     {
-        return Service::with('coach')
+        return Service::with(['coach', 'priceTiers'])
             ->where('is_active', true)
             ->when($this->service_type_id, fn ($query) => $query->where('service_type_id', $this->service_type_id))
             ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
             ->get();
+    }
+
+    #[Computed]
+    public function selectedService(): ?Service
+    {
+        if (! $this->service_id) {
+            return null;
+        }
+
+        return Service::with('priceTiers')->find($this->service_id);
     }
 
     #[Computed]
@@ -55,6 +69,87 @@ trait HasBookingForm
         return Schedule::where('service_id', $this->service_id)
             ->where('is_active', true)
             ->get();
+    }
+
+    #[Computed]
+    public function selectedSchedule(): ?Schedule
+    {
+        if (! $this->schedule_id) {
+            return null;
+        }
+
+        return Schedule::find($this->schedule_id);
+    }
+
+    /**
+     * Check if the selected service has price tiers (exclusive booking mode).
+     */
+    #[Computed]
+    public function isExclusiveService(): bool
+    {
+        return $this->selectedService?->priceTiers()->exists() ?? false;
+    }
+
+    /**
+     * Get available price tiers filtered by the selected schedule's max_capacity.
+     *
+     * @return \Illuminate\Support\Collection<int, ServicePriceTier>
+     */
+    #[Computed]
+    public function availablePriceTiers(): \Illuminate\Support\Collection
+    {
+        $service = $this->selectedService;
+        $schedule = $this->selectedSchedule;
+
+        if (! $service) {
+            return collect();
+        }
+
+        $query = $service->priceTiers()->orderBy('participant_count');
+
+        // Filter by schedule's max_capacity if schedule is selected
+        if ($schedule) {
+            $query->where('participant_count', '<=', $schedule->max_capacity);
+        }
+
+        return $query->get();
+    }
+
+    /**
+     * Check if the selected slot is already booked (for exclusive services).
+     */
+    #[Computed]
+    public function isSlotAlreadyBooked(): bool
+    {
+        if (! $this->schedule_id || ! $this->booking_date) {
+            return false;
+        }
+
+        return Booking::where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->exists();
+    }
+
+    /**
+     * Get the remaining capacity for the selected slot.
+     */
+    #[Computed]
+    public function remainingCapacity(): int
+    {
+        if (! $this->schedule_id || ! $this->booking_date) {
+            return 0;
+        }
+
+        $schedule = $this->selectedSchedule;
+        if (! $schedule) {
+            return 0;
+        }
+
+        $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->sum('participant_count');
+
+        return max(0, $schedule->max_capacity - $bookedParticipants);
     }
 
     /**
@@ -77,6 +172,7 @@ trait HasBookingForm
             'service_id' => ['required', 'exists:services,id'],
             'schedule_id' => ['required', 'exists:schedules,id'],
             'booking_date' => ['required', 'date'],
+            'participant_count' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:50'],
@@ -94,6 +190,9 @@ trait HasBookingForm
             'schedule_id.exists' => __('Izvēlētais grafiks neeksistē.'),
             'booking_date.required' => __('Datums ir obligāts.'),
             'booking_date.date' => __('Datumam jābūt derīgam datumam.'),
+            'participant_count.required' => __('Dalībnieku skaits ir obligāts.'),
+            'participant_count.integer' => __('Dalībnieku skaitam jābūt skaitlim.'),
+            'participant_count.min' => __('Dalībnieku skaitam jābūt vismaz 1.'),
             'name.required' => __('Vārds ir obligāts.'),
             'name.max' => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
             'surname.required' => __('Uzvārds ir obligāts.'),

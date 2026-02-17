@@ -9,7 +9,7 @@ use App\Models\ServiceType;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
-test('booking with multiple participants consumes correct capacity', function () {
+test('booking with multiple participants saves correct participant count', function () {
     Mail::fake();
 
     $coach = Coach::factory()->create();
@@ -44,9 +44,9 @@ test('booking with multiple participants consumes correct capacity', function ()
         ->set('step', 4)
         ->set('service_type_id', $serviceType->id)
         ->set('service_id', $service->id)
-        ->set('participant_count', 3)
         ->set('selectedDate', $bookingDate)
         ->set('schedule_id', $schedule->id)
+        ->set('participant_count', 3)
         ->set('name', 'Janis')
         ->set('surname', 'Berzins')
         ->set('phone', '+37120000000')
@@ -60,7 +60,7 @@ test('booking with multiple participants consumes correct capacity', function ()
         ->and($booking->participant_count)->toBe(3);
 });
 
-test('booking is rejected when not enough capacity for participant count', function () {
+test('exclusive service slot is unavailable after any booking is made', function () {
     Mail::fake();
 
     $coach = Coach::factory()->create();
@@ -71,61 +71,7 @@ test('booking is rejected when not enough capacity for participant count', funct
         'is_active' => true,
     ]);
 
-    ServicePriceTier::factory()->create([
-        'service_id' => $service->id,
-        'participant_count' => 1,
-        'price' => 2000,
-    ]);
-
-    ServicePriceTier::factory()->create([
-        'service_id' => $service->id,
-        'participant_count' => 3,
-        'price' => 5000,
-    ]);
-
-    $schedule = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => now()->addDay()->dayOfWeekIso,
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    $bookingDate = now()->addDay()->toDateString();
-
-    // Create existing bookings that consume 3 spots
-    Booking::factory()->create([
-        'schedule_id' => $schedule->id,
-        'booking_date' => $bookingDate,
-        'participant_count' => 3,
-    ]);
-
-    // Try to book for 3 more (only 2 spots remaining)
-    Livewire::test('booking-modal')
-        ->set('step', 4)
-        ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id)
-        ->set('participant_count', 3)
-        ->set('selectedDate', $bookingDate)
-        ->set('schedule_id', $schedule->id)
-        ->set('name', 'Janis')
-        ->set('surname', 'Berzins')
-        ->set('phone', '+37120000000')
-        ->set('email', 'janis@example.com')
-        ->call('submitBooking')
-        ->assertSet('bookingComplete', false)
-        ->assertSet('step', 2);
-
-    expect(Booking::where('schedule_id', $schedule->id)->count())->toBe(1);
-});
-
-test('available time slots filter by participant count', function () {
-    $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
+    // Service with price tiers = exclusive booking mode
     ServicePriceTier::factory()->create([
         'service_id' => $service->id,
         'participant_count' => 1,
@@ -142,41 +88,31 @@ test('available time slots filter by participant count', function () {
     $schedule = Schedule::factory()->create([
         'service_id' => $service->id,
         'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '10:00',
         'is_active' => true,
         'max_capacity' => 5,
     ]);
+    $bookingDate = $tomorrow->toDateString();
 
-    // Create existing booking for 3 participants (2 spots remaining)
+    // Create one booking (this should make the slot unavailable for exclusive services)
     Booking::factory()->create([
         'schedule_id' => $schedule->id,
-        'booking_date' => $tomorrow->toDateString(),
-        'participant_count' => 3,
+        'booking_date' => $bookingDate,
+        'participant_count' => 1,
     ]);
 
-    // With 1 participant, slot should be available
+    // For exclusive services, slot should NOT be available after any booking
     $component = Livewire::test('booking-modal')
         ->set('service_type_id', $serviceType->id)
         ->set('service_id', $service->id)
-        ->set('participant_count', 1)
-        ->set('selectedDate', $tomorrow->toDateString());
-
-    $slots = $component->get('availableTimeSlots');
-    expect($slots)->toHaveCount(1)
-        ->and($slots[0]['remaining'])->toBe(2);
-
-    // With 3 participants, slot should NOT be available (only 2 remaining)
-    $component = Livewire::test('booking-modal')
-        ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id)
-        ->set('participant_count', 3)
-        ->set('selectedDate', $tomorrow->toDateString());
+        ->set('selectedDate', $bookingDate);
 
     $slots = $component->get('availableTimeSlots');
     expect($slots)->toHaveCount(0);
 });
 
-test('available price tiers are shown for service', function () {
+test('exclusive booking is rejected when slot already has a booking', function () {
+    Mail::fake();
+
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
     $service = Service::factory()->create([
@@ -185,10 +121,101 @@ test('available price tiers are shown for service', function () {
         'is_active' => true,
     ]);
 
-    Schedule::factory()->create([
+    ServicePriceTier::factory()->create([
+        'service_id' => $service->id,
+        'participant_count' => 1,
+        'price' => 2000,
+    ]);
+
+    $schedule = Schedule::factory()->create([
         'service_id' => $service->id,
         'day_of_week' => now()->addDay()->dayOfWeekIso,
         'is_active' => true,
+        'max_capacity' => 5,
+    ]);
+    $bookingDate = now()->addDay()->toDateString();
+
+    // Create existing booking
+    Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => $bookingDate,
+        'participant_count' => 1,
+    ]);
+
+    // Try to book the same slot (should fail for exclusive service)
+    Livewire::test('booking-modal')
+        ->set('step', 4)
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', $bookingDate)
+        ->set('schedule_id', $schedule->id)
+        ->set('participant_count', 1)
+        ->set('name', 'Janis')
+        ->set('surname', 'Berzins')
+        ->set('phone', '+37120000000')
+        ->set('email', 'janis@example.com')
+        ->call('submitBooking')
+        ->assertSet('bookingComplete', false)
+        ->assertSet('step', 2);
+
+    // Only the original booking should exist
+    expect(Booking::where('schedule_id', $schedule->id)->count())->toBe(1);
+});
+
+test('regular service allows multiple bookings until capacity is reached', function () {
+    Mail::fake();
+
+    $coach = Coach::factory()->create();
+    $serviceType = ServiceType::factory()->create();
+    // Service WITHOUT price tiers = regular booking mode
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'coach_id' => $coach->id,
+        'is_active' => true,
+    ]);
+
+    $tomorrow = now()->addDay();
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $tomorrow->dayOfWeekIso,
+        'start_time' => '10:00',
+        'is_active' => true,
+        'max_capacity' => 5,
+    ]);
+
+    // Create existing booking for 3 participants
+    Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => $tomorrow->toDateString(),
+        'participant_count' => 3,
+    ]);
+
+    // Slot should still be available with 2 remaining spots
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', $tomorrow->toDateString());
+
+    $slots = $component->get('availableTimeSlots');
+    expect($slots)->toHaveCount(1)
+        ->and($slots[0]['remaining'])->toBe(2);
+});
+
+test('available price tiers are filtered by schedule max capacity', function () {
+    $coach = Coach::factory()->create();
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'coach_id' => $coach->id,
+        'is_active' => true,
+    ]);
+
+    $tomorrow = now()->addDay();
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $tomorrow->dayOfWeekIso,
+        'is_active' => true,
+        'max_capacity' => 2, // Only allows up to 2 participants
     ]);
 
     ServicePriceTier::factory()->create([
@@ -209,19 +236,19 @@ test('available price tiers are shown for service', function () {
         'price' => 4500,
     ]);
 
+    // After selecting schedule, only tiers with participant_count <= max_capacity should show
     $component = Livewire::test('booking-modal')
         ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id);
+        ->set('service_id', $service->id)
+        ->set('selectedDate', $tomorrow->toDateString())
+        ->set('schedule_id', $schedule->id);
 
     $tiers = $component->get('availablePriceTiers');
 
-    expect($tiers)->toHaveCount(3)
+    // Only 2 tiers should be available (1 and 2 participants)
+    expect($tiers)->toHaveCount(2)
         ->and($tiers[0]->participant_count)->toBe(1)
-        ->and($tiers[0]->price)->toBe(2000)
-        ->and($tiers[1]->participant_count)->toBe(2)
-        ->and($tiers[1]->price)->toBe(3500)
-        ->and($tiers[2]->participant_count)->toBe(3)
-        ->and($tiers[2]->price)->toBe(4500);
+        ->and($tiers[1]->participant_count)->toBe(2);
 });
 
 test('selected price reflects chosen participant count', function () {
@@ -264,7 +291,7 @@ test('selected price reflects chosen participant count', function () {
     expect($component->get('selectedPrice'))->toBe(3500);
 });
 
-test('changing participant count resets date and schedule selection', function () {
+test('changing schedule resets participant count', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
     $service = Service::factory()->create([
@@ -273,9 +300,18 @@ test('changing participant count resets date and schedule selection', function (
         'is_active' => true,
     ]);
 
-    $schedule = Schedule::factory()->create([
+    $tomorrow = now()->addDay();
+    $schedule1 = Schedule::factory()->create([
         'service_id' => $service->id,
-        'day_of_week' => now()->addDay()->dayOfWeekIso,
+        'day_of_week' => $tomorrow->dayOfWeekIso,
+        'start_time' => '10:00',
+        'is_active' => true,
+    ]);
+
+    $schedule2 = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $tomorrow->dayOfWeekIso,
+        'start_time' => '14:00',
         'is_active' => true,
     ]);
 
@@ -294,14 +330,14 @@ test('changing participant count resets date and schedule selection', function (
     Livewire::test('booking-modal')
         ->set('service_type_id', $serviceType->id)
         ->set('service_id', $service->id)
-        ->set('selectedDate', now()->addDay()->toDateString())
-        ->set('schedule_id', $schedule->id)
+        ->set('selectedDate', $tomorrow->toDateString())
+        ->set('schedule_id', $schedule1->id)
         ->set('participant_count', 2)
-        ->assertSet('selectedDate', null)
-        ->assertSet('schedule_id', null);
+        ->set('schedule_id', $schedule2->id)
+        ->assertSet('participant_count', 1);
 });
 
-test('capacity calculation sums participant counts from all bookings', function () {
+test('isExclusiveService returns true for services with price tiers', function () {
     $coach = Coach::factory()->create();
     $serviceType = ServiceType::factory()->create();
     $service = Service::factory()->create([
@@ -310,10 +346,55 @@ test('capacity calculation sums participant counts from all bookings', function 
         'is_active' => true,
     ]);
 
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => now()->addDay()->dayOfWeekIso,
+        'is_active' => true,
+    ]);
+
     ServicePriceTier::factory()->create([
         'service_id' => $service->id,
         'participant_count' => 1,
         'price' => 2000,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id);
+
+    expect($component->get('isExclusiveService'))->toBeTrue();
+});
+
+test('isExclusiveService returns false for services without price tiers', function () {
+    $coach = Coach::factory()->create();
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'coach_id' => $coach->id,
+        'is_active' => true,
+    ]);
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => now()->addDay()->dayOfWeekIso,
+        'is_active' => true,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id);
+
+    expect($component->get('isExclusiveService'))->toBeFalse();
+});
+
+test('regular service capacity calculation sums participant counts from all bookings', function () {
+    $coach = Coach::factory()->create();
+    $serviceType = ServiceType::factory()->create();
+    // Service WITHOUT price tiers = regular booking mode
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'coach_id' => $coach->id,
+        'is_active' => true,
     ]);
 
     $tomorrow = now()->addDay();
@@ -348,7 +429,6 @@ test('capacity calculation sums participant counts from all bookings', function 
     $component = Livewire::test('booking-modal')
         ->set('service_type_id', $serviceType->id)
         ->set('service_id', $service->id)
-        ->set('participant_count', 1)
         ->set('selectedDate', $tomorrow->toDateString());
 
     $slots = $component->get('availableTimeSlots');

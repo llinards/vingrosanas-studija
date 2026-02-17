@@ -6,20 +6,46 @@ use Flux\Flux;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use HasBookingForm;
 
     public function updatedServiceTypeId(): void
     {
         $this->service_id = null;
         $this->schedule_id = null;
-        unset($this->services, $this->schedules);
+        $this->participant_count = 1;
+        unset(
+            $this->services,
+            $this->schedules,
+            $this->selectedService,
+            $this->isExclusiveService,
+            $this->availablePriceTiers
+        );
     }
 
     public function updatedServiceId(): void
     {
         $this->schedule_id = null;
-        unset($this->schedules);
+        $this->participant_count = 1;
+        unset(
+            $this->schedules,
+            $this->selectedService,
+            $this->selectedSchedule,
+            $this->isExclusiveService,
+            $this->availablePriceTiers
+        );
+    }
+
+    public function updatedScheduleId(): void
+    {
+        $this->participant_count = 1;
+        unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
+    }
+
+    public function updatedBookingDate(): void
+    {
+        unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
     }
 
     public function save(): void
@@ -30,6 +56,7 @@ new class extends Component {
             Booking::create([
                 'schedule_id' => $this->schedule_id,
                 'booking_date' => $this->booking_date,
+                'participant_count' => $this->participant_count,
                 'name' => $this->name,
                 'surname' => $this->surname,
                 'phone' => $this->phone,
@@ -57,7 +84,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title(__('Pievienot jaunu rezervāciju'));
+            ->title(__('Pievienot jaunu rezervāciju'));
     }
 };
 ?>
