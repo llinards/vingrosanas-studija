@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CreateStripeCheckoutSession;
 use App\Models\Booking;
 use App\Models\Coach;
 use App\Models\Schedule;
@@ -8,6 +9,16 @@ use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    // Mock the Stripe checkout session creation to avoid actual API calls
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldReceive('execute')
+        ->andReturn([
+            'url' => 'https://checkout.stripe.com/test',
+            'session_id' => 'cs_test_123',
+        ]);
+});
 
 test('booking with multiple participants saves correct participant count', function () {
     Mail::fake();
@@ -52,7 +63,7 @@ test('booking with multiple participants saves correct participant count', funct
         ->set('phone', '+37120000000')
         ->set('email', 'janis@example.com')
         ->call('submitBooking')
-        ->assertSet('bookingComplete', true);
+        ->assertRedirect('https://checkout.stripe.com/test');
 
     $booking = Booking::where('schedule_id', $schedule->id)->first();
 
