@@ -662,9 +662,6 @@ new class extends Component
                                          class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <div class="flex flex-col gap-2">
                                 <flux:button wire:click="submitBooking"
-                                             class="button small primary">{{ __('Apmaksāt uz vietas') }}
-                                </flux:button>
-                                <flux:button wire:click="submitBooking"
                                              class="button small primary">{{ __('Apmaksāt ar karti') }}
                                 </flux:button>
                             </div>
