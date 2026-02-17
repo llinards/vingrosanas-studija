@@ -161,8 +161,19 @@ body {
    Flux UI Component Overrides
    ========================================================================== */
 
+/* Flux UI Component Overrides */
 ui-modal {
     display: contents;
+}
+
+/* Prevent hidden dialogs from blocking page interaction */
+[data-flux-modal]>dialog:not([open]) {
+    display: none;
+    pointer-events: none;
+}
+
+[data-flux-modal]>dialog[open] {
+    pointer-events: auto;
 }
 
 /* Form Fields */
