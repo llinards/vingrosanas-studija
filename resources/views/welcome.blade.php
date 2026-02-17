@@ -1,9 +1,7 @@
 <x-layouts.main :title="__('Sākums')">
 
     {{-- HEADER --}}
-    <x-header>
-        <x-nav />
-    </x-header>
+    <x-header />
 
     {{-- WORKOUT CAROUSEL --}}
     <div>
@@ -26,11 +24,8 @@
     {{-- VIDEO BANNER --}}
     <x-video-banner />
 
-    {{-- SLOGAN AND ACHIEVEMENT COUNTER --}}
-    <x-achievement />
-
-    {{-- CTA --}}
-    <x-banner-with-cta />
+    {{-- SLOGAN --}}
+    <x-slogan />
 
     {{-- COACHES --}}
     <livewire:coaches />
@@ -53,10 +48,9 @@
     {{-- FORM --}}
     <x-contact-form />
 
-    {{-- FOOTER --}}
-    <x-footer />
-
     {{-- BOOKING MODAL --}}
     <livewire:booking-modal />
+
+    <x-EXTRA-booking-modal />
 
 </x-layouts.main>

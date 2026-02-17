@@ -2,8 +2,8 @@
     <div class="container mx-auto px-4">
         <div
             class="flex flex-col space-y-2 md:space-y-0 md:flex-row text-center md:text-right items-center justify-between border-y border-black py-3">
-            <div class="w-36">
-                <img src="{{ asset('images/vingrosanas_studija_logo.svg') }}" alt="">
+            <div class="w-26">
+                <img src="{{ asset('images/vingrosanas_studija_logo-blue.svg') }}" alt="">
             </div>
             <flux:heading level="2">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
         </div>
@@ -12,7 +12,7 @@
             <ul>
                 <li class="list-heading">{{ __('Menu') }}</li>
                 <li>
-                    <flux:link href="#about-us">{{ __('Par mums') }}</flux:link>
+                    <flux:link href="#aboutUs">{{ __('Par mums') }}</flux:link>
                 </li>
                 <li>
                     <flux:link href="#coaches">{{ __('Treneri') }}</flux:link>
@@ -27,7 +27,7 @@
             <ul>
                 <li class="list-heading">{{ __('Informācija') }}</li>
                 <li>
-                    <flux:link href="#privacy-policy">{{ __('Privātuma politika') }}</flux:link>
+                    <flux:link href="/privacy-policy">{{ __('Privātuma politika') }}</flux:link>
                 </li>
             </ul>
             <ul>
@@ -62,7 +62,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-black py-6">
+    <div id="copyright" class="bg-blue py-6">
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}
             </flux:text>

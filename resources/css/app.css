@@ -83,8 +83,8 @@
     /* Brand Colors */
     --color-blue: #518BA9;
     --color-beige: #E3E3DE;
-    --color-gray: #393B3899;
     --color-body: #efefe5;
+    --color-gray: #585858;
 
     /* Zinc Scale (Flux UI Default) */
     --color-zinc-50: #fafafa;
@@ -122,13 +122,30 @@
    ========================================================================== */
 
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: smooth; 
 }
 
 body {
     font-family: var(--font-body);
     @apply focus:outline-blue focus:ring-blue;
 
+}
+
+.custom-cursor {
+    @apply fixed top-0 left-0 size-6 bg-blue rounded-full;
+    @apply pointer-events-none z-50 border;
+    @apply opacity-0 border-white;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    max-height: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    body.custom-cursor-active,
+    body.custom-cursor-active * {
+        cursor: none !important;
+    }
 }
 
 .container {
@@ -139,14 +156,20 @@ body {
     display: none !important
 }
 
+
+
 /* ============================================================================
    Flux UI Component Overrides
    ========================================================================== */
 
+ui-modal {
+    display: contents;
+}
+
 /* Form Fields */
 [data-flux-label] {
     font-family: var(--font-heading);
-    @apply uppercase text-base font-bold;
+    @apply uppercase text-base font-bold text-gray;
 }
 
 ui-checkbox {
@@ -184,6 +207,14 @@ ui-checkbox {
     @apply font-semibold;
 }
 
+#slogan h2 {
+    @apply pb-6 text-blue;
+}
+
+#slogan [data-flux-link] {
+    @apply uppercase underline;
+}
+
 #quote [data-flux-text] {
     @apply text-white
 }
@@ -194,45 +225,6 @@ ui-checkbox {
     @apply uppercase text-3xl md:text-4xl;
     @apply lg:text-5xl xl:text-6xl leading-normal;
 }
-
-/* #counter - numbers and meaning */
-#counter [data-flux-text],
-#counter [data-flux-link] {
-    @apply uppercase text-center
-}
-
-#counter [data-flux-text].counter-number,
-#counter [data-flux-text].counter-indicator {
-    font-family: var(--font-heading-bold);
-    @apply uppercase text-7xl text-center;
-}
-
-#counter [data-flux-text].counter-indicator {
-    @apply mb-1
-}
-
-/* Odometer inserts a block-level .odometer-inside wrapper; make it inline so the suffix stays on the same line. */
-#counter .counter-number.odometer .odometer-inside {
-    @apply inline-block;
-}
-
-/* Prevent wrapping between the number and its suffix */
-#counter .counter-number[data-suffix] {
-    @apply whitespace-nowrap;
-}
-
-/* When the animation ends, odometer uses an absolutely-positioned “last value”.
-   Without left/right it snaps to the left edge of the digit container. */
-.odometer.odometer-auto-theme .odometer-digit .odometer-value.odometer-last-value,
-.odometer.odometer-theme-default .odometer-digit .odometer-value.odometer-last-value {
-    left: 0;
-    right: 0;
-}
-
-#counter [data-flux-heading] {
-    @apply pb-6
-}
-
 
 /* #quote - owner title */
 #quote [data-flux-text]:nth-of-type(2) {
@@ -245,6 +237,11 @@ ui-checkbox {
     @apply text-2xl
 }
 
+#confirmModal [data-flux-text] {
+    font-family: var(--font-heading);
+    @apply uppercase font-semibold text-gray;
+}
+
 /* Links */
 [data-flux-link] {
     @apply transition-all duration-300 hover:text-blue;
@@ -252,11 +249,11 @@ ui-checkbox {
 
 /* Icons */
 [data-flux-icon] {
-    @apply hover:text-blue transition-all duration-300 cursor-pointer;
+    @apply transition-all duration-300 cursor-pointer;
 }
 
 header [data-flux-icon] {
-    @apply size-8 text-white;
+    @apply size-8 text-white hover:text-blue;
 }
 
 nav [data-flux-icon] {
@@ -277,7 +274,7 @@ footer [data-flux-icon] {
 }
 
 #quote [data-flux-icon],
-#videoBanner [data-flux-icon] {
+.video-banner [data-flux-icon] {
     @apply fill-blue size-12 md:size-14 lg:size-16 xl:size-18;
 }
 
@@ -290,8 +287,12 @@ footer [data-flux-icon] {
     @apply text-white p-3;
 }
 
-#videoBanner [data-flux-icon].centered-icon {
+.video-banner [data-flux-icon].centered-icon {
     @apply text-blue fill-blue stroke-white hover:opacity-70
+}
+
+#confirmModal .check {
+    @apply bg-blue rounded-full p-2 size-10 md:size-14 flex items-center;
 }
 
 /* Accordion */
@@ -342,25 +343,25 @@ footer [data-flux-icon] {
 h1 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-[5rem];
-    @apply uppercase text-white tracking-wide;
+    @apply uppercase tracking-wide text-gray;
     @apply leading-tight;
+}
+
+header h1 {
+    @apply text-white
 }
 
 h2 {
     font-family: var(--font-heading);
     @apply text-5xl md:text-6xl lg:text-7xl;
-    @apply uppercase text-black pb-6 md:pb-12;
+    @apply uppercase text-gray pb-6 md:pb-12;
     @apply leading-tight;
 }
 
 h3 {
     font-family: var(--font-heading);
     @apply text-2xl md:text-3xl lg:text-4xl;
-    @apply uppercase text-black;
-}
-
-footer h2 {
-    @apply pb-0;
+    @apply uppercase text-gray;
 }
 
 [data-flux-modal-trigger] h3 {
@@ -377,6 +378,10 @@ footer h2 {
 
 #aboutUs h2 {
     @apply lg:text-8xl pb-0;
+}
+
+#confirmModal h2 {
+    @apply pb-0;
 }
 
 /* ============================================================================
@@ -401,7 +406,7 @@ ul {
 
 .list-heading {
     font-family: var(--font-heading);
-    @apply uppercase text-black font-semibold text-base md:text-xl
+    @apply uppercase text-gray font-semibold text-base md:text-xl
 }
 
 #contactDetails .list-heading {
@@ -412,16 +417,21 @@ ul {
     @apply md:text-xl lg:text-3xl
 }
 
-footer .list-heading {
-    @apply lg:text-xl
-}
 
 /* ============================================================================
    Footer Overrides
    ========================================================================== */
 
 footer h2 {
-    @apply text-3xl md:text-4xl lg:text-5xl uppercase text-black;
+    @apply pb-0;
+}
+
+footer .list-heading {
+    @apply lg:text-xl
+}
+
+footer h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl uppercase;
 }
 
 footer ul {
@@ -434,6 +444,14 @@ footer [data-flux-text] {
 
 footer li [data-flux-link] {
     @apply text-black;
+}
+
+footer [data-flux-link] {
+    @apply text-black;
+}
+
+#copyright [data-flux-link] {
+    @apply text-white hover:text-black
 }
 
 /* ============================================================================
@@ -566,12 +584,9 @@ button {
 
 #workoutCarousel [data-flux-text] {
     font-family: var(--font-heading);
-    @apply uppercase leading-tight py-6 md:py-12
-}
-
-#workoutCarousel [data-flux-text] {
+    @apply uppercase leading-tight py-6 md:py-12;
     @apply text-5xl md:text-6xl lg:text-[5rem];
-
+    @apply text-gray;
 }
 
 #workoutCarousel .f-carousel__slide {

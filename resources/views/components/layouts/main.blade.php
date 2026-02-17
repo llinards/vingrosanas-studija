@@ -6,10 +6,12 @@
 </head>
 
 <body class="bg-body">
-<flux:main class="p-0!">
-    {{$slot}}
-</flux:main>
-@fluxScripts
+    <flux:main class="p-0!">
+        @include('partials.nav')
+        {{$slot}}
+        @include('partials.footer')
+    </flux:main>
+    @fluxScripts
 </body>
 
 </html>

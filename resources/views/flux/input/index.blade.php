@@ -80,7 +80,7 @@ $inputLoadingClasses = Flux::classes()
     ;
 
 $classes = Flux::classes()
-    ->add('w-full border-b block disabled:shadow-none dark:shadow-none')
+    ->add('w-full border-2 border-blue rounded-md block disabled:shadow-none dark:shadow-none')
     ->add('appearance-none') // Without this, input[type="date"] on mobile doesn't respect w-full...
     ->add(match ($size) {
         default => 'text-base sm:text-sm py-2 h-10 leading-[1.375rem]', // This makes the height of the input 40px (same as buttons and such...)
@@ -110,7 +110,7 @@ $classes = Flux::classes()
         'filled'  => 'text-zinc-700 placeholder-zinc-500 disabled:placeholder-zinc-400 dark:text-zinc-200 dark:placeholder-white/60 dark:disabled:placeholder-white/40',
     })
     ->add(match ($variant) { // Border...
-        'outline' => 'border-b-black disabled:border-b-zinc-200 dark:border-white/10 dark:disabled:border-white/5',
+        'outline' => 'disabled:border-b-zinc-200 dark:border-white/10 dark:disabled:border-white/5',
         'filled'  => 'border-0',
     })
     ->add(match ($variant) { // Invalid...
