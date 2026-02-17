@@ -43,7 +43,7 @@
             </flux:navlist>
         </flux:navlist>
         <flux:navlist>
-            <flux:navlist.item href="#about-us" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
+            <flux:navlist.item href="#aboutUs" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
         </flux:navlist>
         <flux:navlist>
             <flux:navlist.item href="#coaches" @click="open = false">{{ __('Treneri') }}</flux:navlist.item>

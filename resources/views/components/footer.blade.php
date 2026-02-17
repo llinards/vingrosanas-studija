@@ -12,7 +12,7 @@
             <ul>
                 <li class="list-heading">{{ __('Menu') }}</li>
                 <li>
-                    <flux:link href="#about-us">{{ __('Par mums') }}</flux:link>
+                    <flux:link href="#aboutUs">{{ __('Par mums') }}</flux:link>
                 </li>
                 <li>
                     <flux:link href="#coaches">{{ __('Treneri') }}</flux:link>

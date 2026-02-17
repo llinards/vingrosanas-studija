@@ -1,6 +1,7 @@
 <flux:modal name="booking-and-consultation-modal">
     <div class="video-banner max-h-196 w-full flex flex-col md:flex-row items-center overflow-hidden"
-        x-data="{ playing: false }">
+        x-data="{ playing: false }"
+        x-on:modal-close.document="if (!$event.detail?.name || $event.detail.name === 'booking-and-consultation-modal') { playing = false; if ($refs.video) { $refs.video.pause(); $refs.video.currentTime = 0; } }">
         {{-- Thumbnail --}}
         <div x-show="!playing" @click="playing = true; $refs.video.play()"
             class="cursor-pointer w-full h-full flex items-center">
@@ -16,12 +17,14 @@
             {{ __('Diemžēl video nav iespējams atskaņot') }}
         </video>
 
-        <div
-            class="md:absolute md:bottom-10 md:left-1/2 md:-translate-x-1/2 z-10 flex flex-col md:flex-row gap-4 w-full bg-blue px-4 md:px-0 py-4 justify-center pointer-events-none">
-            <flux:button class="button large secondary">{{ __('Pieteikties konsultācijai') }}
+        <div class="md:absolute md:bottom-10 md:left-1/2 md:-translate-x-1/2 z-10 flex flex-col md:flex-row gap-4 w-full bg-blue px-4 md:px-0 py-4 justify-center"
+            x-on:click.stop>
+            <flux:button href="#contactForm" class="button large secondary"
+                x-on:click="$flux.modal('booking-and-consultation-modal').close()">{{ __('Pieteikties konsultācijai') }}
             </flux:button>
             <flux:modal.trigger name="booking-modal">
-                <flux:button class="button large secondary">{{ __('Pieteikties apmeklējumam') }}
+                <flux:button x-on:click="$flux.modal('booking-and-consultation-modal').close()"
+                    class="button large secondary">{{ __('Pieteikties apmeklējumam') }}
                 </flux:button>
             </flux:modal.trigger>
         </div>
