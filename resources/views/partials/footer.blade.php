@@ -62,7 +62,7 @@
             </div>
         </div>
     </div>
-    <div class="bg-blue py-6">
+    <div id="copyright" class="bg-blue py-6">
         <div class="container mx-auto space-y-2 text-center">
             <flux:text>{{ __('© VINGROŠANAS STUDIJA :year | Visas tiesības rezervētas.', ['year' => now()->year]) }}
             </flux:text>

@@ -446,6 +446,14 @@ footer li [data-flux-link] {
     @apply text-black;
 }
 
+footer [data-flux-link] {
+    @apply text-black;
+}
+
+#copyright [data-flux-link] {
+    @apply text-white hover:text-black
+}
+
 /* ============================================================================
    Button Variants
    ========================================================================== */
