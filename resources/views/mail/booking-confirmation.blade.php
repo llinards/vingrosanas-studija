@@ -11,6 +11,8 @@ Paldies par rezervāciju!
 - **Laiks:** {{ substr($booking->schedule->start_time, 0, 5) }}
 - **Cena:** {{ number_format($booking->schedule->service->price / 100, 2) }} EUR
 
+Jūs varat atcelt rezervāciju ne vēlāk kā 24 stundas pirms nodarbības sākuma.
+
 <x-mail::button :url="route('booking.success', ['booking' => $booking, 'session_id' => $booking->stripe_checkout_session_id])">
 Rezervācijas informācija
 </x-mail::button>
