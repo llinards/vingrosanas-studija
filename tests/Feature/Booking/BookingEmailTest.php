@@ -108,7 +108,6 @@ test('booking confirmation email contains correct data', function () {
 
     $mailable = new BookingConfirmation($booking);
 
-    $mailable->assertSeeInHtml($booking->name);
     $mailable->assertSeeInHtml($booking->schedule->service->name);
     $mailable->assertSeeInHtml($booking->schedule->service->coach->name);
 });

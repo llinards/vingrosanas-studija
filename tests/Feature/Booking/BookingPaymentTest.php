@@ -61,9 +61,11 @@ test('booking model correctly identifies expired status', function () {
 });
 
 test('booking success page displays booking details', function () {
-    $booking = Booking::factory()->paid()->create();
+    $booking = Booking::factory()->paid()->create([
+        'stripe_checkout_session_id' => 'cs_test_123',
+    ]);
 
-    $this->get(route('booking.success', $booking))
+    $this->get(route('booking.success', ['booking' => $booking, 'session_id' => 'cs_test_123']))
         ->assertSuccessful()
         ->assertSee($booking->schedule->service->name);
 });
@@ -71,9 +73,10 @@ test('booking success page displays booking details', function () {
 test('booking success page shows processing message for pending bookings', function () {
     $booking = Booking::factory()->create([
         'payment_status' => PaymentStatus::Pending,
+        'stripe_checkout_session_id' => 'cs_test_456',
     ]);
 
-    $this->get(route('booking.success', $booking))
+    $this->get(route('booking.success', ['booking' => $booking, 'session_id' => 'cs_test_456']))
         ->assertSuccessful()
         ->assertSee(__('Maksājums tiek apstrādāts'));
 });
