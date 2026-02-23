@@ -1,7 +1,7 @@
 <x-mail::message>
 # Jauna rezervācija
 
-Jums ir jauna rezervācija!
+Tev ir jauna rezervācija!
 
 **Klienta informācija:**
 

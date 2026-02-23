@@ -5,6 +5,8 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use App\Models\Booking;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -24,9 +26,19 @@ Route::group([
         return view('privacy-policy');
     })->name('privacy-policy');
 
-    Route::get('booking/{booking}/success', static function (Booking $booking) {
+    Route::get('booking/{booking}/success', static function (Booking $booking, Request $request) {
+        if ($request->filled('session_id')) {
+            if ($request->session_id !== $booking->stripe_checkout_session_id) {
+                abort(404);
+            }
+        } else {
+            if ( ! Auth::check() || Auth::user()->email !== $booking->email) {
+                abort(404);
+            }
+        }
+
         return view('booking.success', ['booking' => $booking]);
-    })->name('booking.success');
+    })->name('booking.success')->withTrashed();
 
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
         Route::view('/', 'dashboard.dashboard')->name('dashboard');
@@ -51,14 +63,14 @@ Route::group([
         Route::livewire('settings/profile', Profile::class)->name('settings.profile');
         Route::livewire('settings/password', Password::class)->name('settings.password');
         Route::livewire('settings/two-factor', TwoFactor::class)
-            ->middleware(
-                when(
-                    Features::canManageTwoFactorAuthentication()
-                    && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                    ['password.confirm'],
-                    [],
-                ),
-            )
-            ->name('settings.two-factor');
+             ->middleware(
+                 when(
+                     Features::canManageTwoFactorAuthentication()
+                     && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
+                     ['password.confirm'],
+                     [],
+                 ),
+             )
+             ->name('settings.two-factor');
     });
 });
