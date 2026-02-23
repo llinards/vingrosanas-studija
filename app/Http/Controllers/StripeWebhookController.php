@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentStatus;
 use App\Mail\BookingConfirmation;
+use App\Mail\BookingRefunded;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use Illuminate\Http\Request;
@@ -33,6 +35,7 @@ class StripeWebhookController extends Controller
         return match ($event->type) {
             'checkout.session.completed' => $this->handleCheckoutSessionCompleted($event->data->object),
             'checkout.session.expired' => $this->handleCheckoutSessionExpired($event->data->object),
+            'charge.refunded' => $this->handleChargeRefunded($event->data->object),
             default => response('Webhook received', 200),
         };
     }
@@ -109,5 +112,51 @@ class StripeWebhookController extends Controller
         }
 
         return response('Session expiry noted', 200);
+    }
+
+    /**
+     * Handle a charge refund event (e.g. refund initiated from Stripe dashboard).
+     */
+    private function handleChargeRefunded(object $charge): Response
+    {
+        $paymentIntent = $charge->payment_intent ?? null;
+
+        if (! $paymentIntent) {
+            Log::warning('Stripe charge.refunded without payment_intent', [
+                'charge_id' => $charge->id ?? null,
+            ]);
+
+            return response('Missing payment_intent', 400);
+        }
+
+        $booking = Booking::where('payment_reference', $paymentIntent)->first();
+
+        if (! $booking) {
+            Log::warning('Booking not found for refunded charge', [
+                'payment_intent' => $paymentIntent,
+            ]);
+
+            return response('Booking not found', 404);
+        }
+
+        // Already marked as refunded (e.g. refund initiated from admin panel)
+        if ($booking->payment_status === PaymentStatus::Refunded) {
+            return response('Already refunded', 200);
+        }
+
+        $refundId = $charge->refunds->data[0]->id ?? 're_unknown';
+
+        $booking->markAsRefunded($refundId);
+
+        $booking->load('schedule.service.coach');
+        Mail::to($booking->email)->send(new BookingRefunded($booking));
+
+        Log::info('Booking refunded via Stripe dashboard', [
+            'booking_id' => $booking->id,
+            'refund_id' => $refundId,
+            'payment_intent' => $paymentIntent,
+        ]);
+
+        return response('Refund processed', 200);
     }
 }

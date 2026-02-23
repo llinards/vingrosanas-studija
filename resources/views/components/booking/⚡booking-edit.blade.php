@@ -1,14 +1,16 @@
 <?php
 
+use App\Actions\RefundBooking;
+use App\Exceptions\RefundNotAllowedException;
 use App\Livewire\Concerns\HasBookingForm;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     use HasBookingForm;
 
     #[Locked]
@@ -21,17 +23,17 @@ new class extends Component
     {
         $booking->load('schedule.service');
 
-        $this->bookingId = $booking->id;
-        $this->service_type_id = $booking->schedule->service->service_type_id;
-        $this->service_id = $booking->schedule->service_id;
-        $this->schedule_id = $booking->schedule_id;
-        $this->booking_date = $booking->booking_date->format('Y-m-d');
+        $this->bookingId         = $booking->id;
+        $this->service_type_id   = $booking->schedule->service->service_type_id;
+        $this->service_id        = $booking->schedule->service_id;
+        $this->schedule_id       = $booking->schedule_id;
+        $this->booking_date      = $booking->booking_date->format('Y-m-d');
         $this->participant_count = $booking->participant_count;
-        $this->name = $booking->name;
-        $this->surname = $booking->surname;
-        $this->phone = $booking->phone;
-        $this->email = $booking->email;
-        $this->payment_status = $booking->payment_status->value;
+        $this->name              = $booking->name;
+        $this->surname           = $booking->surname;
+        $this->phone             = $booking->phone;
+        $this->email             = $booking->email;
+        $this->payment_status    = $booking->payment_status->value;
     }
 
     /**
@@ -39,8 +41,8 @@ new class extends Component
      */
     public function updatedServiceTypeId(): void
     {
-        $this->service_id = null;
-        $this->schedule_id = null;
+        $this->service_id        = null;
+        $this->schedule_id       = null;
         $this->participant_count = 1;
         unset(
             $this->services,
@@ -56,7 +58,7 @@ new class extends Component
      */
     public function updatedServiceId(): void
     {
-        $this->schedule_id = null;
+        $this->schedule_id       = null;
         $this->participant_count = 1;
         unset(
             $this->schedules,
@@ -89,14 +91,14 @@ new class extends Component
      */
     public function getIsSlotAlreadyBookedProperty(): bool
     {
-        if (! $this->schedule_id || ! $this->booking_date) {
+        if ( ! $this->schedule_id || ! $this->booking_date) {
             return false;
         }
 
         return Booking::where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->exists();
+                      ->whereDate('booking_date', $this->booking_date)
+                      ->where('id', '!=', $this->bookingId)
+                      ->exists();
     }
 
     /**
@@ -104,21 +106,65 @@ new class extends Component
      */
     public function getRemainingCapacityProperty(): int
     {
-        if (! $this->schedule_id || ! $this->booking_date) {
+        if ( ! $this->schedule_id || ! $this->booking_date) {
             return 0;
         }
 
         $schedule = $this->selectedSchedule;
-        if (! $schedule) {
+        if ( ! $schedule) {
             return 0;
         }
 
         $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->sum('participant_count');
+                                     ->whereDate('booking_date', $this->booking_date)
+                                     ->where('id', '!=', $this->bookingId)
+                                     ->sum('participant_count');
 
         return max(0, $schedule->max_capacity - $bookedParticipants);
+    }
+
+    /**
+     * Check if the current booking is eligible for refund.
+     */
+    #[Computed]
+    public function isRefundable(): bool
+    {
+        $booking = Booking::with('schedule')->find($this->bookingId);
+
+        return $booking ? $booking->isRefundable() : false;
+    }
+
+    /**
+     * Process a refund for the current booking.
+     */
+    public function refund(): void
+    {
+        $booking = Booking::findOrFail($this->bookingId);
+
+        try {
+            app(RefundBooking::class)->execute($booking);
+
+            Flux::toast(
+                text: __('Rezervācija veiksmīgi atmaksāta!'),
+                variant: 'success',
+            );
+
+            $this->redirect(route('admin.bookings.index'), navigate: true);
+        } catch (RefundNotAllowedException $e) {
+            Flux::toast(
+                text: __('Atmaksa nav iespējama. Līdz pakalpojumam jābūt vairāk nekā 24 stundām.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            Flux::toast(
+                text: __('Neizdevās veikt atmaksu. Lūdzu, mēģini vēlreiz.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        }
     }
 
     /**
@@ -132,14 +178,14 @@ new class extends Component
             $booking = Booking::findOrFail($this->bookingId);
 
             $booking->update([
-                'schedule_id' => $this->schedule_id,
-                'booking_date' => $this->booking_date,
+                'schedule_id'       => $this->schedule_id,
+                'booking_date'      => $this->booking_date,
                 'participant_count' => $this->participant_count,
-                'name' => $this->name,
-                'surname' => $this->surname,
-                'phone' => $this->phone,
-                'email' => $this->email,
-                'payment_status' => $this->payment_status,
+                'name'              => $this->name,
+                'surname'           => $this->surname,
+                'phone'             => $this->phone,
+                'email'             => $this->email,
+                'payment_status'    => $this->payment_status,
             ]);
 
             Flux::toast(
@@ -165,10 +211,32 @@ new class extends Component
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-            ->title(__('Rediģēt rezervāciju'));
+                    ->title(__('Rediģēt rezervāciju'));
     }
 };
 ?>
 
 
-<x-booking.booking-form :heading="__('Rediģēt rezervāciju')"/>
+<div>
+    <x-booking.booking-form :heading="__('Rediģēt rezervāciju')"/>
+
+    @if($this->isRefundable)
+        <div class="flex min-h-full flex-col items-center justify-center px-6">
+            <div class="w-full max-w-2xl">
+                <flux:separator class="my-6"/>
+
+                <flux:heading level="2" size="lg" class="mb-4">{{ __('Atmaksa') }}</flux:heading>
+
+                <flux:text class="mb-4">
+                    {{ __('Atmaksa ir iespējama, jo līdz pakalpojumam ir vairāk nekā 24 stundas.') }}
+                </flux:text>
+                <flux:button wire:click="refund"
+                             wire:confirm="{{__('Vai tiešām vēlies veikt atmaksu un atcelt rezervāciju?')}}"
+                             variant="danger"
+                             icon="arrow-uturn-left">
+                    {{ __('Veikt atmaksu') }}
+                </flux:button>
+            </div>
+        </div>
+    @endif
+</div>

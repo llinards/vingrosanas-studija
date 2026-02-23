@@ -56,6 +56,20 @@
                     </flux:button>
                 </div>
             </div>
+        @elseif($booking->payment_status->value === 'refunded')
+            <div class="md:max-w-1/3 mx-auto">
+                <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-4">
+                    <flux:icon.receipt-refund class="size-12 text-blue mx-auto mb-4"/>
+                    <flux:heading level="3"
+                                  class="text-center">{{ __('Rezervācija ir atcelta un tās apmaksa tiks atgriezta!') }}</flux:heading>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <flux:button href="{{ route('home') }}" class="button large primary">
+                        {{ __('Atgriezties uz sākumu') }}
+                    </flux:button>
+                </div>
+            </div>
         @else
             <div class="md:max-w-1/3 mx-auto">
                 <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-4">

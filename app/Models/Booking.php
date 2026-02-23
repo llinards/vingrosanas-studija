@@ -52,6 +52,45 @@ class Booking extends Model
         ]);
     }
 
+    /**
+     * Check if the booking is eligible for a refund.
+     *
+     * A booking can be refunded if it is paid and the service
+     * is more than 24 hours away.
+     */
+    public function isRefundable(): bool
+    {
+        if ($this->payment_status !== PaymentStatus::Paid) {
+            return false;
+        }
+
+        if (! $this->payment_reference) {
+            return false;
+        }
+
+        return $this->getServiceDateTime()->isAfter(now()->addHours(24));
+    }
+
+    /**
+     * Mark the booking as refunded with the given refund reference.
+     */
+    public function markAsRefunded(string $refundReference): void
+    {
+        $this->update([
+            'payment_status' => PaymentStatus::Refunded,
+            'refund_reference' => $refundReference,
+            'refunded_at' => now(),
+        ]);
+    }
+
+    /**
+     * Get the full service date and time as a Carbon instance.
+     */
+    public function getServiceDateTime(): \Illuminate\Support\Carbon
+    {
+        return $this->booking_date->copy()->setTimeFromTimeString($this->schedule->start_time);
+    }
+
     protected function casts(): array
     {
         return [
@@ -59,6 +98,7 @@ class Booking extends Model
             'booking_date' => 'date',
             'participant_count' => 'integer',
             'expires_at' => 'datetime',
+            'refunded_at' => 'datetime',
         ];
     }
 }
