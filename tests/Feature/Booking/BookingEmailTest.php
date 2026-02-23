@@ -108,8 +108,8 @@ test('booking confirmation email contains correct data', function () {
 
     $mailable = new BookingConfirmation($booking);
 
-    $mailable->assertSeeInHtml($booking->schedule->service->name);
-    $mailable->assertSeeInHtml($booking->schedule->service->coach->name);
+    $mailable->assertSeeInHtml($booking->schedule->service->name, escape: false);
+    $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
 });
 
 test('new booking notification email contains customer data', function () {
@@ -118,8 +118,8 @@ test('new booking notification email contains customer data', function () {
 
     $mailable = new NewBookingNotification($booking);
 
-    $mailable->assertSeeInHtml($booking->name);
-    $mailable->assertSeeInHtml($booking->surname);
-    $mailable->assertSeeInHtml($booking->phone);
-    $mailable->assertSeeInHtml($booking->email);
+    $mailable->assertSeeInHtml($booking->name, escape: false);
+    $mailable->assertSeeInHtml($booking->surname, escape: false);
+    $mailable->assertSeeInHtml($booking->phone, escape: false);
+    $mailable->assertSeeInHtml($booking->email, escape: false);
 });
