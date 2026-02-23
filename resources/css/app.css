@@ -352,7 +352,7 @@ footer [data-flux-icon] {
 
 h1 {
     font-family: var(--font-heading);
-    @apply text-5xl md:text-6xl lg:text-[5rem];
+    @apply text-4xl md:text-6xl lg:text-[5rem];
     @apply uppercase tracking-wide text-gray;
     @apply leading-tight;
 }
@@ -363,7 +363,7 @@ header h1 {
 
 h2 {
     font-family: var(--font-heading);
-    @apply text-5xl md:text-6xl lg:text-7xl;
+    @apply text-3xl md:text-6xl lg:text-7xl;
     @apply uppercase text-gray pb-6 md:pb-12;
     @apply leading-tight;
 }
@@ -379,7 +379,7 @@ h3 {
 }
 
 #coaches [data-flux-modal] h2 {
-    @apply text-4xl md:text-6xl lg:text-7xl;
+    @apply text-3xl md:text-6xl lg:text-7xl;
 }
 
 [data-flux-accordion-item] h2 {
@@ -583,7 +583,7 @@ button {
 #workoutCarousel [data-flux-text] {
     font-family: var(--font-heading);
     @apply uppercase leading-tight py-6 md:py-12;
-    @apply text-5xl md:text-6xl lg:text-[5rem];
+    @apply text-4xl md:text-6xl lg:text-[5rem];
     @apply text-gray;
 }
 
