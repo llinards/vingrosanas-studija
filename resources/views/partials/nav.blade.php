@@ -49,17 +49,17 @@
                     </flux:navlist>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:navlist.item href="#aboutUs" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
+                    <flux:navlist.item href="/#aboutUs" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:navlist.item href="#coaches" @click="open = false">{{ __('Treneri') }}</flux:navlist.item>
+                    <flux:navlist.item href="/#coaches" @click="open = false">{{ __('Treneri') }}</flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:navlist.item href="#services" @click="open = false">{{ __('Pakalpojumi') }}
+                    <flux:navlist.item href="/#services" @click="open = false">{{ __('Pakalpojumi') }}
                     </flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:navlist.item href="#contactForm" @click="open = false">{{ __('Kontakti') }}
+                    <flux:navlist.item href="/#contactForm" @click="open = false">{{ __('Kontakti') }}
                     </flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist class="nav-icons flex flex-row gap-x-4 absolute bottom-16">
