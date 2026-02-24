@@ -1,10 +1,12 @@
 <?php
 
+use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -13,12 +15,41 @@ new class extends Component
     use WithPagination;
 
     /**
-     * Get paginated bookings ordered by date ascending.
+     * Selected payment statuses for filtering.
+     *
+     * @var array<int, string>
+     */
+    #[Url]
+    public array $paymentStatuses = [];
+
+    /**
+     * Initialize the component with all payment statuses selected.
+     */
+    public function mount(): void
+    {
+        if (empty($this->paymentStatuses)) {
+            $this->paymentStatuses = collect(PaymentStatus::cases())
+                ->map(fn (PaymentStatus $status) => $status->value)
+                ->all();
+        }
+    }
+
+    /**
+     * Reset pagination when filters change.
+     */
+    public function updatedPaymentStatuses(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Get paginated bookings ordered by date ascending, filtered by payment status.
      */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
+            ->whereIn('payment_status', $this->paymentStatuses)
             ->orderBy('booking_date', 'asc')
             ->paginate(10);
     }
@@ -70,6 +101,14 @@ new class extends Component
             </flux:button>
         </div>
     @else
+        <div class="mb-6">
+            <flux:checkbox.group class="flex flex-col" wire:model.live="paymentStatuses" label="{{ __('Maksājuma statusi') }}">
+                @foreach(PaymentStatus::cases() as $status)
+                    <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}" />
+                @endforeach
+            </flux:checkbox.group>
+        </div>
+
         @if($this->bookings->isEmpty())
             <flux:text class="text-center py-8">{{ __('Nav nevienas rezervācijas.') }}</flux:text>
         @else

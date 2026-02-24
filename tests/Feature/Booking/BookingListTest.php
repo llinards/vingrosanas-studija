@@ -147,3 +147,78 @@ test('booking list includes today bookings', function () {
     // Today's booking should come before past booking when sorted by date ascending
     expect($bookings->contains('id', $todayBooking->id))->toBeTrue();
 });
+
+test('booking list initializes with all payment statuses selected', function () {
+    $component = Livewire::test('booking.booking-list');
+
+    $expectedStatuses = collect(PaymentStatus::cases())
+        ->map(fn (PaymentStatus $status) => $status->value)
+        ->all();
+
+    expect($component->instance()->paymentStatuses)->toBe($expectedStatuses);
+});
+
+test('booking list filters bookings by selected payment statuses', function () {
+    $paidBooking = Booking::factory()->paid()->create();
+    $pendingBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    $failedBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paymentStatuses', [PaymentStatus::Paid->value]);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($paidBooking->id);
+});
+
+test('booking list can filter by multiple payment statuses', function () {
+    Booking::factory()->paid()->create();
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
+    Booking::factory()->refunded()->create();
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paymentStatuses', [PaymentStatus::Paid->value, PaymentStatus::Pending->value]);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(2);
+});
+
+test('booking list shows no bookings when no payment statuses are selected', function () {
+    Booking::factory()->paid()->create();
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paymentStatuses', []);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(0);
+});
+
+test('booking list resets pagination when payment status filter changes', function () {
+    Booking::factory()->paid()->count(15)->create();
+
+    Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2)
+        ->set('paymentStatuses', [PaymentStatus::Paid->value])
+        ->assertSet('paginators.page', 1);
+});
+
+test('booking list payment status filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['paymentStatuses' => [PaymentStatus::Paid->value]])
+        ->test('booking.booking-list')
+        ->assertSet('paymentStatuses', [PaymentStatus::Paid->value]);
+});
+
+test('booking list displays payment status filter checkboxes', function () {
+    Booking::factory()->create();
+
+    $this->get(route('admin.bookings.index'))
+        ->assertSuccessful()
+        ->assertSee('Maksājuma statuss')
+        ->assertSee('Apmaksāts')
+        ->assertSee('Gaida apmaksu')
+        ->assertSee('Neizdevās')
+        ->assertSee('Atmaksāts');
+});
