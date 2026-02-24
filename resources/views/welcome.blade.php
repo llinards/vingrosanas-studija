@@ -48,9 +48,7 @@
     {{-- FORM --}}
     <x-contact-form />
 
-    {{-- BOOKING MODAL --}}
-    <livewire:booking-modal />
-
-    <x-EXTRA-booking-modal />
+    {{--
+    <x-EXTRA-booking-modal /> --}}
 
 </x-layouts.main>
