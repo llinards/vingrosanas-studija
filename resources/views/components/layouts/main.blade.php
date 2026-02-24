@@ -11,6 +11,9 @@
         {{$slot}}
         @include('partials.footer')
     </flux:main>
+
+    {{-- BOOKING MODAL --}}
+    <livewire:booking-modal />
     @fluxScripts
 </body>
 
