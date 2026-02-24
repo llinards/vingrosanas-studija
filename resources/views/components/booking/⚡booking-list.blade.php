@@ -23,6 +23,18 @@ new class extends Component
     public array $paymentStatuses = [];
 
     /**
+     * Whether to show only today's bookings.
+     */
+    #[Url]
+    public bool $todayOnly = false;
+
+    /**
+     * Whether to show only past bookings.
+     */
+    #[Url]
+    public bool $pastOnly = false;
+
+    /**
      * Initialize the component with all payment statuses selected.
      */
     public function mount(): void
@@ -43,13 +55,32 @@ new class extends Component
     }
 
     /**
-     * Get paginated bookings ordered by date ascending, filtered by payment status.
+     * Reset pagination when the today-only filter changes.
+     */
+    public function updatedTodayOnly(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Reset pagination when the past-only filter changes.
+     */
+    public function updatedPastOnly(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Get paginated bookings ordered by date ascending, filtered by payment status and optionally by today's date.
      */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
             ->whereIn('payment_status', $this->paymentStatuses)
+            ->when($this->todayOnly, fn ($query) => $query->whereDate('booking_date', today()))
+            ->when($this->pastOnly, fn ($query) => $query->whereDate('booking_date', '<', today()))
+            ->when(! $this->pastOnly && ! $this->todayOnly, fn ($query) => $query->whereDate('booking_date', '>=', today()))
             ->orderBy('booking_date', 'asc')
             ->paginate(10);
     }
@@ -101,11 +132,16 @@ new class extends Component
             </flux:button>
         </div>
     @else
-        <div class="mb-6">
-            <flux:checkbox.group class="flex flex-col" wire:model.live="paymentStatuses" label="{{ __('Maksājuma statusi') }}">
-                @foreach(PaymentStatus::cases() as $status)
+        <div class="mb-6 flex flex-wrap items-end gap-8">
+            <flux:checkbox.group wire:model.live="paymentStatuses">
+                @foreach(\App\Enums\PaymentStatus::cases() as $status)
                     <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}" />
                 @endforeach
+            </flux:checkbox.group>
+
+            <flux:checkbox.group>
+                <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly" />
+                <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly" />
             </flux:checkbox.group>
         </div>
 
