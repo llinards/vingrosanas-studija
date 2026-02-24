@@ -34,13 +34,13 @@
                     </div>
                 </div>
 
-                <livewire:booking.booking-cancel :booking="$booking" />
-
                 <div class="mt-8 text-center">
                     <flux:button href="{{ route('home') }}" class="button large primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>
+
+                <livewire:booking.booking-cancel :booking="$booking" />
             </div>
         @elseif($booking->payment_status->value === 'failed')
             <div class="md:max-w-1/3 mx-auto">

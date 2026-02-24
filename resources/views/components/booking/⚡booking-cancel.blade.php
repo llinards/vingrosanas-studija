@@ -68,17 +68,19 @@ new class extends Component
     @if($isRefundable)
         <flux:separator class="my-6" />
 
+        <flux:text class="text-center mb-2">
+            {{ __('Vēlaties atcelt rezervāciju?') }}
+        </flux:text>
         <flux:text class="text-center mb-4">
-            {{ __('Vēlaties atcelt rezervāciju? Atmaksa ir iespējama, jo līdz nodarbībai ir vairāk nekā 24 stundas.') }}
+            {{ __('Atcelšana un atmaksa ir iespējama, ja līdz nodarbības sākumam ir vairāk nekā 24h.') }}
         </flux:text>
 
         <div class="text-center">
-            <flux:button wire:click="cancel"
+            <flux:link as="button" wire:click="cancel"
                          wire:confirm="{{ __('Vai tiešām vēlaties atcelt rezervāciju un saņemt atmaksu?') }}"
-                         variant="danger"
-                         icon="x-mark">
+                       icon="arrow-uturn-left">
                 {{ __('Atcelt rezervāciju') }}
-            </flux:button>
+            </flux:link>
         </div>
     @endif
 </div>
