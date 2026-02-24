@@ -10,8 +10,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-new class extends Component
-{
+new class extends Component {
     use WithPagination;
 
     /**
@@ -41,7 +40,7 @@ new class extends Component
     {
         if (empty($this->paymentStatuses)) {
             $this->paymentStatuses = collect(PaymentStatus::cases())
-                ->map(fn (PaymentStatus $status) => $status->value)
+                ->map(fn(PaymentStatus $status) => $status->value)
                 ->all();
         }
     }
@@ -77,12 +76,13 @@ new class extends Component
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
-            ->whereIn('payment_status', $this->paymentStatuses)
-            ->when($this->todayOnly, fn ($query) => $query->whereDate('booking_date', today()))
-            ->when($this->pastOnly, fn ($query) => $query->whereDate('booking_date', '<', today()))
-            ->when(! $this->pastOnly && ! $this->todayOnly, fn ($query) => $query->whereDate('booking_date', '>=', today()))
-            ->orderBy('booking_date', 'asc')
-            ->paginate(10);
+                      ->whereIn('payment_status', $this->paymentStatuses)
+                      ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
+                      ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
+                      ->when(! $this->pastOnly && ! $this->todayOnly,
+                          fn($query) => $query->whereDate('booking_date', '>=', today()))
+                      ->orderBy('booking_date', 'asc')
+                      ->paginate(10);
     }
 
     /**
@@ -135,13 +135,13 @@ new class extends Component
         <div class="mb-6 flex flex-wrap items-end gap-8">
             <flux:checkbox.group wire:model.live="paymentStatuses">
                 @foreach(\App\Enums\PaymentStatus::cases() as $status)
-                    <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}" />
+                    <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
                 @endforeach
             </flux:checkbox.group>
 
             <flux:checkbox.group>
-                <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly" />
-                <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly" />
+                <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
+                <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
             </flux:checkbox.group>
         </div>
 
@@ -153,11 +153,9 @@ new class extends Component
                     <flux:table.column>{{ __('Klients') }}</flux:table.column>
                     <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
                     <flux:table.column>{{ __('Treneris') }}</flux:table.column>
-                    <flux:table.column>{{ __('Datums') }}</flux:table.column>
-                    <flux:table.column>{{ __('Laiks') }}</flux:table.column>
+                    <flux:table.column>{{ __('Pieteicies uz') }}</flux:table.column>
                     <flux:table.column>{{ __('Dalībnieki') }}</flux:table.column>
-                    <flux:table.column>{{ __('Statuss') }}</flux:table.column>
-                    <flux:table.column>{{ __('Darbības') }}</flux:table.column>
+                    <flux:table.column colspan="2">{{ __('Statuss') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach($this->bookings as $booking)
@@ -165,8 +163,8 @@ new class extends Component
                             <flux:table.cell>{{ $booking->name }} {{ $booking->surname }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->schedule->service->name }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->schedule->service->coach->name }}</flux:table.cell>
-                            <flux:table.cell>{{ $booking->booking_date->format('d.m.Y') }}</flux:table.cell>
-                            <flux:table.cell>{{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
+                            <flux:table.cell>{{ $booking->booking_date->format('d.m.Y') }}
+                                / {{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->participant_count }}</flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="match($booking->payment_status->value) {
@@ -179,14 +177,14 @@ new class extends Component
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button href="{{ route('admin.bookings.edit', $booking) }}" variant="primary"
-                                                 size="sm">
-                                        {{ __('Rediģēt') }}
+                                                 size="sm"
+                                                 icon="pencil">
                                     </flux:button>
                                     <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst rezervāciju?') }}"
                                                  variant="danger"
                                                  size="sm"
+                                                 icon="trash"
                                                  wire:click="destroy({{ $booking->id }})">
-                                        {{ __('Dzēst') }}
                                     </flux:button>
                                 </div>
                             </flux:table.cell>
