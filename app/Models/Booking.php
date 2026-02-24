@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,26 @@ class Booking extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    /**
+     * Scope to only include active bookings that occupy capacity.
+     *
+     * Excludes refunded, failed, and expired pending bookings.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereNotIn('payment_status', [
+            PaymentStatus::Refunded,
+            PaymentStatus::Failed,
+        ])->where(function (Builder $query) {
+            $query->where('payment_status', '!=', PaymentStatus::Pending)
+                ->orWhereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        });
     }
 
     /**

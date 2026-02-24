@@ -142,7 +142,8 @@ trait HasBookingForm
             return false;
         }
 
-        return Booking::where('schedule_id', $this->schedule_id)
+        return Booking::active()
+            ->where('schedule_id', $this->schedule_id)
             ->whereDate('booking_date', $this->booking_date)
             ->exists();
     }
@@ -162,7 +163,8 @@ trait HasBookingForm
             return 0;
         }
 
-        $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
+        $bookedParticipants = Booking::active()
+            ->where('schedule_id', $this->schedule_id)
             ->whereDate('booking_date', $this->booking_date)
             ->sum('participant_count');
 

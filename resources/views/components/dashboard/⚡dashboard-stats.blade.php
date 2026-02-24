@@ -159,7 +159,7 @@ new class extends Component
             ->where('is_active', true)
             ->where('day_of_week', $todayDayOfWeek)
             ->withCount(['bookings' => function ($query) {
-                $query->whereDate('booking_date', today());
+                $query->active()->whereDate('booking_date', today());
             }])
             ->get();
 

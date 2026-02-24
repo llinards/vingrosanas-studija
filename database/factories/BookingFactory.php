@@ -51,6 +51,19 @@ class BookingFactory extends Factory
     }
 
     /**
+     * Indicate a refunded booking.
+     */
+    public function refunded(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'payment_status' => PaymentStatus::Refunded,
+            'payment_reference' => 'pi_test_'.fake()->unique()->word(),
+            'refund_reference' => 're_test_'.fake()->unique()->word(),
+            'refunded_at' => now(),
+        ]);
+    }
+
+    /**
      * Indicate a past booking.
      */
     public function past(): static

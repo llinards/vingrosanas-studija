@@ -154,8 +154,9 @@ new class extends Component
                     }
 
                     if ($isExclusive) {
-                        // For exclusive services: check if ANY booking exists
-                        $hasBooking = Booking::where('schedule_id', $schedule->id)
+                        // For exclusive services: check if ANY active booking exists
+                        $hasBooking = Booking::active()
+                            ->where('schedule_id', $schedule->id)
                             ->whereDate('booking_date', $date->toDateString())
                             ->exists();
 
@@ -165,7 +166,8 @@ new class extends Component
                         }
                     } else {
                         // For regular services: check remaining capacity
-                        $bookedParticipants = Booking::where('schedule_id', $schedule->id)
+                        $bookedParticipants = Booking::active()
+                            ->where('schedule_id', $schedule->id)
                             ->whereDate('booking_date', $date->toDateString())
                             ->sum('participant_count');
 
@@ -222,8 +224,9 @@ new class extends Component
                 }
 
                 if ($isExclusive) {
-                    // For exclusive services: hide slot if ANY booking exists
-                    $hasBooking = Booking::where('schedule_id', $schedule->id)
+                    // For exclusive services: hide slot if ANY active booking exists
+                    $hasBooking = Booking::active()
+                        ->where('schedule_id', $schedule->id)
                         ->whereDate('booking_date', $date->toDateString())
                         ->exists();
 
@@ -238,7 +241,8 @@ new class extends Component
                     }
                 } else {
                     // For regular services: check remaining capacity
-                    $bookedParticipants = Booking::where('schedule_id', $schedule->id)
+                    $bookedParticipants = Booking::active()
+                        ->where('schedule_id', $schedule->id)
                         ->whereDate('booking_date', $date->toDateString())
                         ->sum('participant_count');
 
@@ -378,19 +382,10 @@ new class extends Component
             $schedule = Schedule::findOrFail($this->schedule_id);
 
             if ($isExclusive) {
-                // For exclusive services: fail if ANY booking exists (excluding expired pending ones)
-                $hasBooking = Booking::where('schedule_id', $this->schedule_id)
+                // For exclusive services: fail if ANY active booking exists
+                $hasBooking = Booking::active()
+                    ->where('schedule_id', $this->schedule_id)
                     ->whereDate('booking_date', $this->selectedDate)
-                    ->where(function ($query) {
-                        $query->where('payment_status', '!=', PaymentStatus::Pending)
-                            ->orWhere(function ($q) {
-                                $q->where('payment_status', PaymentStatus::Pending)
-                                    ->where(function ($inner) {
-                                        $inner->whereNull('expires_at')
-                                            ->orWhere('expires_at', '>', now());
-                                    });
-                            });
-                    })
                     ->lockForUpdate()
                     ->exists();
 
@@ -403,19 +398,10 @@ new class extends Component
                     return null;
                 }
             } else {
-                // For regular services: check remaining capacity (excluding expired pending bookings)
-                $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
+                // For regular services: check remaining capacity (excluding inactive bookings)
+                $bookedParticipants = Booking::active()
+                    ->where('schedule_id', $this->schedule_id)
                     ->whereDate('booking_date', $this->selectedDate)
-                    ->where(function ($query) {
-                        $query->where('payment_status', '!=', PaymentStatus::Pending)
-                            ->orWhere(function ($q) {
-                                $q->where('payment_status', PaymentStatus::Pending)
-                                    ->where(function ($inner) {
-                                        $inner->whereNull('expires_at')
-                                            ->orWhere('expires_at', '>', now());
-                                    });
-                            });
-                    })
                     ->lockForUpdate()
                     ->sum('participant_count');
 

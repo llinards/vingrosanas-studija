@@ -10,7 +10,8 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
     use HasBookingForm;
 
     #[Locked]
@@ -23,17 +24,17 @@ new class extends Component {
     {
         $booking->load('schedule.service');
 
-        $this->bookingId         = $booking->id;
-        $this->service_type_id   = $booking->schedule->service->service_type_id;
-        $this->service_id        = $booking->schedule->service_id;
-        $this->schedule_id       = $booking->schedule_id;
-        $this->booking_date      = $booking->booking_date->format('Y-m-d');
+        $this->bookingId = $booking->id;
+        $this->service_type_id = $booking->schedule->service->service_type_id;
+        $this->service_id = $booking->schedule->service_id;
+        $this->schedule_id = $booking->schedule_id;
+        $this->booking_date = $booking->booking_date->format('Y-m-d');
         $this->participant_count = $booking->participant_count;
-        $this->name              = $booking->name;
-        $this->surname           = $booking->surname;
-        $this->phone             = $booking->phone;
-        $this->email             = $booking->email;
-        $this->payment_status    = $booking->payment_status->value;
+        $this->name = $booking->name;
+        $this->surname = $booking->surname;
+        $this->phone = $booking->phone;
+        $this->email = $booking->email;
+        $this->payment_status = $booking->payment_status->value;
     }
 
     /**
@@ -41,8 +42,8 @@ new class extends Component {
      */
     public function updatedServiceTypeId(): void
     {
-        $this->service_id        = null;
-        $this->schedule_id       = null;
+        $this->service_id = null;
+        $this->schedule_id = null;
         $this->participant_count = 1;
         unset(
             $this->services,
@@ -58,7 +59,7 @@ new class extends Component {
      */
     public function updatedServiceId(): void
     {
-        $this->schedule_id       = null;
+        $this->schedule_id = null;
         $this->participant_count = 1;
         unset(
             $this->schedules,
@@ -91,14 +92,15 @@ new class extends Component {
      */
     public function getIsSlotAlreadyBookedProperty(): bool
     {
-        if ( ! $this->schedule_id || ! $this->booking_date) {
+        if (! $this->schedule_id || ! $this->booking_date) {
             return false;
         }
 
-        return Booking::where('schedule_id', $this->schedule_id)
-                      ->whereDate('booking_date', $this->booking_date)
-                      ->where('id', '!=', $this->bookingId)
-                      ->exists();
+        return Booking::active()
+            ->where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->where('id', '!=', $this->bookingId)
+            ->exists();
     }
 
     /**
@@ -106,19 +108,20 @@ new class extends Component {
      */
     public function getRemainingCapacityProperty(): int
     {
-        if ( ! $this->schedule_id || ! $this->booking_date) {
+        if (! $this->schedule_id || ! $this->booking_date) {
             return 0;
         }
 
         $schedule = $this->selectedSchedule;
-        if ( ! $schedule) {
+        if (! $schedule) {
             return 0;
         }
 
-        $bookedParticipants = Booking::where('schedule_id', $this->schedule_id)
-                                     ->whereDate('booking_date', $this->booking_date)
-                                     ->where('id', '!=', $this->bookingId)
-                                     ->sum('participant_count');
+        $bookedParticipants = Booking::active()
+            ->where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->where('id', '!=', $this->bookingId)
+            ->sum('participant_count');
 
         return max(0, $schedule->max_capacity - $bookedParticipants);
     }
@@ -178,14 +181,14 @@ new class extends Component {
             $booking = Booking::findOrFail($this->bookingId);
 
             $booking->update([
-                'schedule_id'       => $this->schedule_id,
-                'booking_date'      => $this->booking_date,
+                'schedule_id' => $this->schedule_id,
+                'booking_date' => $this->booking_date,
                 'participant_count' => $this->participant_count,
-                'name'              => $this->name,
-                'surname'           => $this->surname,
-                'phone'             => $this->phone,
-                'email'             => $this->email,
-                'payment_status'    => $this->payment_status,
+                'name' => $this->name,
+                'surname' => $this->surname,
+                'phone' => $this->phone,
+                'email' => $this->email,
+                'payment_status' => $this->payment_status,
             ]);
 
             Flux::toast(
@@ -211,7 +214,7 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title(__('Rediģēt rezervāciju'));
+            ->title(__('Rediģēt rezervāciju'));
     }
 };
 ?>
