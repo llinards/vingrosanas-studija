@@ -2,12 +2,12 @@
    Imports
    ========================================================================== */
 
-@import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
-@import '@fancyapps/ui/dist/carousel/carousel.css';
-@import '@fancyapps/ui/dist/carousel/carousel.dots.css';
-@import '@fancyapps/ui/dist/carousel/carousel.autoplay.css';
-@import 'odometer/themes/odometer-theme-default.css';
+@import "tailwindcss";
+@import "../../vendor/livewire/flux/dist/flux.css";
+@import "@fancyapps/ui/dist/carousel/carousel.css";
+@import "@fancyapps/ui/dist/carousel/carousel.dots.css";
+@import "@fancyapps/ui/dist/carousel/carousel.autoplay.css";
+@import "odometer/themes/odometer-theme-default.css";
 
 /* ============================================================================
    Sources - Tailwind v4 Content Scanning
@@ -29,40 +29,40 @@
    ========================================================================== */
 
 @font-face {
-    font-family: 'Oswald';
-    src: url('fonts/Oswald-Regular.ttf') format('truetype');
+    font-family: "Oswald";
+    src: url("fonts/Oswald-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Oswald';
-    src: url('fonts/Oswald-SemiBold.ttf') format('truetype');
+    font-family: "Oswald";
+    src: url("fonts/Oswald-SemiBold.ttf") format("truetype");
     font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Oswald-SemiBold';
-    src: url('fonts/Oswald-SemiBold.ttf') format('truetype');
+    font-family: "Oswald-SemiBold";
+    src: url("fonts/Oswald-SemiBold.ttf") format("truetype");
     font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Archivo';
-    src: url('fonts/Archivo-Regular.ttf') format('truetype');
+    font-family: "Archivo";
+    src: url("fonts/Archivo-Regular.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
 
 @font-face {
-    font-family: 'Archivo-SemiBold';
-    src: url('fonts/Archivo-SemiBold.ttf') format('truetype');
+    font-family: "Archivo-SemiBold";
+    src: url("fonts/Archivo-SemiBold.ttf") format("truetype");
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -74,15 +74,19 @@
 
 @theme {
     /* Typography */
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-heading: 'Oswald', ui-sans-serif, system-ui, sans-serif;
-    --font-heading-bold: 'Oswald-SemiBold', ui-sans-serif, system-ui, sans-serif;
-    --font-body: 'Archivo', ui-sans-serif, system-ui, sans-serif;
-    --font-body-bold: 'Archivo-SemiBold', ui-sans-serif, system-ui, sans-serif;
+    --font-sans:
+        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+    --font-heading: "Oswald", ui-sans-serif, system-ui, sans-serif;
+    --font-heading-bold:
+        "Oswald-SemiBold", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Archivo", ui-sans-serif, system-ui, sans-serif;
+    --font-body-bold: "Archivo-SemiBold", ui-sans-serif, system-ui, sans-serif;
 
     /* Brand Colors */
-    --color-blue: #518BA9;
-    --color-beige: #E3E3DE;
+    --color-blue: #518ba9;
+    --color-beige: #e3e3de;
     --color-body: #efefe5;
     --color-gray: #585858;
 
@@ -122,7 +126,7 @@
    ========================================================================== */
 
 html {
-    scroll-behavior: smooth; 
+    scroll-behavior: smooth;
 }
 
 body {
@@ -152,10 +156,8 @@ body {
 }
 
 [x-cloak] {
-    display: none !important
+    display: none !important;
 }
-
-
 
 /* ============================================================================
    Flux UI Component Overrides
@@ -167,12 +169,12 @@ ui-modal {
 }
 
 /* Prevent hidden dialogs from blocking page interaction */
-[data-flux-modal]>dialog:not([open]) {
+[data-flux-modal] > dialog:not([open]) {
     display: none;
     pointer-events: none;
 }
 
-[data-flux-modal]>dialog[open] {
+[data-flux-modal] > dialog[open] {
     pointer-events: auto;
 }
 
@@ -226,7 +228,7 @@ ui-checkbox {
 }
 
 #quote [data-flux-text] {
-    @apply text-white
+    @apply text-white;
 }
 
 /* #quote - quote */
@@ -244,7 +246,7 @@ ui-checkbox {
 /* #quote - name */
 #quote [data-flux-text]:nth-of-type(3) {
     font-family: var(--font-body-bold);
-    @apply text-2xl
+    @apply text-2xl;
 }
 
 #confirmModal [data-flux-text] {
@@ -298,7 +300,7 @@ footer [data-flux-icon] {
 }
 
 .video-banner [data-flux-icon].centered-icon {
-    @apply text-blue fill-blue stroke-white hover:opacity-70
+    @apply text-blue fill-blue stroke-white hover:opacity-70;
 }
 
 #confirmModal .check {
@@ -358,7 +360,7 @@ h1 {
 }
 
 header h1 {
-    @apply text-white
+    @apply text-white;
 }
 
 h2 {
@@ -416,7 +418,7 @@ ul {
 
 .list-heading {
     font-family: var(--font-heading);
-    @apply uppercase text-gray font-semibold text-base md:text-xl
+    @apply uppercase text-gray font-semibold text-base md:text-xl;
 }
 
 #contactDetails .list-heading {
@@ -424,15 +426,14 @@ ul {
 }
 
 #contactDetails ul li {
-    @apply md:text-xl lg:text-3xl
+    @apply md:text-xl lg:text-3xl;
 }
-
 
 /* ============================================================================
    Footer Overrides
    ========================================================================== */
 footer .list-heading {
-    @apply lg:text-xl
+    @apply lg:text-xl;
 }
 
 footer h2 {
@@ -456,7 +457,7 @@ footer li [data-flux-link] {
    Button Variants
    ========================================================================== */
 button {
-    @apply cursor-pointer
+    @apply cursor-pointer;
 }
 
 .button {
@@ -475,7 +476,7 @@ button {
 }
 
 .primary {
-    @apply bg-blue border-blue text-white hover:opacity-70
+    @apply bg-blue border-blue text-white hover:opacity-70;
 }
 
 .secondary,
@@ -488,7 +489,7 @@ button {
 }
 
 .secondary:focus {
-    @apply ring-black
+    @apply ring-black;
 }
 
 .tertiary {
@@ -507,7 +508,7 @@ button {
 
 #bookingModal .close-button,
 #coaches .close-button {
-    @apply size-8
+    @apply size-8;
 }
 
 #bookingModal .close-button [data-flux-icon],
@@ -532,25 +533,24 @@ button {
     @apply uppercase;
 }
 
-[data-flux-modal]>dialog::backdrop {
+[data-flux-modal] > dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
 .coach-bio-description h1,
 .coach-bio-description h2,
 .coach-bio-description h3 {
-    @apply pb-3 md:pb-4
+    @apply pb-3 md:pb-4;
 }
 
 .coach-bio-description p {
     @apply font-body text-black text-base md:text-lg;
-    @apply pb-3 md:pb-4
+    @apply pb-3 md:pb-4;
 }
 
 .coach-bio-description ul {
-    @apply list-disc pl-4
+    @apply list-disc pl-4;
 }
-
 
 /* ============================================================================
    Third-Party Component Overrides
@@ -573,7 +573,7 @@ button {
 #ownerCarousel .f-carousel__slide img,
 #workoutCarousel .f-carousel__slide img,
 #galleryCarousel .f-carousel__slide img {
-    @apply w-full h-full object-center object-cover
+    @apply w-full h-full object-center object-cover;
 }
 
 #ownerCarousel {
@@ -592,7 +592,7 @@ button {
 }
 
 #workoutCarousel .f-carousel__slide::after {
-    content: '';
+    content: "";
     @apply mx-6 w-3 h-3 md:w-4;
     @apply md:h-4 lg:w-5 lg:h-5;
     @apply bg-blue rounded-full;
@@ -615,7 +615,6 @@ button {
     #coachCarousel {
         --f-carousel-slide-width: calc((100% - 64px) / 2);
     }
-
 }
 
 @media screen and (max-width: 640px) {

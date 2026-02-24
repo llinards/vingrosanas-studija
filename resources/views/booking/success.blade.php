@@ -34,6 +34,8 @@
                     </div>
                 </div>
 
+                <livewire:booking.booking-cancel :booking="$booking" />
+
                 <div class="mt-8 text-center">
                     <flux:button href="{{ route('home') }}" class="button large primary">
                         {{ __('Atgriezties uz sākumu') }}
