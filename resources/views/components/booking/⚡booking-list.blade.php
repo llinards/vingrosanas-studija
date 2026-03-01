@@ -34,6 +34,12 @@ new class extends Component {
     public bool $pastOnly = false;
 
     /**
+     * Search query for filtering bookings.
+     */
+    #[Url]
+    public string $search = '';
+
+    /**
      * Initialize the component with all payment statuses selected.
      */
     public function mount(): void
@@ -70,12 +76,26 @@ new class extends Component {
     }
 
     /**
+     * Reset pagination when the search filter changes.
+     */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
      * Get paginated bookings ordered by date ascending, filtered by payment status and optionally by today's date.
      */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
+                      ->when($this->search, fn($query) => $query->where(function ($subQuery) {
+                          $subQuery->where('name', 'like', '%'.$this->search.'%')
+                                   ->orWhere('surname', 'like', '%'.$this->search.'%')
+                                   ->orWhere('phone', 'like', '%'.$this->search.'%')
+                                   ->orWhere('email', 'like', '%'.$this->search.'%');
+                      }))
                       ->whereIn('payment_status', $this->paymentStatuses)
                       ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
                       ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
@@ -132,17 +152,22 @@ new class extends Component {
             </flux:button>
         </div>
     @else
-        <div class="mb-6 flex flex-wrap items-end gap-8">
-            <flux:checkbox.group wire:model.live="paymentStatuses">
-                @foreach(\App\Enums\PaymentStatus::cases() as $status)
-                    <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
-                @endforeach
-            </flux:checkbox.group>
+        <div class="mb-6 flex flex-col gap-4">
+            <flux:input prefix-icon="magnifying-glass" type="search"
+                        wire:model.live="search" placeholder="{{ __('Meklēt rezervācijas') }}"/>
 
-            <flux:checkbox.group>
-                <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
-                <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
-            </flux:checkbox.group>
+            <div class="flex flex-wrap items-end gap-8">
+                <flux:checkbox.group wire:model.live="paymentStatuses">
+                    @foreach(\App\Enums\PaymentStatus::cases() as $status)
+                        <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
+                    @endforeach
+                </flux:checkbox.group>
+
+                <flux:checkbox.group>
+                    <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
+                    <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
+                </flux:checkbox.group>
+            </div>
         </div>
 
         @if($this->bookings->isEmpty())
