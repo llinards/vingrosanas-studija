@@ -1,6 +1,6 @@
 @props(['heading'])
 
-<div class="flex min-h-full flex-col items-center justify-center p-6">
+<div class="flex justify-center">
     <div class="w-full max-w-2xl">
         <flux:heading level="1" size="xl" class="mb-6">{{ $heading }}</flux:heading>
 
