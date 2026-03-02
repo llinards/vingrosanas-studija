@@ -7,14 +7,12 @@
 <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50">
     <flux:sidebar.toggle class="lg:hidden" icon="x-mark"/>
 
-    <a href="{{ route('admin.dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+    <a href="{{ route('admin.bookings.index') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
         <x-app-logo/>
     </a>
 
     <flux:navlist variant="outline">
         <flux:navlist.group class="grid">
-            <flux:navlist.item icon="home" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')"
-                               wire:navigate>{{ __('Sākums') }}</flux:navlist.item>
             <flux:navlist.item icon="user" :href="route('admin.coaches.index')" :current="request()->routeIs('admin.coaches.*')"
                                wire:navigate>{{ __('Treneri') }}</flux:navlist.item>
             <flux:navlist.item icon="wrench" :href="route('admin.services.index')"

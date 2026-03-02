@@ -41,7 +41,7 @@ Route::group([
     })->name('booking.success')->withTrashed();
 
     Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-        Route::view('/', 'dashboard.dashboard')->name('dashboard');
+        Route::redirect('/', 'admin/bookings')->name('dashboard');
 
         Route::view('coaches', 'dashboard.coach-list')->name('coaches.index');
         Route::livewire('coaches/create', 'coach.coach-create')->name('coaches.create');
