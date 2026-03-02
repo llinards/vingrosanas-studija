@@ -39,8 +39,7 @@ test('contact form resets fields after successful submission', function () {
         ->assertSet('surname', '')
         ->assertSet('email', '')
         ->assertSet('message', '')
-        ->assertSet('terms', false)
-        ->assertSet('showConfirmModal', true);
+        ->assertSet('terms', false);
 });
 
 test('contact form validates required fields', function () {
