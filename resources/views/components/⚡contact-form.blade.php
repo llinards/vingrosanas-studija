@@ -16,6 +16,8 @@ new class extends Component
 
     public bool $terms = false;
 
+    public bool $showConfirmModal = false;
+
     public function submit(): void
     {
         $this->validate([
@@ -46,9 +48,9 @@ new class extends Component
             )
         );
 
-        $this->reset();
+        $this->reset(['name', 'surname', 'email', 'message', 'terms']);
 
-        Flux::modal('confirm')->show();
+        $this->showConfirmModal = true;
     }
 };
 ?>
@@ -71,8 +73,8 @@ new class extends Component
         <flux:button type="submit" class="button large primary self-center">{{ __('Nosūtīt') }}</flux:button>
     </form>
 
-    <flux:modal id="confirmModal"
-        class="p-6 md:p-12 lg:p-24 flex flex-col items-center justify-center text-center space-y-6" name="confirm">
+    <flux:modal wire:model.self="showConfirmModal" id="confirmModal"
+        class="p-6 md:p-12 lg:p-24 flex flex-col items-center justify-center text-center space-y-6">
         <flux:icon.check class="check mt-12 md:mt-0" />
         <flux:heading level="2">{{ __('Tava ziņa ir veiksmīgi nosūtīta!') }}</flux:heading>
         <flux:text>{{ __('Mēs drīz ar tevi sazināsimies — paldies, ka esi ceļā uz kustību kopā ar mums!') }}
