@@ -22,6 +22,22 @@ class Booking extends Model
     }
 
     /**
+     * Scope to filter bookings by a search term across name, surname, phone, and email.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->where(function (Builder $subQuery) use ($term) {
+            $subQuery->where('name', 'like', '%'.$term.'%')
+                ->orWhere('surname', 'like', '%'.$term.'%')
+                ->orWhere('phone', 'like', '%'.$term.'%')
+                ->orWhere('email', 'like', '%'.$term.'%');
+        });
+    }
+
+    /**
      * Scope to only include active bookings that occupy capacity.
      *
      * Excludes refunded, failed, and expired pending bookings.

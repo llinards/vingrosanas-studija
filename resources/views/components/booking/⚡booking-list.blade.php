@@ -52,33 +52,9 @@ new class extends Component {
     }
 
     /**
-     * Reset pagination when filters change.
+     * Reset pagination when any filter changes.
      */
-    public function updatedPaymentStatuses(): void
-    {
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination when the today-only filter changes.
-     */
-    public function updatedTodayOnly(): void
-    {
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination when the past-only filter changes.
-     */
-    public function updatedPastOnly(): void
-    {
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination when the search filter changes.
-     */
-    public function updatedSearch(): void
+    public function updated(): void
     {
         $this->resetPage();
     }
@@ -90,12 +66,7 @@ new class extends Component {
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
-                      ->when($this->search, fn($query) => $query->where(function ($subQuery) {
-                          $subQuery->where('name', 'like', '%'.$this->search.'%')
-                                   ->orWhere('surname', 'like', '%'.$this->search.'%')
-                                   ->orWhere('phone', 'like', '%'.$this->search.'%')
-                                   ->orWhere('email', 'like', '%'.$this->search.'%');
-                      }))
+                      ->when($this->search, fn($query) => $query->search($this->search))
                       ->whereIn('payment_status', $this->paymentStatuses)
                       ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
                       ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
@@ -154,11 +125,11 @@ new class extends Component {
     @else
         <div class="mb-6 flex flex-col gap-4">
             <flux:input prefix-icon="magnifying-glass" type="search"
-                        wire:model.live="search" placeholder="{{ __('Meklēt rezervācijas') }}"/>
+                        wire:model.live.debounce.300ms="search" placeholder="{{ __('Meklēt rezervācijas') }}"/>
 
             <div class="flex flex-wrap items-end gap-8">
                 <flux:checkbox.group wire:model.live="paymentStatuses">
-                    @foreach(\App\Enums\PaymentStatus::cases() as $status)
+                    @foreach(PaymentStatus::cases() as $status)
                         <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
                     @endforeach
                 </flux:checkbox.group>
