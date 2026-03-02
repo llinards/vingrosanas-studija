@@ -77,6 +77,7 @@ new class extends Component
                 'phone' => $this->phone,
                 'email' => $this->email,
                 'payment_status' => $this->payment_status,
+                'attendance_status' => $this->attendance_status,
             ]);
 
             Flux::toast(

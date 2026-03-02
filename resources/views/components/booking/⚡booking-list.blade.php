@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use Flux\Flux;
@@ -20,6 +21,14 @@ new class extends Component {
      */
     #[Url]
     public array $paymentStatuses = [];
+
+    /**
+     * Selected attendance statuses for filtering.
+     *
+     * @var array<int, string>
+     */
+    #[Url]
+    public array $attendanceStatuses = [];
 
     /**
      * Whether to show only today's bookings.
@@ -49,6 +58,12 @@ new class extends Component {
                 ->map(fn(PaymentStatus $status) => $status->value)
                 ->all();
         }
+
+        if (empty($this->attendanceStatuses)) {
+            $this->attendanceStatuses = collect(AttendanceStatus::cases())
+                ->map(fn(AttendanceStatus $status) => $status->value)
+                ->all();
+        }
     }
 
     /**
@@ -68,6 +83,7 @@ new class extends Component {
         return Booking::with(['schedule.service.coach'])
                       ->when($this->search, fn($query) => $query->search($this->search))
                       ->whereIn('payment_status', $this->paymentStatuses)
+                      ->whereIn('attendance_status', $this->attendanceStatuses)
                       ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
                       ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
                       ->when(! $this->pastOnly && ! $this->todayOnly,
@@ -134,6 +150,12 @@ new class extends Component {
                     @endforeach
                 </flux:checkbox.group>
 
+                <flux:checkbox.group wire:model.live="attendanceStatuses">
+                    @foreach(AttendanceStatus::cases() as $status)
+                        <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
+                    @endforeach
+                </flux:checkbox.group>
+
                 <flux:checkbox.group>
                     <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
                     <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
@@ -151,7 +173,8 @@ new class extends Component {
                     <flux:table.column>{{ __('Treneris') }}</flux:table.column>
                     <flux:table.column>{{ __('Pieteicies uz') }}</flux:table.column>
                     <flux:table.column>{{ __('Dalībnieki') }}</flux:table.column>
-                    <flux:table.column colspan="2">{{ __('Statuss') }}</flux:table.column>
+                    <flux:table.column>{{ __('Maksājums') }}</flux:table.column>
+                    <flux:table.column colspan="2">{{ __('Apmeklējums') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach($this->bookings as $booking)
@@ -169,6 +192,13 @@ new class extends Component {
                                 'failed' => 'red',
                                 'refunded' => 'zinc',
                             }">{{ $booking->payment_status->label() }}</flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <flux:badge size="sm" :color="match($booking->attendance_status->value) {
+                                'attended' => 'green',
+                                'missed' => 'red',
+                                'pending' => 'zinc',
+                            }">{{ $booking->attendance_status->label() }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex gap-2">

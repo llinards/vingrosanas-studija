@@ -35,6 +35,7 @@ new class extends Component
         $this->phone = $booking->phone;
         $this->email = $booking->email;
         $this->payment_status = $booking->payment_status->value;
+        $this->attendance_status = $booking->attendance_status->value;
     }
 
     /**
@@ -189,6 +190,7 @@ new class extends Component
                 'phone' => $this->phone,
                 'email' => $this->email,
                 'payment_status' => $this->payment_status,
+                'attendance_status' => $this->attendance_status,
             ]);
 
             Flux::toast(

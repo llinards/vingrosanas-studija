@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Schedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,6 +27,7 @@ class BookingFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'email' => fake()->safeEmail(),
             'payment_status' => PaymentStatus::Pending,
+            'attendance_status' => AttendanceStatus::Pending,
             'participant_count' => 1,
         ];
     }
@@ -60,6 +62,26 @@ class BookingFactory extends Factory
             'payment_reference' => 'pi_test_'.fake()->unique()->word(),
             'refund_reference' => 're_test_'.fake()->unique()->word(),
             'refunded_at' => now(),
+        ]);
+    }
+
+    /**
+     * Indicate an attended booking.
+     */
+    public function attended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'attendance_status' => AttendanceStatus::Attended,
+        ]);
+    }
+
+    /**
+     * Indicate a missed booking.
+     */
+    public function missed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'attendance_status' => AttendanceStatus::Missed,
         ]);
     }
 

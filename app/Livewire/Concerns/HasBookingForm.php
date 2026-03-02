@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Schedule;
@@ -32,6 +33,8 @@ trait HasBookingForm
     public string $email = '';
 
     public string $payment_status = 'pending';
+
+    public string $attendance_status = 'pending';
 
     /**
      * Get all available service types for the booking form dropdown.
@@ -186,6 +189,20 @@ trait HasBookingForm
     }
 
     /**
+     * @return array<int, array{value: string, label: string}>
+     */
+    #[Computed]
+    public function attendanceStatusOptions(): array
+    {
+        return collect(AttendanceStatus::cases())
+            ->map(fn (AttendanceStatus $status) => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ])
+            ->all();
+    }
+
+    /**
      * Get the validation rules for the booking form.
      *
      * @return array<string, array<int, mixed>>
@@ -202,6 +219,7 @@ trait HasBookingForm
             'phone' => ['required', 'string', 'max:50'],
             'email' => ['required', 'email', 'max:255'],
             'payment_status' => ['required', 'string'],
+            'attendance_status' => ['required', 'string'],
         ];
     }
 
@@ -232,6 +250,7 @@ trait HasBookingForm
             'email.email' => __('E-pastam jābūt derīgai e-pasta adresei.'),
             'email.max' => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
             'payment_status.required' => __('Maksājuma statuss ir obligāts.'),
+            'attendance_status.required' => __('Apmeklējuma statuss ir obligāts.'),
         ];
     }
 }

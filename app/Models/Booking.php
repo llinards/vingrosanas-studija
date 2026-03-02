@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -132,6 +133,7 @@ class Booking extends Model
     {
         return [
             'payment_status' => PaymentStatus::class,
+            'attendance_status' => AttendanceStatus::class,
             'booking_date' => 'date',
             'participant_count' => 'integer',
             'expires_at' => 'datetime',
