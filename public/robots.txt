@@ -1,2 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+
+Sitemap: https://vingrosanasstudija.lv/sitemap.xml
