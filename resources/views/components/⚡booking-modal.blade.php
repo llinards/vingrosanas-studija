@@ -563,7 +563,7 @@ new class extends Component
                                 @foreach($this->availableTimeSlots as $slot)
                                     <flux:radio :value="$slot['schedule_id']"
                                                 :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
-                                                :description="$slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
+                                                :description="$this->isExclusiveService ? null : $slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
                                 @endforeach
                             </flux:radio.group>
                         @elseif($this->selectedDate)

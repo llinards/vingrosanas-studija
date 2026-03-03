@@ -217,3 +217,61 @@ test('today is marked unavailable when all time slots have passed', function () 
 
     Carbon::setTestNow();
 });
+
+test('regular service shows remaining capacity on time slots', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+        'is_exclusive' => false,
+    ]);
+
+    $todayDayOfWeek = today()->dayOfWeekIso;
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '10:00',
+        'is_active' => true,
+    ]);
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('step', 2)
+        ->set('selectedDate', today()->toDateString())
+        ->assertSee(__('vietas'));
+
+    Carbon::setTestNow();
+});
+
+test('exclusive service hides remaining capacity on time slots', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->exclusive()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+
+    $todayDayOfWeek = today()->dayOfWeekIso;
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $todayDayOfWeek,
+        'start_time' => '10:00',
+        'is_active' => true,
+    ]);
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('step', 2)
+        ->set('selectedDate', today()->toDateString())
+        ->assertDontSee(__('vietas'))
+        ->assertDontSee(__('vieta'));
+
+    Carbon::setTestNow();
+});
