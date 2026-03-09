@@ -3,6 +3,7 @@
 
 <head>
     @include('partials.head')
+    @cookieconsentscripts
 </head>
 
 <body class="bg-body">
@@ -14,6 +15,7 @@
 
     {{-- BOOKING MODAL --}}
     <livewire:booking-modal />
+    @cookieconsentview
     @fluxScripts
 </body>
 
