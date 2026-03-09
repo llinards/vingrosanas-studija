@@ -1,13 +1,11 @@
 {
     "agents": [
-        "claude_code",
-        "codex",
-        "copilot",
-        "opencode"
+        "claude_code"
     ],
     "guidelines": true,
     "herd_mcp": true,
     "mcp": true,
+    "nightwatch_mcp": false,
     "packages": [
         "laravel/fortify"
     ],
