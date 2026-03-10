@@ -72,11 +72,5 @@ document.addEventListener("DOMContentLoaded", () => {
         ).init();
     }
 
-    const contactForm = document.getElementById("contactForm");
-    if (coachCarousel) {
-        contactForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            Flux.modal("confirm").show();
-        });
-    }
+
 });
