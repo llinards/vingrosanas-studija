@@ -11,10 +11,11 @@
     ],
     "sail": false,
     "skills": [
+        "cashier-stripe-development",
         "fluxui-development",
         "livewire-development",
         "pest-testing",
         "tailwindcss-development",
-        "developing-with-fortify"
+        "fortify-development"
     ]
 }
