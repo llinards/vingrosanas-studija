@@ -9,6 +9,7 @@ use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
+use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -161,73 +162,12 @@ new class extends Component
     #[Computed]
     public function unavailableDates(): string
     {
-        $schedules = $this->activeSchedules;
-
-        if ($schedules->isEmpty()) {
-            return '';
-        }
-
-        $today = Carbon::today();
-        $endDate = $today->copy()->addWeeks(4);
-        $unavailable = [];
-        $now = now();
-        $isExclusive = $this->isExclusiveService;
-
-        for ($date = $today->copy(); $date->lte($endDate); $date->addDay()) {
-            $hasAvailableSlot = false;
-            $isToday = $date->isToday();
-
-            foreach ($schedules as $schedule) {
-                $matchesDay = false;
-
-                if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
-                    $matchesDay = true;
-                } elseif ($schedule->date !== null && $schedule->date->isSameDay($date)) {
-                    $matchesDay = true;
-                }
-
-                if ($matchesDay) {
-                    if ($isToday) {
-                        $slotTime = Carbon::parse($schedule->start_time);
-                        if ($slotTime->format('H:i') <= $now->format('H:i')) {
-                            continue;
-                        }
-                    }
-
-                    if ($isExclusive) {
-                        // For exclusive services: check if ANY active booking exists
-                        $hasBooking = Booking::active()
-                            ->where('schedule_id', $schedule->id)
-                            ->whereDate('booking_date', $date->toDateString())
-                            ->exists();
-
-                        if (! $hasBooking) {
-                            $hasAvailableSlot = true;
-                            break;
-                        }
-                    } else {
-                        // For regular services: check remaining capacity
-                        $bookedParticipants = Booking::active()
-                            ->where('schedule_id', $schedule->id)
-                            ->whereDate('booking_date', $date->toDateString())
-                            ->sum('participant_count');
-
-                        $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                        if ($remaining >= 1) {
-                            $hasAvailableSlot = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (! $hasAvailableSlot) {
-                $unavailable[] = $date->toDateString();
-            }
-        }
-
-        return implode(',', $unavailable);
+        return app(ScheduleAvailabilityService::class)->unavailableDates(
+            schedules: $this->activeSchedules,
+            startDate: Carbon::today(),
+            endDate: Carbon::today()->addWeeks(4),
+            isExclusive: $this->isExclusiveService,
+        );
     }
 
     /**
@@ -240,71 +180,11 @@ new class extends Component
             return [];
         }
 
-        $date = Carbon::parse($this->selectedDate);
-        $schedules = $this->activeSchedules;
-        $slots = [];
-        $isToday = $date->isToday();
-        $now = now();
-        $isExclusive = $this->isExclusiveService;
-
-        foreach ($schedules as $schedule) {
-            $matchesDay = false;
-
-            if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
-                $matchesDay = true;
-            } elseif ($schedule->date !== null && $schedule->date->isSameDay($date)) {
-                $matchesDay = true;
-            }
-
-            if ($matchesDay) {
-                if ($isToday) {
-                    $slotTime = Carbon::parse($schedule->start_time);
-                    if ($slotTime->format('H:i') <= $now->format('H:i')) {
-                        continue;
-                    }
-                }
-
-                if ($isExclusive) {
-                    // For exclusive services: hide slot if ANY active booking exists
-                    $hasBooking = Booking::active()
-                        ->where('schedule_id', $schedule->id)
-                        ->whereDate('booking_date', $date->toDateString())
-                        ->exists();
-
-                    if (! $hasBooking) {
-                        $slots[] = [
-                            'schedule_id' => $schedule->id,
-                            'start_time' => substr((string) $schedule->start_time, 0, 5),
-                            'coach_name' => $schedule->service->coach->name,
-                            'remaining' => $schedule->max_capacity,
-                            'max_capacity' => $schedule->max_capacity,
-                        ];
-                    }
-                } else {
-                    // For regular services: check remaining capacity
-                    $bookedParticipants = Booking::active()
-                        ->where('schedule_id', $schedule->id)
-                        ->whereDate('booking_date', $date->toDateString())
-                        ->sum('participant_count');
-
-                    $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                    if ($remaining >= 1) {
-                        $slots[] = [
-                            'schedule_id' => $schedule->id,
-                            'start_time' => substr((string) $schedule->start_time, 0, 5),
-                            'coach_name' => $schedule->service->coach->name,
-                            'remaining' => $remaining,
-                            'max_capacity' => $schedule->max_capacity,
-                        ];
-                    }
-                }
-            }
-        }
-
-        usort($slots, fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
-
-        return $slots;
+        return app(ScheduleAvailabilityService::class)->availableTimeSlots(
+            schedules: $this->activeSchedules,
+            date: Carbon::parse($this->selectedDate),
+            isExclusive: $this->isExclusiveService,
+        );
     }
 
     #[Computed]
@@ -412,65 +292,18 @@ new class extends Component
     #[Computed]
     public function sessionUnavailableDates(): string
     {
-        $schedules = $this->sessionActiveSchedules;
-
-        if ($schedules->isEmpty()) {
-            return '';
-        }
-
-        $today = Carbon::today();
-        $endDate = $today->copy()->addDays(30);
-
-        $unavailable = [];
-        $now = now();
-
-        for ($date = $today->copy(); $date->lte($endDate); $date->addDay()) {
-            $hasAvailableSlot = false;
-            $isToday = $date->isToday();
-
-            foreach ($schedules as $schedule) {
-                $matchesDay = false;
-
-                if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
-                    $matchesDay = true;
-                } elseif ($schedule->date !== null && $schedule->date->isSameDay($date)) {
-                    $matchesDay = true;
-                }
-
-                if ($matchesDay) {
-                    if ($isToday) {
-                        $slotTime = Carbon::parse($schedule->start_time);
-                        if ($slotTime->format('H:i') <= $now->format('H:i')) {
-                            continue;
-                        }
-                    }
-
-                    $bookedParticipants = Booking::active()
-                        ->where('schedule_id', $schedule->id)
-                        ->whereDate('booking_date', $date->toDateString())
-                        ->sum('participant_count');
-
-                    $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                    if ($remaining >= 1) {
-                        $hasAvailableSlot = true;
-                        break;
-                    }
-                }
-            }
-
-            if (! $hasAvailableSlot) {
-                $unavailable[] = $date->toDateString();
-            }
-        }
-
-        return implode(',', $unavailable);
+        return app(ScheduleAvailabilityService::class)->unavailableDates(
+            schedules: $this->sessionActiveSchedules,
+            startDate: Carbon::today(),
+            endDate: Carbon::today()->addDays(30),
+            extraBookings: $this->sessions,
+        );
     }
 
     /**
      * Get available time slots for the membership session builder.
      *
-     * @return array<int, array{schedule_id: int, start_time: string, coach_name: string, remaining: int}>
+     * @return array<int, array{schedule_id: int, start_time: string, coach_name: string, remaining: int, max_capacity: int}>
      */
     #[Computed]
     public function sessionAvailableTimeSlots(): array
@@ -479,59 +312,11 @@ new class extends Component
             return [];
         }
 
-        $date = Carbon::parse($this->session_date);
-        $schedules = $this->sessionActiveSchedules;
-        $slots = [];
-        $isToday = $date->isToday();
-        $now = now();
-
-        // Count already selected sessions for same schedule+date
-        $selectedForDate = collect($this->sessions)
-            ->where('date', $this->session_date)
-            ->pluck('schedule_id')
-            ->countBy()
-            ->all();
-
-        foreach ($schedules as $schedule) {
-            $matchesDay = false;
-
-            if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
-                $matchesDay = true;
-            } elseif ($schedule->date !== null && $schedule->date->isSameDay($date)) {
-                $matchesDay = true;
-            }
-
-            if ($matchesDay) {
-                if ($isToday) {
-                    $slotTime = Carbon::parse($schedule->start_time);
-                    if ($slotTime->format('H:i') <= $now->format('H:i')) {
-                        continue;
-                    }
-                }
-
-                $bookedParticipants = Booking::active()
-                    ->where('schedule_id', $schedule->id)
-                    ->whereDate('booking_date', $date->toDateString())
-                    ->sum('participant_count');
-
-                // Account for already selected sessions in the current wizard
-                $alreadySelected = $selectedForDate[$schedule->id] ?? 0;
-                $remaining = $schedule->max_capacity - $bookedParticipants - $alreadySelected;
-
-                if ($remaining >= 1) {
-                    $slots[] = [
-                        'schedule_id' => $schedule->id,
-                        'start_time' => substr((string) $schedule->start_time, 0, 5),
-                        'coach_name' => $schedule->service->coach->name,
-                        'remaining' => $remaining,
-                    ];
-                }
-            }
-        }
-
-        usort($slots, fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
-
-        return $slots;
+        return app(ScheduleAvailabilityService::class)->availableTimeSlots(
+            schedules: $this->sessionActiveSchedules,
+            date: Carbon::parse($this->session_date),
+            extraBookings: $this->sessions,
+        );
     }
 
     // ========================================

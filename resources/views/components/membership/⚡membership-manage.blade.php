@@ -6,6 +6,7 @@ use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Services\ScheduleAvailabilityService;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -123,62 +124,36 @@ new class extends Component {
     }
 
     /**
+     * Get unavailable dates for the rebook calendar.
+     */
+    #[Computed]
+    public function rebookUnavailableDates(): string
+    {
+        return app(ScheduleAvailabilityService::class)->unavailableDates(
+            schedules: $this->rebookSchedules,
+            startDate: Carbon::today(),
+            endDate: $this->membership->period_end,
+            excludeBookingId: $this->rebookingBookingId,
+        );
+    }
+
+    /**
      * Get available time slots for the rebook date.
      *
-     * @return array<int, array{schedule_id: int, start_time: string, coach_name: string, remaining: int}>
+     * @return array<int, array{schedule_id: int, start_time: string, coach_name: string, remaining: int, max_capacity: int}>
      */
     #[Computed]
     public function rebookTimeSlots(): array
     {
-        if ( ! $this->rebook_date || ! $this->rebook_service_id) {
+        if (! $this->rebook_date || ! $this->rebook_service_id) {
             return [];
         }
 
-        $date      = Carbon::parse($this->rebook_date);
-        $schedules = $this->rebookSchedules;
-        $slots     = [];
-        $isToday   = $date->isToday();
-        $now       = now();
-
-        foreach ($schedules as $schedule) {
-            $matchesDay = false;
-
-            if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
-                $matchesDay = true;
-            } elseif ($schedule->date !== null && $schedule->date->isSameDay($date)) {
-                $matchesDay = true;
-            }
-
-            if ($matchesDay) {
-                if ($isToday) {
-                    $slotTime = Carbon::parse($schedule->start_time);
-                    if ($slotTime->format('H:i') <= $now->format('H:i')) {
-                        continue;
-                    }
-                }
-
-                $bookedParticipants = Booking::active()
-                                             ->where('schedule_id', $schedule->id)
-                                             ->whereDate('booking_date', $date->toDateString())
-                                             ->where('id', '!=', $this->rebookingBookingId)
-                                             ->sum('participant_count');
-
-                $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                if ($remaining >= 1) {
-                    $slots[] = [
-                        'schedule_id' => $schedule->id,
-                        'start_time'  => substr((string) $schedule->start_time, 0, 5),
-                        'coach_name'  => $schedule->service->coach->name,
-                        'remaining'   => $remaining,
-                    ];
-                }
-            }
-        }
-
-        usort($slots, fn($a, $b) => strcmp($a['start_time'], $b['start_time']));
-
-        return $slots;
+        return app(ScheduleAvailabilityService::class)->availableTimeSlots(
+            schedules: $this->rebookSchedules,
+            date: Carbon::parse($this->rebook_date),
+            excludeBookingId: $this->rebookingBookingId,
+        );
     }
 
     /**
@@ -191,7 +166,7 @@ new class extends Component {
         $this->rebook_service_id      = null;
         $this->rebook_date            = null;
         $this->rebook_schedule_id     = null;
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
+        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
     /**
@@ -204,7 +179,7 @@ new class extends Component {
         $this->rebook_service_id      = null;
         $this->rebook_date            = null;
         $this->rebook_schedule_id     = null;
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
+        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
     public function updatedRebookServiceTypeId(): void
@@ -212,14 +187,14 @@ new class extends Component {
         $this->rebook_service_id  = null;
         $this->rebook_date        = null;
         $this->rebook_schedule_id = null;
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
+        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
     public function updatedRebookServiceId(): void
     {
         $this->rebook_date        = null;
         $this->rebook_schedule_id = null;
-        unset($this->rebookSchedules, $this->rebookTimeSlots);
+        unset($this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
     public function updatedRebookDate(): void
@@ -393,6 +368,7 @@ new class extends Component {
                                     <div class="flex justify-center">
                                         <flux:calendar wire:model.live="rebook_date" min="today"
                                                        :max="$this->membership->period_end->toDateString()"
+                                                       :unavailable="$this->rebookUnavailableDates"
                                                        locale="lv" start-day="1"/>
                                     </div>
                                 @endif
