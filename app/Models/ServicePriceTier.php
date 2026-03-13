@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ServicePriceTierFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ServicePriceTier extends Model
 {
-    /** @use HasFactory<\Database\Factories\ServicePriceTierFactory> */
+    /** @use HasFactory<ServicePriceTierFactory> */
     use HasFactory;
 
     /**
@@ -17,5 +18,13 @@ class ServicePriceTier extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'price' => 'integer',
+            'participant_count' => 'integer',
+        ];
     }
 }

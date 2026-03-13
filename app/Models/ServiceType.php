@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\ServiceTypeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ServiceType extends Model
 {
-    /** @use HasFactory<\Database\Factories\ServiceTypeFactory> */
+    /** @use HasFactory<ServiceTypeFactory> */
     use HasFactory;
 
     /**
@@ -17,5 +18,12 @@ class ServiceType extends Model
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'position' => 'integer',
+        ];
     }
 }

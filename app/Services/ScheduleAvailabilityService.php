@@ -129,12 +129,12 @@ class ScheduleAvailabilityService
      *
      * @param  array<int, array{schedule_id: int, date: string}>  $extraBookings
      */
-    private function remainingCapacity(
+    public function remainingCapacity(
         Schedule $schedule,
         string $dateString,
-        bool $isExclusive,
-        ?int $excludeBookingId,
-        array $extraBookings,
+        bool $isExclusive = false,
+        ?int $excludeBookingId = null,
+        array $extraBookings = [],
     ): int {
         $query = Booking::active()
             ->where('schedule_id', $schedule->id)

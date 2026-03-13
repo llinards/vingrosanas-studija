@@ -27,24 +27,16 @@ class ExpirePendingMemberships extends Command
      */
     public function handle(): int
     {
-        $expiredMemberships = Membership::query()
+        $count = Membership::query()
             ->where('payment_status', PaymentStatus::Pending)
             ->whereNotNull('expires_at')
             ->where('expires_at', '<', now())
-            ->get();
-
-        $count = $expiredMemberships->count();
+            ->delete();
 
         if ($count === 0) {
             $this->info('No expired pending memberships found.');
 
             return self::SUCCESS;
-        }
-
-        foreach ($expiredMemberships as $membership) {
-            $membership->delete();
-
-            $this->line("Deleted expired membership #{$membership->id} ({$membership->email})");
         }
 
         $this->info("Deleted {$count} expired pending membership(s).");

@@ -9,6 +9,7 @@ use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
+use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 
@@ -70,7 +71,7 @@ trait HasBookingForm
             return null;
         }
 
-        return Service::with('priceTiers')->find($this->service_id);
+        return $this->services->firstWhere('id', $this->service_id);
     }
 
     /**
@@ -166,12 +167,8 @@ trait HasBookingForm
             return 0;
         }
 
-        $bookedParticipants = Booking::active()
-            ->where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->sum('participant_count');
-
-        return max(0, $schedule->max_capacity - $bookedParticipants);
+        return app(ScheduleAvailabilityService::class)
+            ->remainingCapacity($schedule, $this->booking_date, $this->isExclusiveService);
     }
 
     /**

@@ -36,6 +36,7 @@ class Coach extends Model
     {
         return [
             'is_active' => 'boolean',
+            'position' => 'integer',
         ];
     }
 

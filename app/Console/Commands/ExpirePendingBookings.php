@@ -27,24 +27,16 @@ class ExpirePendingBookings extends Command
      */
     public function handle(): int
     {
-        $expiredBookings = Booking::query()
+        $count = Booking::query()
             ->where('payment_status', PaymentStatus::Pending)
             ->whereNotNull('expires_at')
             ->where('expires_at', '<', now())
-            ->get();
-
-        $count = $expiredBookings->count();
+            ->delete();
 
         if ($count === 0) {
             $this->info('No expired pending bookings found.');
 
             return self::SUCCESS;
-        }
-
-        foreach ($expiredBookings as $booking) {
-            $booking->delete();
-
-            $this->line("Deleted expired booking #{$booking->id} ({$booking->email})");
         }
 
         $this->info("Deleted {$count} expired pending booking(s).");

@@ -73,6 +73,8 @@ class Service extends Model
             'is_membership_eligible' => 'boolean',
             'is_membership' => 'boolean',
             'sessions_count' => 'integer',
+            'price' => 'integer',
+            'position' => 'integer',
         ];
     }
 }
