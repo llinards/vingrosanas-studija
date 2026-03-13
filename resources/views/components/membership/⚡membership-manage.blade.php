@@ -145,7 +145,7 @@ new class extends Component {
     #[Computed]
     public function rebookTimeSlots(): array
     {
-        if (! $this->rebook_date || ! $this->rebook_service_id) {
+        if ( ! $this->rebook_date || ! $this->rebook_service_id) {
             return [];
         }
 
@@ -327,7 +327,7 @@ new class extends Component {
                             <div>
                                 @if($booking->attendance_status->value === 'attended')
                                     <flux:badge size="sm"
-                                                color="green">{{ $booking->attendance_status->label() }}</flux:badge>
+                                                color="zinc">{{ $booking->attendance_status->label() }}</flux:badge>
                                 @elseif($this->canRebook($booking))
                                     @if($this->rebookingBookingId !== $booking->id)
                                         <flux:button wire:click="startRebook({{ $booking->id }})"
