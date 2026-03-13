@@ -18,24 +18,29 @@
 
                         <div class="flex justify-between items-center py-2 border-b border-gray-200">
                             <flux:text>{{ __('Periods') }}</flux:text>
-                            <flux:text>{{ $membership->period_start->format('d.m.Y') }} — {{ $membership->period_end->format('d.m.Y') }}</flux:text>
+                            <flux:text>{{ $membership->period_start->format('d.m.Y') }}
+                                — {{ $membership->period_end->format('d.m.Y') }}</flux:text>
                         </div>
 
                         <div class="flex justify-between items-center py-2 border-b border-gray-200">
                             <flux:text>{{ __('Nodarbības') }}</flux:text>
-                            <flux:text>{{ $membership->bookings->count() }}/{{ $membership->sessions_total }}</flux:text>
+                            <flux:text>{{ $membership->bookings->count() }}
+                                /{{ $membership->sessions_total }}</flux:text>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-8 text-center space-y-4">
-                    <flux:button href="{{ route('membership.manage', ['membership' => $membership, 'session_id' => $membership->stripe_checkout_session_id]) }}">
+                    <flux:button class="button large primary"
+                                 href="{{ route('membership.manage', ['membership' => $membership, 'session_id' => $membership->stripe_checkout_session_id]) }}">
                         {{ __('Pārvaldīt abonementu') }}
                     </flux:button>
-                    <br>
-                    <flux:button href="{{ route('home') }}" variant="ghost">
-                        {{ __('Atgriezties uz sākumu') }}
-                    </flux:button>
+                    <div>
+                        <flux:link href="{{ route('home') }}"
+                                   icon="arrow-uturn-left">
+                            {{ __('Atgriezties uz sākumu') }}
+                        </flux:link>
+                    </div>
                 </div>
             </div>
         @else

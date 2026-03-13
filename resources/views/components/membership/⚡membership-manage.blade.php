@@ -355,8 +355,8 @@ new class extends Component {
                                                 color="green">{{ $booking->attendance_status->label() }}</flux:badge>
                                 @elseif($this->canRebook($booking))
                                     @if($this->rebookingBookingId !== $booking->id)
-                                        <flux:button wire:click="startRebook({{ $booking->id }})" size="sm"
-                                                     variant="outline">
+                                        <flux:button wire:click="startRebook({{ $booking->id }})"
+                                                     class="button primary">
                                             {{ __('Pārplānot') }}
                                         </flux:button>
                                     @endif
@@ -412,11 +412,10 @@ new class extends Component {
                                 @endif
 
                                 <div class="flex justify-between">
-                                    <flux:button wire:click="cancelRebook" size="sm"
-                                                 variant="ghost">{{ __('Atcelt') }}</flux:button>
+                                    <flux:link as="button" wire:click="cancelRebook">{{ __('Atcelt') }}</flux:link>
                                     @if($this->rebook_schedule_id)
-                                        <flux:button wire:click="confirmRebook" size="sm"
-                                                     variant="primary">{{ __('Apstiprināt') }}</flux:button>
+                                        <flux:button wire:click="confirmRebook"
+                                                     class="button primary">{{ __('Apstiprināt') }}</flux:button>
                                     @endif
                                 </div>
                             </div>
@@ -427,9 +426,10 @@ new class extends Component {
         </div>
 
         <div class="mt-8 text-center">
-            <flux:button href="{{ route('home') }}" variant="ghost">
+            <flux:link href="{{ route('home') }}"
+                       icon="arrow-uturn-left">
                 {{ __('Atgriezties uz sākumu') }}
-            </flux:button>
+            </flux:link>
         </div>
     </div>
 </div>
