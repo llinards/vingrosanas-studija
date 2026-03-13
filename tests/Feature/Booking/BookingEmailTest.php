@@ -68,7 +68,7 @@ test('booking confirmation email is sent via webhook after payment', function ()
 
     Mail::to($booking->email)->send(new BookingConfirmation($booking));
 
-    Mail::assertSent(BookingConfirmation::class, function ($mail) {
+    Mail::assertQueued(BookingConfirmation::class, function ($mail) {
         return $mail->hasTo('janis@example.com');
     });
 });
@@ -97,7 +97,7 @@ test('new booking notification is sent to coach when coach has email', function 
     // Simulate webhook sending notification
     Mail::to($coach->email)->send(new NewBookingNotification($booking));
 
-    Mail::assertSent(NewBookingNotification::class, function ($mail) {
+    Mail::assertQueued(NewBookingNotification::class, function ($mail) {
         return $mail->hasTo('coach@example.com');
     });
 });

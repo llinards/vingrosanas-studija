@@ -17,7 +17,7 @@ test('contact form sends email on valid submission', function () {
         ->call('submit')
         ->assertHasNoErrors();
 
-    Mail::assertSent(ContactFormSubmission::class, function ($mail) {
+    Mail::assertQueued(ContactFormSubmission::class, function ($mail) {
         return $mail->hasTo(config('mail.contact_email'))
             && $mail->name === 'Jānis'
             && $mail->surname === 'Bērziņš'

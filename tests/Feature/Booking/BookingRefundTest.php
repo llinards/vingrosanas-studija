@@ -192,7 +192,7 @@ test('stripe charge.refunded webhook marks booking as refunded and sends email',
         ->refund_reference->toBe('re_test_webhook_789')
         ->refunded_at->not->toBeNull();
 
-    Mail::assertSent(BookingRefunded::class, function ($mail) use ($booking) {
+    Mail::assertQueued(BookingRefunded::class, function ($mail) use ($booking) {
         return $mail->hasTo($booking->email);
     });
 });
@@ -238,7 +238,7 @@ test('stripe charge.refunded webhook skips already refunded bookings', function 
     // Refund reference should remain the original one
     expect($booking->fresh()->refund_reference)->toBe('re_existing');
 
-    Mail::assertNotSent(BookingRefunded::class);
+    Mail::assertNotQueued(BookingRefunded::class);
 });
 
 test('admin can see refund button for refundable booking', function () {

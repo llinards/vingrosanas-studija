@@ -124,7 +124,7 @@ test('stripe webhook handles membership checkout completed event', function () {
         ->payment_status->toBe(PaymentStatus::Paid)
         ->payment_reference->toBe('pi_test_mem_456');
 
-    Mail::assertSent(MembershipConfirmation::class);
+    Mail::assertQueued(MembershipConfirmation::class);
 });
 
 test('stripe webhook handles membership refund event', function () {
@@ -174,5 +174,5 @@ test('stripe webhook handles membership refund event', function () {
     expect($membership->payment_status)->toBe(PaymentStatus::Refunded);
     expect($booking->payment_status)->toBe(PaymentStatus::Refunded);
 
-    Mail::assertSent(MembershipRefunded::class);
+    Mail::assertQueued(MembershipRefunded::class);
 });

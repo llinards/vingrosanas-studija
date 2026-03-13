@@ -155,6 +155,6 @@ test('stripe webhook handles checkout session completed event', function () {
         ->payment_status->toBe(PaymentStatus::Paid)
         ->payment_reference->toBe('pi_test_456');
 
-    Mail::assertSent(BookingConfirmation::class);
-    Mail::assertSent(NewBookingNotification::class);
+    Mail::assertQueued(BookingConfirmation::class);
+    Mail::assertQueued(NewBookingNotification::class);
 });
