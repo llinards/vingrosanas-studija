@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Service;
+use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
@@ -16,7 +18,26 @@ new class extends Component
             ->orderBy('position')])
             ->whereHas('services', fn ($query) => $query->where('is_active', true))
             ->orderBy('position')
-            ->get();
+            ->get()
+            ->each(function (ServiceType $serviceType): void {
+                $unique = $serviceType->services->unique(fn (Service $service) => $this->servicePricingFingerprint($service));
+
+                $serviceType->setRelation('services', $unique);
+            });
+    }
+
+    private function servicePricingFingerprint(Service $service): string
+    {
+        if ($service->priceTiers->count() > 1) {
+            $tiers = $service->priceTiers
+                ->sortBy('participant_count')
+                ->map(fn (ServicePriceTier $tier) => $tier->participant_count.':'.$tier->price)
+                ->implode('|');
+
+            return $service->name.'|'.$tiers;
+        }
+
+        return $service->name.'|'.$service->price;
     }
 };
 ?>
