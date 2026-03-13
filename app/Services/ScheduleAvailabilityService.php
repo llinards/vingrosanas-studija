@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\Schedule;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
@@ -106,7 +107,7 @@ class ScheduleAvailabilityService
     /**
      * Check if a schedule matches the given date (by day of week or specific date).
      */
-    private function matchesDay(mixed $schedule, Carbon $date): bool
+    private function matchesDay(Schedule $schedule, Carbon $date): bool
     {
         if ($schedule->day_of_week !== null && $schedule->day_of_week->value === $date->dayOfWeekIso) {
             return true;
@@ -118,7 +119,7 @@ class ScheduleAvailabilityService
     /**
      * Check if the schedule's start time is after the current time.
      */
-    private function isAfterNow(mixed $schedule, Carbon $now): bool
+    private function isAfterNow(Schedule $schedule, Carbon $now): bool
     {
         return Carbon::parse($schedule->start_time)->format('H:i') > $now->format('H:i');
     }
@@ -129,7 +130,7 @@ class ScheduleAvailabilityService
      * @param  array<int, array{schedule_id: int, date: string}>  $extraBookings
      */
     private function remainingCapacity(
-        mixed $schedule,
+        Schedule $schedule,
         string $dateString,
         bool $isExclusive,
         ?int $excludeBookingId,
