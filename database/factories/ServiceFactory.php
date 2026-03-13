@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Coach;
+use App\Models\Service;
 use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Service>
+ * @extends Factory<Service>
  */
 class ServiceFactory extends Factory
 {
@@ -25,6 +26,7 @@ class ServiceFactory extends Factory
             'price' => fake()->numberBetween(500, 10000),
             'is_active' => true,
             'is_exclusive' => false,
+            'is_membership_eligible' => false,
             'position' => 0,
         ];
     }
@@ -36,6 +38,16 @@ class ServiceFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_exclusive' => true,
+        ]);
+    }
+
+    /**
+     * Mark the service as eligible for membership bookings.
+     */
+    public function membershipEligible(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_membership_eligible' => true,
         ]);
     }
 }

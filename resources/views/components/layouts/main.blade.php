@@ -15,6 +15,9 @@
 
     {{-- BOOKING MODAL --}}
     <livewire:booking-modal />
+
+    {{-- MEMBERSHIP MODAL --}}
+    <livewire:membership-modal />
     @cookieconsentview
     @fluxScripts
 </body>

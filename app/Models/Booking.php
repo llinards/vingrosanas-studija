@@ -4,14 +4,16 @@ namespace App\Models;
 
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
+use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 class Booking extends Model
 {
-    /** @use HasFactory<\Database\Factories\BookingFactory> */
+    /** @use HasFactory<BookingFactory> */
     use HasFactory;
 
     /**
@@ -20,6 +22,22 @@ class Booking extends Model
     public function schedule(): BelongsTo
     {
         return $this->belongsTo(Schedule::class);
+    }
+
+    /**
+     * @return BelongsTo<Membership, $this>
+     */
+    public function membership(): BelongsTo
+    {
+        return $this->belongsTo(Membership::class);
+    }
+
+    /**
+     * Check if this booking belongs to a membership.
+     */
+    public function isMembershipBooking(): bool
+    {
+        return $this->membership_id !== null;
     }
 
     /**
@@ -98,6 +116,10 @@ class Booking extends Model
      */
     public function isRefundable(): bool
     {
+        if ($this->isMembershipBooking()) {
+            return false;
+        }
+
         if ($this->payment_status !== PaymentStatus::Paid) {
             return false;
         }
@@ -124,7 +146,7 @@ class Booking extends Model
     /**
      * Get the full service date and time as a Carbon instance.
      */
-    public function getServiceDateTime(): \Illuminate\Support\Carbon
+    public function getServiceDateTime(): Carbon
     {
         return $this->booking_date->copy()->setTimeFromTimeString($this->schedule->start_time);
     }

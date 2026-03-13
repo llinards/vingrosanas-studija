@@ -3,6 +3,7 @@
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Membership;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
 
@@ -19,6 +20,12 @@ new class extends Component
     public ?string $checkedInDate = null;
 
     public ?string $checkedInTime = null;
+
+    public bool $hasMembership = false;
+
+    public int $membershipSessionsUsed = 0;
+
+    public int $membershipSessionsTotal = 0;
 
     /** @var Collection<int, Booking>|null */
     public ?Collection $matchingBookings = null;
@@ -88,6 +95,19 @@ new class extends Component
         $this->checkedInDate = $booking->booking_date->format('d.m.Y');
         $this->checkedInTime = substr($booking->schedule->start_time, 0, 5);
         $this->matchingBookings = null;
+
+        // Check for membership info
+        if ($booking->membership_id) {
+            $membership = Membership::find($booking->membership_id);
+
+            if ($membership && $membership->isActive()) {
+                $this->hasMembership = true;
+                $this->membershipSessionsUsed = $membership->bookings()
+                    ->where('attendance_status', AttendanceStatus::Attended)
+                    ->count();
+                $this->membershipSessionsTotal = $membership->sessions_total;
+            }
+        }
     }
 };
 ?>
@@ -120,6 +140,14 @@ new class extends Component
                     <flux:text>{{ $checkedInTime }}</flux:text>
                 </div>
             </div>
+
+            @if($hasMembership)
+                <flux:separator/>
+                <div class="flex justify-between items-center py-2">
+                    <flux:text class="font-medium">{{ __('Abonements') }}</flux:text>
+                    <flux:badge size="sm" color="purple">{{ $membershipSessionsUsed }}/{{ $membershipSessionsTotal }} {{ __('apmeklētas') }}</flux:badge>
+                </div>
+            @endif
         </div>
 
         <div class="mt-8 text-center">

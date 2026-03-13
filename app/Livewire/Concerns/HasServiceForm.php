@@ -22,6 +22,8 @@ trait HasServiceForm
 
     public bool $is_exclusive = false;
 
+    public bool $is_membership_eligible = false;
+
     public string $newServiceTypeName = '';
 
     /**

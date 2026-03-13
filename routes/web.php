@@ -5,6 +5,7 @@ use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use App\Models\Booking;
+use App\Models\Membership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,21 @@ Route::get('booking/{booking}/success', static function (Booking $booking, Reque
     return view('booking.success', ['booking' => $booking]);
 })->name('booking.success')->withTrashed();
 
+Route::get('membership/{membership}/success', static function (Membership $membership, Request $request) {
+    if ($request->filled('session_id')) {
+        if ($request->session_id !== $membership->stripe_checkout_session_id) {
+            abort(404);
+        }
+    } else {
+        abort(404);
+    }
+
+    return view('membership.success', ['membership' => $membership]);
+})->name('membership.success');
+
+Route::livewire('membership/{membership}/manage', 'membership.membership-manage')
+    ->name('membership.manage');
+
 Route::view('check-in', 'check-in')->name('check-in');
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
@@ -53,6 +69,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::view('bookings', 'dashboard.booking-list')->name('bookings.index');
     Route::livewire('bookings/create', 'booking.booking-create')->name('bookings.create');
     Route::livewire('bookings/{booking}/edit', 'booking.booking-edit')->name('bookings.edit');
+
+    Route::view('memberships', 'dashboard.membership-list')->name('memberships.index');
+    Route::livewire('memberships/{membership}/edit', 'membership.membership-edit')->name('memberships.edit');
 
     Route::redirect('settings', 'settings/profile');
     Route::livewire('settings/profile', Profile::class)->name('settings.profile');

@@ -4,11 +4,13 @@ namespace Database\Factories;
 
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
+use App\Models\Booking;
+use App\Models\Membership;
 use App\Models\Schedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Booking>
+ * @extends Factory<Booking>
  */
 class BookingFactory extends Factory
 {
@@ -92,6 +94,21 @@ class BookingFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'booking_date' => fake()->dateTimeBetween('-4 weeks', '-1 day')->format('Y-m-d'),
+        ]);
+    }
+
+    /**
+     * Associate the booking with a membership.
+     */
+    public function forMembership(Membership $membership): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'membership_id' => $membership->id,
+            'payment_status' => PaymentStatus::Paid,
+            'name' => $membership->name,
+            'surname' => $membership->surname,
+            'phone' => $membership->phone,
+            'email' => $membership->email,
         ]);
     }
 }

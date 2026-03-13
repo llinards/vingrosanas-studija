@@ -24,6 +24,9 @@
             <flux:navlist.item icon="ticket" :href="route('admin.bookings.index')"
                                :current="request()->routeIs('admin.bookings.*')"
                                wire:navigate>{{ __('Rezervācijas') }}</flux:navlist.item>
+            <flux:navlist.item icon="identification" :href="route('admin.memberships.index')"
+                               :current="request()->routeIs('admin.memberships.*')"
+                               wire:navigate>{{ __('Abonementi') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 

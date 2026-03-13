@@ -29,6 +29,7 @@ new class extends Component
                     'price' => (int) round($this->price * 100),
                     'is_active' => $this->is_active,
                     'is_exclusive' => $this->is_exclusive,
+                    'is_membership_eligible' => $this->is_membership_eligible,
                 ]);
 
                 // Create price tier for 1 participant using the base price
