@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\MembershipTier;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
+use App\Models\Service;
 
 test('membership can be marked as paid', function () {
     $membership = Membership::factory()->create([
@@ -100,9 +100,12 @@ test('membership can be marked as refunded', function () {
         ->refunded_at->not->toBeNull();
 });
 
-test('membership has correct tier session counts', function () {
-    expect(MembershipTier::FourSessions->sessionCount())->toBe(4);
-    expect(MembershipTier::NineSessions->sessionCount())->toBe(9);
+test('membership has correct tier session counts via service', function () {
+    $fourSessionService = Service::factory()->membership(4)->create();
+    $nineSessionService = Service::factory()->membership(9)->create();
+
+    expect($fourSessionService->sessions_count)->toBe(4);
+    expect($nineSessionService->sessions_count)->toBe(9);
 });
 
 test('membership scope active filters correctly', function () {
@@ -167,4 +170,24 @@ test('membership bookings are not individually refundable', function () {
     ]);
 
     expect($booking->isRefundable())->toBeFalse();
+});
+
+test('membership tierLabel returns service name', function () {
+    $service = Service::factory()->membership(4)->create(['name' => '4 nodarbības mēnesī']);
+    $membership = Membership::factory()->paid()->create(['service_id' => $service->id]);
+
+    expect($membership->tierLabel())->toBe('4 nodarbības mēnesī');
+});
+
+test('membership tierLabel returns fallback when service is null', function () {
+    $membership = Membership::factory()->paid()->create(['service_id' => null]);
+
+    expect($membership->tierLabel())->toBe('—');
+});
+
+test('membership service relationship works', function () {
+    $service = Service::factory()->membership(4)->create();
+    $membership = Membership::factory()->paid()->create(['service_id' => $service->id]);
+
+    expect($membership->service->id)->toBe($service->id);
 });

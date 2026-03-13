@@ -13,7 +13,7 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-gray-200">
                             <flux:text>{{ __('Abonements') }}</flux:text>
-                            <flux:text>{{ $membership->tier->label() }}</flux:text>
+                            <flux:text>{{ $membership->tierLabel() }}</flux:text>
                         </div>
 
                         <div class="flex justify-between items-center py-2 border-b border-gray-200">

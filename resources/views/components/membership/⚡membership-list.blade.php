@@ -66,6 +66,7 @@ new class extends Component {
     public function memberships(): LengthAwarePaginator
     {
         return Membership::query()
+            ->with('service')
             ->when($this->search, fn ($query) => $query->search($this->search))
             ->whereIn('payment_status', $this->paymentStatuses)
             ->when($this->activeOnly, fn ($query) => $query->active())
@@ -154,7 +155,7 @@ new class extends Component {
                                 <div>{{ $membership->name }} {{ $membership->surname }}</div>
                                 <div class="text-xs text-zinc-500">{{ $membership->email }}</div>
                             </flux:table.cell>
-                            <flux:table.cell>{{ $membership->tier->label() }}</flux:table.cell>
+                            <flux:table.cell>{{ $membership->tierLabel() }}</flux:table.cell>
                             <flux:table.cell>{{ $membership->period_start->format('d.m.Y') }} — {{ $membership->period_end->format('d.m.Y') }}</flux:table.cell>
                             <flux:table.cell>{{ $membership->bookings_count }}/{{ $membership->sessions_total }}</flux:table.cell>
                             <flux:table.cell>

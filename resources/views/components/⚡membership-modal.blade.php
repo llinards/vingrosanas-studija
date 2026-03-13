@@ -1,7 +1,6 @@
 <?php
 
 use App\Actions\CreateMembershipCheckoutSession;
-use App\Enums\MembershipTier;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Membership;
@@ -18,8 +17,8 @@ new class extends Component
 {
     public int $step = 1;
 
-    /** @var string|null MembershipTier value */
-    public ?string $selectedTier = null;
+    /** @var int|null Selected membership service ID */
+    public ?int $selectedServiceId = null;
 
     /**
      * Currently selected session builder fields.
@@ -51,34 +50,42 @@ new class extends Component
     public string $email = '';
 
     /**
-     * Get the selected tier enum.
+     * Get the selected membership service.
      */
     #[Computed]
-    public function tier(): ?MembershipTier
+    public function membershipService(): ?Service
     {
-        return $this->selectedTier ? MembershipTier::from($this->selectedTier) : null;
+        return $this->selectedServiceId ? Service::find($this->selectedServiceId) : null;
     }
 
     /**
-     * Get the total sessions required for the selected tier.
+     * Get all active membership services for the tier selection step.
+     */
+    #[Computed]
+    public function membershipServices(): Collection
+    {
+        return Service::where('is_membership', true)
+            ->where('is_active', true)
+            ->orderBy('sessions_count')
+            ->get();
+    }
+
+    /**
+     * Get the total sessions required for the selected membership.
      */
     #[Computed]
     public function requiredSessions(): int
     {
-        return $this->tier?->sessionCount() ?? 0;
+        return $this->membershipService?->sessions_count ?? 0;
     }
 
     /**
-     * Get the price for the selected tier.
+     * Get the price for the selected membership service.
      */
     #[Computed]
     public function tierPrice(): int
     {
-        if (! $this->selectedTier) {
-            return 0;
-        }
-
-        return config("membership.tiers.{$this->selectedTier}.price", 0);
+        return $this->membershipService?->price ?? 0;
     }
 
     /**
@@ -334,9 +341,9 @@ new class extends Component
     {
         if ($this->step === 1) {
             $this->validate([
-                'selectedTier' => ['required', 'string'],
+                'selectedServiceId' => ['required', 'integer', 'exists:services,id'],
             ], [
-                'selectedTier.required' => __('Jums ir jāizvēlās abonements.'),
+                'selectedServiceId.required' => __('Jums ir jāizvēlās abonements.'),
             ]);
         }
 
@@ -373,10 +380,10 @@ new class extends Component
 
     public function submitMembership(): void
     {
-        $tier = $this->tier;
+        $membershipService = $this->membershipService;
         $price = $this->tierPrice;
 
-        if (! $tier || count($this->sessions) !== $tier->sessionCount()) {
+        if (! $membershipService || count($this->sessions) !== $membershipService->sessions_count) {
             return;
         }
 
@@ -385,7 +392,7 @@ new class extends Component
         $periodStart = $dates->min()->startOfMonth();
         $periodEnd = $dates->min()->endOfMonth();
 
-        $result = DB::transaction(function () use ($tier, $price, $periodStart, $periodEnd) {
+        $result = DB::transaction(function () use ($membershipService, $price, $periodStart, $periodEnd) {
             // Verify capacity for all sessions
             foreach ($this->sessions as $session) {
                 $schedule = Schedule::lockForUpdate()->findOrFail($session['schedule_id']);
@@ -407,9 +414,9 @@ new class extends Component
                 'name' => $this->name,
                 'surname' => $this->surname,
                 'phone' => $this->phone,
-                'tier' => $tier,
+                'service_id' => $membershipService->id,
                 'price' => $price,
-                'sessions_total' => $tier->sessionCount(),
+                'sessions_total' => $membershipService->sessions_count,
                 'period_start' => $periodStart,
                 'period_end' => $periodEnd,
                 'payment_status' => PaymentStatus::Pending,
@@ -449,7 +456,8 @@ new class extends Component
     {
         $this->reset();
         unset(
-            $this->tier,
+            $this->membershipService,
+            $this->membershipServices,
             $this->requiredSessions,
             $this->tierPrice,
             $this->serviceTypes,
@@ -498,17 +506,17 @@ new class extends Component
                 <div class="space-y-6">
                     <flux:heading size="lg">{{ __('Izvēlieties abonementu') }}</flux:heading>
 
-                    <flux:radio.group wire:model.live="selectedTier" variant="cards">
-                        @foreach(MembershipTier::cases() as $tierOption)
+                    <flux:radio.group wire:model.live="selectedServiceId" variant="cards">
+                        @foreach($this->membershipServices as $membershipOption)
                             <flux:radio
-                                :value="$tierOption->value"
-                                :label="$tierOption->label()"
-                                :description="Number::currency(config('membership.tiers.' . $tierOption->value . '.price') / 100, 'EUR') . ' / ' . __('mēnesī')"
+                                :value="$membershipOption->id"
+                                :label="$membershipOption->name"
+                                :description="Number::currency($membershipOption->price / 100, 'EUR') . ' / ' . __('mēnesī')"
                             />
                         @endforeach
                     </flux:radio.group>
 
-                    @error('selectedTier')
+                    @error('selectedServiceId')
                         <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
                     @enderror
 
@@ -633,7 +641,7 @@ new class extends Component
                     <div class="p-4 space-y-2">
                         <div class="flex justify-between">
                             <flux:text class="font-medium">{{ __('Abonements') }}</flux:text>
-                            <flux:text>{{ $this->tier->label() }}</flux:text>
+                            <flux:text>{{ $this->membershipService->name }}</flux:text>
                         </div>
                         <flux:separator/>
                         <div class="flex justify-between">

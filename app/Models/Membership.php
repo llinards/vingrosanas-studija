@@ -2,18 +2,26 @@
 
 namespace App\Models;
 
-use App\Enums\MembershipTier;
 use App\Enums\PaymentStatus;
 use Database\Factories\MembershipFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Membership extends Model
 {
     /** @use HasFactory<MembershipFactory> */
     use HasFactory;
+
+    /**
+     * @return BelongsTo<Service, $this>
+     */
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
 
     /**
      * @return HasMany<Booking, $this>
@@ -135,10 +143,17 @@ class Membership extends Model
         });
     }
 
+    /**
+     * Get the membership tier label from the linked service.
+     */
+    public function tierLabel(): string
+    {
+        return $this->service?->name ?? '—';
+    }
+
     protected function casts(): array
     {
         return [
-            'tier' => MembershipTier::class,
             'payment_status' => PaymentStatus::class,
             'period_start' => 'date',
             'period_end' => 'date',

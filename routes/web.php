@@ -43,6 +43,8 @@ Route::get('membership/{membership}/success', static function (Membership $membe
         abort(404);
     }
 
+    $membership->load('service');
+
     return view('membership.success', ['membership' => $membership]);
 })->name('membership.success');
 

@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Enums\MembershipTier;
 use App\Enums\PaymentStatus;
 use App\Models\Membership;
+use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,16 +19,14 @@ class MembershipFactory extends Factory
      */
     public function definition(): array
     {
-        $tier = fake()->randomElement(MembershipTier::cases());
-
         return [
             'email' => fake()->safeEmail(),
             'name' => fake()->firstName(),
             'surname' => fake()->lastName(),
             'phone' => fake()->phoneNumber(),
-            'tier' => $tier,
-            'price' => config("membership.tiers.{$tier->value}.price"),
-            'sessions_total' => $tier->sessionCount(),
+            'service_id' => Service::factory()->membership(4),
+            'price' => 4000,
+            'sessions_total' => 4,
             'period_start' => today()->startOfMonth(),
             'period_end' => today()->endOfMonth(),
             'payment_status' => PaymentStatus::Pending,
@@ -52,9 +50,9 @@ class MembershipFactory extends Factory
     public function fourSessions(): static
     {
         return $this->state(fn (array $attributes) => [
-            'tier' => MembershipTier::FourSessions,
+            'service_id' => Service::factory()->membership(4),
             'sessions_total' => 4,
-            'price' => config('membership.tiers.four_sessions.price'),
+            'price' => 4000,
         ]);
     }
 
@@ -64,9 +62,9 @@ class MembershipFactory extends Factory
     public function nineSessions(): static
     {
         return $this->state(fn (array $attributes) => [
-            'tier' => MembershipTier::NineSessions,
+            'service_id' => Service::factory()->membership(9),
             'sessions_total' => 9,
-            'price' => config('membership.tiers.nine_sessions.price'),
+            'price' => 8000,
         ]);
     }
 

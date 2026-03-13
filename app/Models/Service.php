@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\ServiceFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,12 +54,25 @@ class Service extends Model
         return $this->priceTiers()->max('participant_count') ?? 1;
     }
 
+    /**
+     * Scope to only include membership services.
+     *
+     * @param  Builder<Service>  $query
+     * @return Builder<Service>
+     */
+    public function scopeMembership(Builder $query): Builder
+    {
+        return $query->where('is_membership', true);
+    }
+
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
             'is_exclusive' => 'boolean',
             'is_membership_eligible' => 'boolean',
+            'is_membership' => 'boolean',
+            'sessions_count' => 'integer',
         ];
     }
 }

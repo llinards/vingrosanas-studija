@@ -46,7 +46,7 @@ new class extends Component
     #[Computed]
     public function membership(): Membership
     {
-        return Membership::findOrFail($this->membershipId);
+        return Membership::with('service')->findOrFail($this->membershipId);
     }
 
     /**
@@ -166,7 +166,7 @@ new class extends Component
 
             <div class="flex flex-col gap-6 sm:flex-row">
                 <div class="sm:flex-1">
-                    <flux:input :value="$this->membership->tier->label()" :label="__('Abonements')" disabled/>
+                    <flux:input :value="$this->membership->tierLabel()" :label="__('Abonements')" disabled/>
                 </div>
                 <div class="sm:flex-1">
                     <flux:input :value="$this->membership->period_start->format('d.m.Y')" :label="__('Sākuma datums')" disabled/>

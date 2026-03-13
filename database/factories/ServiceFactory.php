@@ -27,6 +27,8 @@ class ServiceFactory extends Factory
             'is_active' => true,
             'is_exclusive' => false,
             'is_membership_eligible' => false,
+            'is_membership' => false,
+            'sessions_count' => null,
             'position' => 0,
         ];
     }
@@ -48,6 +50,20 @@ class ServiceFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_membership_eligible' => true,
+        ]);
+    }
+
+    /**
+     * Create a membership service with a given session count.
+     */
+    public function membership(int $sessions = 4): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_membership' => true,
+            'sessions_count' => $sessions,
+            'is_exclusive' => false,
+            'is_membership_eligible' => false,
+            'coach_id' => null,
         ]);
     }
 }

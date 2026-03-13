@@ -154,12 +154,15 @@ new class extends Component
                                         <flux:table.cell>
                                             <div class="flex items-center gap-2">
                                                 {{ $service->name }}
+                                                @if($service->is_membership)
+                                                    <flux:badge size="sm" color="blue">{{ __('Abonements') }}</flux:badge>
+                                                @endif
                                                 @if($service->is_exclusive)
                                                     <flux:badge size="sm" color="purple">{{ __('Individuāls') }}</flux:badge>
                                                 @endif
                                             </div>
                                         </flux:table.cell>
-                                        <flux:table.cell>{{ $service->coach->name }}</flux:table.cell>
+                                        <flux:table.cell>{{ $service->coach?->name ?? '—' }}</flux:table.cell>
                                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
                                         <flux:table.cell>
                                             <flux:switch wire:click="toggleActive({{ $service->id }})"

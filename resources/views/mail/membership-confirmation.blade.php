@@ -5,7 +5,7 @@ Paldies par abonementa iegādi!
 
 **Abonementa informācija:**
 
-- **Abonements:** {{ $membership->tier->label() }}
+- **Abonements:** {{ $membership->tierLabel() }}
 - **Periods:** {{ $membership->period_start->format('d.m.Y') }} — {{ $membership->period_end->format('d.m.Y') }}
 - **Cena:** {{ number_format($membership->price / 100, 2) }} EUR
 

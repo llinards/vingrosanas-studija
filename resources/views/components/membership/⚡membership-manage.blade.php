@@ -60,7 +60,7 @@ new class extends Component
     #[Computed]
     public function membership(): Membership
     {
-        return Membership::findOrFail($this->membershipId);
+        return Membership::with('service')->findOrFail($this->membershipId);
     }
 
     /**
@@ -320,7 +320,7 @@ new class extends Component
             <div class="space-y-2">
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                     <flux:text>{{ __('Abonements') }}</flux:text>
-                    <flux:text>{{ $this->membership->tier->label() }}</flux:text>
+                    <flux:text>{{ $this->membership->tierLabel() }}</flux:text>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                     <flux:text>{{ __('Periods') }}</flux:text>

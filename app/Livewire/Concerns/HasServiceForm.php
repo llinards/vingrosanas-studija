@@ -24,6 +24,10 @@ trait HasServiceForm
 
     public bool $is_membership_eligible = false;
 
+    public bool $is_membership = false;
+
+    public string $sessions_count = '';
+
     public string $newServiceTypeName = '';
 
     /**
@@ -56,15 +60,22 @@ trait HasServiceForm
      */
     protected function rules(): array
     {
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'service_type_id' => ['required', 'exists:service_types,id'],
-            'coach_id' => ['required', 'exists:coaches,id'],
+            'coach_id' => $this->is_membership ? ['nullable'] : ['required', 'exists:coaches,id'],
             'price' => ['required', 'numeric', 'min:0'],
-            'priceTiers' => ['array'],
-            'priceTiers.*.participant_count' => ['required', 'integer', 'min:1'],
-            'priceTiers.*.price' => ['required', 'numeric', 'min:0'],
         ];
+
+        if ($this->is_membership) {
+            $rules['sessions_count'] = ['required', 'integer', 'min:1'];
+        } else {
+            $rules['priceTiers'] = ['array'];
+            $rules['priceTiers.*.participant_count'] = ['required', 'integer', 'min:1'];
+            $rules['priceTiers.*.price'] = ['required', 'numeric', 'min:0'];
+        }
+
+        return $rules;
     }
 
     /**
@@ -90,6 +101,9 @@ trait HasServiceForm
             'priceTiers.*.price.required' => __('Cena ir obligāta.'),
             'priceTiers.*.price.numeric' => __('Cenai jābūt skaitlim.'),
             'priceTiers.*.price.min' => __('Cena nedrīkst būt negatīva.'),
+            'sessions_count.required' => __('Nodarbību skaits ir obligāts.'),
+            'sessions_count.integer' => __('Nodarbību skaitam jābūt veselam skaitlim.'),
+            'sessions_count.min' => __('Nodarbību skaitam jābūt vismaz 1.'),
         ];
     }
 

@@ -17,7 +17,7 @@ class CreateMembershipCheckoutSession
     {
         Stripe::setApiKey(config('cashier.secret'));
 
-        $membership->loadMissing('bookings.schedule.service');
+        $membership->loadMissing(['bookings.schedule.service', 'service']);
 
         $sessionDetails = $membership->bookings
             ->map(fn ($booking) => $booking->booking_date->format('d.m.Y')
@@ -31,7 +31,7 @@ class CreateMembershipCheckoutSession
                 'price_data' => [
                     'currency' => config('cashier.currency', 'eur'),
                     'product_data' => [
-                        'name' => 'Abonements - '.$membership->tier->label(),
+                        'name' => 'Abonements - '.$membership->tierLabel(),
                         'description' => $sessionDetails,
                     ],
                     'unit_amount' => $membership->price,

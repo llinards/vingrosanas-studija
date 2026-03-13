@@ -19,7 +19,7 @@ test('membership success page displays details for paid membership', function ()
 
     $this->get(route('membership.success', ['membership' => $membership, 'session_id' => 'cs_test_membership_123']))
         ->assertSuccessful()
-        ->assertSee($membership->tier->label());
+        ->assertSee($membership->tierLabel());
 });
 
 test('membership success page shows processing for pending membership', function () {

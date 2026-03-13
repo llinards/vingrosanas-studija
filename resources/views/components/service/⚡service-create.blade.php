@@ -25,11 +25,13 @@ new class extends Component
                 $service = Service::create([
                     'name' => $this->name,
                     'service_type_id' => $this->service_type_id,
-                    'coach_id' => $this->coach_id,
+                    'coach_id' => $this->is_membership ? null : $this->coach_id,
                     'price' => (int) round($this->price * 100),
                     'is_active' => $this->is_active,
-                    'is_exclusive' => $this->is_exclusive,
-                    'is_membership_eligible' => $this->is_membership_eligible,
+                    'is_exclusive' => $this->is_membership ? false : $this->is_exclusive,
+                    'is_membership_eligible' => $this->is_membership ? false : $this->is_membership_eligible,
+                    'is_membership' => $this->is_membership,
+                    'sessions_count' => $this->is_membership ? (int) $this->sessions_count : null,
                 ]);
 
                 // Create price tier for 1 participant using the base price

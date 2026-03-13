@@ -30,6 +30,8 @@ new class extends Component
         $this->is_active = $service->is_active;
         $this->is_exclusive = $service->is_exclusive;
         $this->is_membership_eligible = $service->is_membership_eligible;
+        $this->is_membership = $service->is_membership;
+        $this->sessions_count = $service->sessions_count ? (string) $service->sessions_count : '';
 
         // Load existing price tiers (excluding the base 1-participant tier)
         $this->priceTiers = $service->priceTiers()
@@ -58,11 +60,13 @@ new class extends Component
                 $service->update([
                     'name' => $this->name,
                     'service_type_id' => $this->service_type_id,
-                    'coach_id' => $this->coach_id,
+                    'coach_id' => $this->is_membership ? null : $this->coach_id,
                     'price' => (int) round($this->price * 100),
                     'is_active' => $this->is_active,
-                    'is_exclusive' => $this->is_exclusive,
-                    'is_membership_eligible' => $this->is_membership_eligible,
+                    'is_exclusive' => $this->is_membership ? false : $this->is_exclusive,
+                    'is_membership_eligible' => $this->is_membership ? false : $this->is_membership_eligible,
+                    'is_membership' => $this->is_membership,
+                    'sessions_count' => $this->is_membership ? (int) $this->sessions_count : null,
                 ]);
 
                 // Update the base 1-participant tier
