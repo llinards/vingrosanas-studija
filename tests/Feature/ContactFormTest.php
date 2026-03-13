@@ -3,6 +3,7 @@
 use App\Mail\ContactFormSubmission;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
+use Spatie\Honeypot\Honeypot;
 
 test('contact form sends email on valid submission', function () {
     Mail::fake();
@@ -78,6 +79,25 @@ test('contact form validates terms must be accepted', function () {
         ->set('terms', false)
         ->call('submit')
         ->assertHasErrors(['terms']);
+
+    Mail::assertNothingSent();
+});
+
+test('contact form blocks spam when honeypot field is filled', function () {
+    Mail::fake();
+
+    $honeypot = app(Honeypot::class);
+    $nameField = $honeypot->unrandomizedNameFieldName();
+
+    Livewire::test('contact-form')
+        ->set('name', 'Spammer')
+        ->set('surname', 'Bot')
+        ->set('email', 'spam@example.com')
+        ->set('message', 'Buy now!')
+        ->set('terms', true)
+        ->set("extraFields.{$nameField}", 'I am a bot')
+        ->call('submit')
+        ->assertForbidden();
 
     Mail::assertNothingSent();
 });

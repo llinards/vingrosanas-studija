@@ -3,9 +3,15 @@
 use App\Mail\ContactFormSubmission;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
+use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
+use Spatie\Honeypot\Http\Livewire\Concerns\UsesSpamProtection;
 
 new class extends Component
 {
+    use UsesSpamProtection;
+
+    public HoneypotData $extraFields;
+
     public string $name = '';
 
     public string $surname = '';
@@ -16,8 +22,15 @@ new class extends Component
 
     public bool $terms = false;
 
+    public function mount(): void
+    {
+        $this->extraFields = new HoneypotData();
+    }
+
     public function submit(): void
     {
+        $this->protectAgainstSpam();
+
         $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
@@ -57,6 +70,7 @@ new class extends Component
     <form wire:submit="submit" class="flex flex-col items-center justify-center w-full">
         <div
             class="w-full border-6 border-blue rounded-4xl bg-beige shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
+            <x-honeypot livewire-model="extraFields" />
             <flux:input wire:model="name" type="text" :label="__('Vārds*')" />
             <flux:input wire:model="surname" type="text" :label="__('Uzvārds*')" />
             <flux:input wire:model="email" type="email" :label="__('E-pasts*')" />
