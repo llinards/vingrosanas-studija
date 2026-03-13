@@ -33,6 +33,8 @@ Route::get('booking/{booking}/success', static function (Booking $booking, Reque
     return view('booking.success', ['booking' => $booking]);
 })->name('booking.success')->withTrashed();
 
+Route::view('check-in', 'check-in')->name('check-in');
+
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::redirect('/', 'admin/bookings')->name('dashboard');
 
