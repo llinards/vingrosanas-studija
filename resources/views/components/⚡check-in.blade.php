@@ -7,8 +7,7 @@ use App\Models\Membership;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     public string $email = '';
 
     public bool $checkedIn = false;
@@ -36,16 +35,16 @@ new class extends Component
             'email' => ['required', 'email'],
         ], [
             'email.required' => __('E-pasts ir obligāts.'),
-            'email.email' => __('E-pastam jābūt derīgai e-pasta adresei.'),
+            'email.email'    => __('E-pastam jābūt derīgai e-pasta adresei.'),
         ]);
 
         $bookings = Booking::query()
-            ->with('schedule.service.coach')
-            ->where('email', $this->email)
-            ->where('booking_date', today())
-            ->where('payment_status', PaymentStatus::Paid)
-            ->whereIn('attendance_status', [AttendanceStatus::Pending, AttendanceStatus::Attended])
-            ->get();
+                           ->with('schedule.service.coach')
+                           ->where('email', $this->email)
+                           ->where('booking_date', today())
+                           ->where('payment_status', PaymentStatus::Paid)
+                           ->whereIn('attendance_status', [AttendanceStatus::Pending, AttendanceStatus::Attended])
+                           ->get();
 
         $pending = $bookings->where('attendance_status', AttendanceStatus::Pending);
 
@@ -72,7 +71,7 @@ new class extends Component
     {
         $booking = $this->matchingBookings?->firstWhere('id', $bookingId);
 
-        if (! $booking) {
+        if ( ! $booking) {
             return;
         }
 
@@ -89,22 +88,22 @@ new class extends Component
     {
         $booking->update(['attendance_status' => AttendanceStatus::Attended]);
 
-        $this->checkedIn = true;
+        $this->checkedIn            = true;
         $this->checkedInServiceName = $booking->schedule->service->name;
-        $this->checkedInCoachName = $booking->schedule->service->coach->name;
-        $this->checkedInDate = $booking->booking_date->format('d.m.Y');
-        $this->checkedInTime = substr($booking->schedule->start_time, 0, 5);
-        $this->matchingBookings = null;
+        $this->checkedInCoachName   = $booking->schedule->service->coach->name;
+        $this->checkedInDate        = $booking->booking_date->format('d.m.Y');
+        $this->checkedInTime        = substr($booking->schedule->start_time, 0, 5);
+        $this->matchingBookings     = null;
 
         // Check for membership info
         if ($booking->membership_id) {
             $membership = Membership::find($booking->membership_id);
 
             if ($membership && $membership->isActive()) {
-                $this->hasMembership = true;
-                $this->membershipSessionsUsed = $membership->bookings()
-                    ->where('attendance_status', AttendanceStatus::Attended)
-                    ->count();
+                $this->hasMembership           = true;
+                $this->membershipSessionsUsed  = $membership->bookings()
+                                                            ->where('attendance_status', AttendanceStatus::Attended)
+                                                            ->count();
                 $this->membershipSessionsTotal = $membership->sessions_total;
             }
         }
@@ -145,7 +144,8 @@ new class extends Component
                 <flux:separator/>
                 <div class="flex justify-between items-center py-2">
                     <flux:text class="font-medium">{{ __('Abonements') }}</flux:text>
-                    <flux:badge size="sm" color="purple">{{ $membershipSessionsUsed }}/{{ $membershipSessionsTotal }} {{ __('apmeklētas') }}</flux:badge>
+                    <flux:badge size="sm">{{ $membershipSessionsUsed }}
+                        /{{ $membershipSessionsTotal }} {{ __('apmeklētas') }}</flux:badge>
                 </div>
             @endif
         </div>
@@ -169,10 +169,13 @@ new class extends Component
                             class="w-full text-left p-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition cursor-pointer">
                         <div class="flex justify-between items-center">
                             <div>
-                                <flux:text class="font-semibold">{{ $matchingBooking->schedule->service->name }}</flux:text>
-                                <flux:text class="text-sm text-gray-500">{{ $matchingBooking->schedule->service->coach->name }}</flux:text>
+                                <flux:text
+                                    class="font-semibold">{{ $matchingBooking->schedule->service->name }}</flux:text>
+                                <flux:text
+                                    class="text-sm text-gray-500">{{ $matchingBooking->schedule->service->coach->name }}</flux:text>
                             </div>
-                            <flux:text class="font-semibold">{{ substr($matchingBooking->schedule->start_time, 0, 5) }}</flux:text>
+                            <flux:text
+                                class="font-semibold">{{ substr($matchingBooking->schedule->start_time, 0, 5) }}</flux:text>
                         </div>
                     </button>
                 @endforeach
@@ -193,7 +196,7 @@ new class extends Component
             </flux:text>
 
             <form wire:submit="checkIn" class="space-y-6">
-                <flux:input wire:model="email" type="email" :label="__('E-pasts')" />
+                <flux:input wire:model="email" type="email" :label="__('E-pasts')"/>
                 <div class="text-center">
                     <flux:button type="submit" class="button large primary">
                         {{ __('Reģistrēties') }}

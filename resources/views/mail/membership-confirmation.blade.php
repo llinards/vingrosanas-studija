@@ -15,7 +15,7 @@ Paldies par abonementa iegādi!
 - {{ $booking->booking_date->format('d.m.Y') }} {{ substr($booking->schedule->start_time, 0, 5) }} — {{ $booking->schedule->service->name }}
 @endforeach
 
-Jūs varat pārbookot nodarbības savā abonementa pārvaldības lapā.
+Jūs varat mainīt nodarbības savā abonementa pārvaldības lapā.
 
 <x-mail::button :url="route('membership.manage', ['membership' => $membership, 'session_id' => $membership->stripe_checkout_session_id])">
 Pārvaldīt abonementu

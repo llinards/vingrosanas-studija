@@ -15,8 +15,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     #[Locked]
     public int $membershipId;
 
@@ -46,12 +45,12 @@ new class extends Component
     {
         $sessionId = request()->query('session_id');
 
-        if (! $sessionId || $sessionId !== $membership->stripe_checkout_session_id) {
+        if ( ! $sessionId || $sessionId !== $membership->stripe_checkout_session_id) {
             abort(404);
         }
 
         $this->membershipId = $membership->id;
-        $this->sessionId = $sessionId;
+        $this->sessionId    = $sessionId;
     }
 
     /**
@@ -70,10 +69,10 @@ new class extends Component
     public function bookings(): Collection
     {
         return $this->membership->bookings()
-            ->with(['schedule.service.coach'])
-            ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
-            ->orderBy('booking_date')
-            ->get();
+                                ->with(['schedule.service.coach'])
+                                ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
+                                ->orderBy('booking_date')
+                                ->get();
     }
 
     /**
@@ -84,8 +83,8 @@ new class extends Component
     {
         return ServiceType::whereHas('services', function ($query) {
             $query->where('is_active', true)
-                ->where('is_membership_eligible', true)
-                ->whereHas('schedules', fn ($q) => $q->where('is_active', true));
+                  ->where('is_membership_eligible', true)
+                  ->whereHas('schedules', fn($q) => $q->where('is_active', true));
         })->get();
     }
 
@@ -95,16 +94,16 @@ new class extends Component
     #[Computed]
     public function rebookServices(): Collection
     {
-        if (! $this->rebook_service_type_id) {
+        if ( ! $this->rebook_service_type_id) {
             return new Collection;
         }
 
         return Service::with('coach')
-            ->where('is_active', true)
-            ->where('is_membership_eligible', true)
-            ->where('service_type_id', $this->rebook_service_type_id)
-            ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
-            ->get();
+                      ->where('is_active', true)
+                      ->where('is_membership_eligible', true)
+                      ->where('service_type_id', $this->rebook_service_type_id)
+                      ->whereHas('schedules', fn($query) => $query->where('is_active', true))
+                      ->get();
     }
 
     /**
@@ -113,14 +112,14 @@ new class extends Component
     #[Computed]
     public function rebookSchedules(): Collection
     {
-        if (! $this->rebook_service_id) {
+        if ( ! $this->rebook_service_id) {
             return new Collection;
         }
 
         return Schedule::with('service.coach')
-            ->where('service_id', $this->rebook_service_id)
-            ->where('is_active', true)
-            ->get();
+                       ->where('service_id', $this->rebook_service_id)
+                       ->where('is_active', true)
+                       ->get();
     }
 
     /**
@@ -131,15 +130,15 @@ new class extends Component
     #[Computed]
     public function rebookTimeSlots(): array
     {
-        if (! $this->rebook_date || ! $this->rebook_service_id) {
+        if ( ! $this->rebook_date || ! $this->rebook_service_id) {
             return [];
         }
 
-        $date = Carbon::parse($this->rebook_date);
+        $date      = Carbon::parse($this->rebook_date);
         $schedules = $this->rebookSchedules;
-        $slots = [];
-        $isToday = $date->isToday();
-        $now = now();
+        $slots     = [];
+        $isToday   = $date->isToday();
+        $now       = now();
 
         foreach ($schedules as $schedule) {
             $matchesDay = false;
@@ -159,25 +158,25 @@ new class extends Component
                 }
 
                 $bookedParticipants = Booking::active()
-                    ->where('schedule_id', $schedule->id)
-                    ->whereDate('booking_date', $date->toDateString())
-                    ->where('id', '!=', $this->rebookingBookingId)
-                    ->sum('participant_count');
+                                             ->where('schedule_id', $schedule->id)
+                                             ->whereDate('booking_date', $date->toDateString())
+                                             ->where('id', '!=', $this->rebookingBookingId)
+                                             ->sum('participant_count');
 
                 $remaining = $schedule->max_capacity - $bookedParticipants;
 
                 if ($remaining >= 1) {
                     $slots[] = [
                         'schedule_id' => $schedule->id,
-                        'start_time' => substr((string) $schedule->start_time, 0, 5),
-                        'coach_name' => $schedule->service->coach->name,
-                        'remaining' => $remaining,
+                        'start_time'  => substr((string) $schedule->start_time, 0, 5),
+                        'coach_name'  => $schedule->service->coach->name,
+                        'remaining'   => $remaining,
                     ];
                 }
             }
         }
 
-        usort($slots, fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
+        usort($slots, fn($a, $b) => strcmp($a['start_time'], $b['start_time']));
 
         return $slots;
     }
@@ -187,11 +186,11 @@ new class extends Component
      */
     public function startRebook(int $bookingId): void
     {
-        $this->rebookingBookingId = $bookingId;
+        $this->rebookingBookingId     = $bookingId;
         $this->rebook_service_type_id = null;
-        $this->rebook_service_id = null;
-        $this->rebook_date = null;
-        $this->rebook_schedule_id = null;
+        $this->rebook_service_id      = null;
+        $this->rebook_date            = null;
+        $this->rebook_schedule_id     = null;
         unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
     }
 
@@ -200,25 +199,25 @@ new class extends Component
      */
     public function cancelRebook(): void
     {
-        $this->rebookingBookingId = null;
+        $this->rebookingBookingId     = null;
         $this->rebook_service_type_id = null;
-        $this->rebook_service_id = null;
-        $this->rebook_date = null;
-        $this->rebook_schedule_id = null;
+        $this->rebook_service_id      = null;
+        $this->rebook_date            = null;
+        $this->rebook_schedule_id     = null;
         unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
     }
 
     public function updatedRebookServiceTypeId(): void
     {
-        $this->rebook_service_id = null;
-        $this->rebook_date = null;
+        $this->rebook_service_id  = null;
+        $this->rebook_date        = null;
         $this->rebook_schedule_id = null;
         unset($this->rebookServices, $this->rebookSchedules, $this->rebookTimeSlots);
     }
 
     public function updatedRebookServiceId(): void
     {
-        $this->rebook_date = null;
+        $this->rebook_date        = null;
         $this->rebook_schedule_id = null;
         unset($this->rebookSchedules, $this->rebookTimeSlots);
     }
@@ -235,26 +234,26 @@ new class extends Component
     public function confirmRebook(): void
     {
         $this->validate([
-            'rebook_service_id' => ['required', 'exists:services,id'],
-            'rebook_date' => ['required', 'date'],
+            'rebook_service_id'  => ['required', 'exists:services,id'],
+            'rebook_date'        => ['required', 'date'],
             'rebook_schedule_id' => ['required', 'exists:schedules,id'],
         ], [
-            'rebook_service_id.required' => __('Jums ir jāizvēlās pakalpojums.'),
-            'rebook_date.required' => __('Datums ir obligāts.'),
+            'rebook_service_id.required'  => __('Jums ir jāizvēlās pakalpojums.'),
+            'rebook_date.required'        => __('Datums ir obligāts.'),
             'rebook_schedule_id.required' => __('Laika slots ir obligāts.'),
         ]);
 
         try {
             DB::transaction(function () {
-                $booking = Booking::findOrFail($this->rebookingBookingId);
+                $booking  = Booking::findOrFail($this->rebookingBookingId);
                 $schedule = Schedule::lockForUpdate()->findOrFail($this->rebook_schedule_id);
 
                 // Verify capacity (excluding the booking being rebooked)
                 $bookedParticipants = Booking::active()
-                    ->where('schedule_id', $this->rebook_schedule_id)
-                    ->whereDate('booking_date', $this->rebook_date)
-                    ->where('id', '!=', $this->rebookingBookingId)
-                    ->sum('participant_count');
+                                             ->where('schedule_id', $this->rebook_schedule_id)
+                                             ->whereDate('booking_date', $this->rebook_date)
+                                             ->where('id', '!=', $this->rebookingBookingId)
+                                             ->sum('participant_count');
 
                 $remaining = $schedule->max_capacity - $bookedParticipants;
 
@@ -263,7 +262,7 @@ new class extends Component
                 }
 
                 $booking->update([
-                    'schedule_id' => $this->rebook_schedule_id,
+                    'schedule_id'  => $this->rebook_schedule_id,
                     'booking_date' => $this->rebook_date,
                 ]);
             });
@@ -272,7 +271,7 @@ new class extends Component
             unset($this->bookings);
 
             Flux::toast(
-                text: __('Nodarbība veiksmīgi pārbookota!'),
+                text: __('Nodarbība veiksmīgi pārplānota!'),
                 variant: 'success',
             );
         } catch (\RuntimeException $e) {
@@ -285,7 +284,7 @@ new class extends Component
             Log::error($e);
 
             Flux::toast(
-                text: __('Neizdevās pārbookot nodarbību. Lūdzu, mēģiniet vēlreiz.'),
+                text: __('Neizdevās pārplānot nodarbību. Lūdzu, mēģiniet vēlreiz.'),
                 heading: __('Kļūda!'),
                 variant: 'danger',
             );
@@ -306,8 +305,8 @@ new class extends Component
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-            ->title(__('Pārvaldīt abonementu'))
-            ->layout('layouts.main');
+                    ->title(__('Pārvaldīt abonementu'))
+                    ->layout('layouts.main');
     }
 };
 ?>
@@ -324,11 +323,13 @@ new class extends Component
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                     <flux:text>{{ __('Periods') }}</flux:text>
-                    <flux:text>{{ $this->membership->period_start->format('d.m.Y') }} — {{ $this->membership->period_end->format('d.m.Y') }}</flux:text>
+                    <flux:text>{{ $this->membership->period_start->format('d.m.Y') }}
+                        — {{ $this->membership->period_end->format('d.m.Y') }}</flux:text>
                 </div>
                 <div class="flex justify-between items-center py-2 border-b border-gray-200">
                     <flux:text>{{ __('Nodarbības') }}</flux:text>
-                    <flux:text class="font-semibold">{{ $this->bookings->count() }}/{{ $this->membership->sessions_total }}</flux:text>
+                    <flux:text class="font-semibold">{{ $this->bookings->count() }}
+                        /{{ $this->membership->sessions_total }}</flux:text>
                 </div>
             </div>
 
@@ -350,11 +351,13 @@ new class extends Component
                             </div>
                             <div>
                                 @if($booking->attendance_status->value === 'attended')
-                                    <flux:badge size="sm" color="green">{{ $booking->attendance_status->label() }}</flux:badge>
+                                    <flux:badge size="sm"
+                                                color="green">{{ $booking->attendance_status->label() }}</flux:badge>
                                 @elseif($this->canRebook($booking))
                                     @if($this->rebookingBookingId !== $booking->id)
-                                        <flux:button wire:click="startRebook({{ $booking->id }})" size="sm" variant="outline">
-                                            {{ __('Pārbookot') }}
+                                        <flux:button wire:click="startRebook({{ $booking->id }})" size="sm"
+                                                     variant="outline">
+                                            {{ __('Pārplānot') }}
                                         </flux:button>
                                     @endif
                                 @else
@@ -376,7 +379,8 @@ new class extends Component
 
                                 @if($this->rebook_service_type_id)
                                     <flux:select wire:model.live="rebook_service_id" :label="__('Treniņš')">
-                                        <flux:select.option value="">{{ __('Izvēlieties treniņu') }}</flux:select.option>
+                                        <flux:select.option
+                                            value="">{{ __('Izvēlieties treniņu') }}</flux:select.option>
                                         @foreach($this->rebookServices as $service)
                                             <flux:select.option :value="$service->id">
                                                 {{ $service->name }} ({{ $service->coach->name }})
@@ -394,7 +398,8 @@ new class extends Component
                                 @endif
 
                                 @if($this->rebook_date && count($this->rebookTimeSlots) > 0)
-                                    <flux:radio.group wire:model.live="rebook_schedule_id" :label="__('Pieejamie laiki')" variant="cards">
+                                    <flux:radio.group wire:model.live="rebook_schedule_id"
+                                                      :label="__('Pieejamie laiki')" variant="cards">
                                         @foreach($this->rebookTimeSlots as $slot)
                                             <flux:radio :value="$slot['schedule_id']"
                                                         :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
@@ -402,13 +407,16 @@ new class extends Component
                                         @endforeach
                                     </flux:radio.group>
                                 @elseif($this->rebook_date)
-                                    <flux:text class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
+                                    <flux:text
+                                        class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
                                 @endif
 
                                 <div class="flex justify-between">
-                                    <flux:button wire:click="cancelRebook" size="sm" variant="ghost">{{ __('Atcelt') }}</flux:button>
+                                    <flux:button wire:click="cancelRebook" size="sm"
+                                                 variant="ghost">{{ __('Atcelt') }}</flux:button>
                                     @if($this->rebook_schedule_id)
-                                        <flux:button wire:click="confirmRebook" size="sm" variant="primary">{{ __('Apstiprināt') }}</flux:button>
+                                        <flux:button wire:click="confirmRebook" size="sm"
+                                                     variant="primary">{{ __('Apstiprināt') }}</flux:button>
                                     @endif
                                 </div>
                             </div>
