@@ -6,33 +6,21 @@
     @case('about')
         <flux:heading level="3">{{ __('Kas ir vingrošanas studija?') }}</flux:heading>
         <flux:text>
-            {{ __('“Vingrošanas studija” ir moderna sporta zāle
-            studijas formātā, kas radīta dažāda vecuma
-            cilvēkiem, kuri vēlas uzlabot veselību, atgūt
-            kustību brīvību un stiprināt sportisko formu
-            nepiespiestā un atbalstošā vidē.') }}
+            {{ __('“Vingrošanas studija” ir moderna studijas tipa sporta zāle, kas radīta dažāda vecuma cilvēkiem, kuri vēlas uzlabot veselību, atgūt kustību brīvību un stiprināt fizisko formu nepiespiestā un atbalstošā vidē.') }}
         </flux:text>
+        <flux:text>{{('Nodarbības ir piemērotas gan tiem, kuri tikai sāk sportot, gan tiem, kas atsāk fiziskās aktivitātes pēc ilgāka pārtraukuma, kā arī cilvēkiem, kuri vēlas uzlabot savu fizisko sagatavotību un kustību kvalitāti ikdienā.')}}</flux:text>
 
-        <flux:heading level="3">{{ __('Ko vingrošanas studija piedāvā') }}</flux:heading>
+        <flux:heading level="3">{{ __('VINGROŠANAS STUDIJA piedāvā:') }}</flux:heading>
         <ul class="list-disc pl-4">
-            <li>{{ __('Grupas un individuālās nodarbības') }}</li>
-            <li>{{ __('Funkcionālo trenažieru zonu') }}</li>
-            <li>{{ __('Fizioterapeita un masāžas pakalpojumus') }}</li>
+            <li>{{__('Grupu un individuālās nodarbības')}}</li>
+            <li>{{__('Funkcionālo trenažieru zonu')}}</li>
+            <li>{{__('Vingrošanu bērniem')}}</li>
+            <li>{{__('Fizioterapeita un masāžas pakalpojumus')}}</li>
         </ul>
 
+        <flux:heading level="3">{{ __('Mūsu pieeja:') }}</flux:heading>
         <flux:text>
-            {{ __('Mūsu nodarbības ir piemērotas ikvienam – gan
-            iesācējiem vai tiem, kas atsāk pēc pārtraukuma,
-            gan tiem, kas vēlas paaugstināt fizisko
-            sagatavotību un kustību kvalitāti ikdienā.') }}
-        </flux:text>
-
-        <flux:heading level="3">{{ __('Mūsu pieeja') }}</flux:heading>
-        <flux:text>
-            {{ __('Uzsvaru liekam uz kustību brīvību, stabilitāti,
-            mobilitāti un vispārējo labsajūtu. Mēs palīdzam
-            stiprināt veselību, samazināt traumu risku un
-            radīt vairāk enerģijas ikdienas dzīvei.') }}
+            {{ __('Darbā uzsvaru liekam uz kustību daudzveidību un brīvību, mobilitāti un vispārējo labsajūtu, palīdzot stiprināt veselību, samazināt traumu risku un radīt vairāk enerģijas ikdienas dzīvē.') }}
         </flux:text>
         @break
 
