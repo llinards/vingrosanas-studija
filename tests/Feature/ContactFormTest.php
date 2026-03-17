@@ -1,11 +1,39 @@
 <?php
 
 use App\Mail\ContactFormSubmission;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Spatie\Honeypot\Honeypot;
 
-test('contact form sends email on valid submission', function () {
+test('contact form sends email to site setting email', function () {
+    Mail::fake();
+
+    SiteSetting::factory()->create([
+        'group' => 'contact',
+        'key' => 'email',
+        'value' => 'studio@example.com',
+    ]);
+
+    Livewire::test('contact-form')
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('email', 'janis@example.com')
+        ->set('message', 'Mans jautājums par nodarbībām.')
+        ->set('terms', true)
+        ->call('submit')
+        ->assertHasNoErrors();
+
+    Mail::assertQueued(ContactFormSubmission::class, function ($mail) {
+        return $mail->hasTo('studio@example.com')
+            && $mail->name === 'Jānis'
+            && $mail->surname === 'Bērziņš'
+            && $mail->email === 'janis@example.com'
+            && $mail->contactMessage === 'Mans jautājums par nodarbībām.';
+    });
+});
+
+test('contact form falls back to config email when no site setting', function () {
     Mail::fake();
 
     Livewire::test('contact-form')
@@ -18,11 +46,7 @@ test('contact form sends email on valid submission', function () {
         ->assertHasNoErrors();
 
     Mail::assertQueued(ContactFormSubmission::class, function ($mail) {
-        return $mail->hasTo(config('mail.contact_email'))
-            && $mail->name === 'Jānis'
-            && $mail->surname === 'Bērziņš'
-            && $mail->email === 'janis@example.com'
-            && $mail->contactMessage === 'Mans jautājums par nodarbībām.';
+        return $mail->hasTo(config('mail.contact_email'));
     });
 });
 

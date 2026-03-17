@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\ContactFormSubmission;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Spatie\Honeypot\Http\Livewire\Concerns\HoneypotData;
@@ -50,7 +51,7 @@ new class extends Component
             'terms.accepted' => __('Jums jāpiekrīt personas datu apstrādei.'),
         ]);
 
-        Mail::to(config('mail.contact_email'))->send(
+        Mail::to(SiteSetting::getValue('contact', 'email') ?? config('mail.contact_email'))->send(
             new ContactFormSubmission(
                 name: $this->name,
                 surname: $this->surname,
