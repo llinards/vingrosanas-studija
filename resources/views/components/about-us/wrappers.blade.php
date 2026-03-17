@@ -34,7 +34,7 @@
         </flux:accordion.item>
     </flux:accordion>
 
-    <div class="hidden lg:grid md:grid-cols-2 md:gap-x-6" x-data="{ active: 'about' }">
+    <div class="hidden lg:grid md:grid-cols-2 md:items-center md:gap-x-6" x-data="{ active: 'about' }">
         <div class="flex flex-col w-fit space-y-12">
             <button type="button" @mouseenter="active = 'about'" @focus="active = 'about'">
                 <flux:heading level="2">{{ __('Par mums') }}</flux:heading>
@@ -53,7 +53,7 @@
             </button>
         </div>
 
-        <div class="pt-6 md:pt-0">
+        <div>
             <template x-if="active === 'about'">
                 <div x-data="{ shown: false }" x-init="requestAnimationFrame(() => { shown = true })"
                     :class="shown ? 'opacity-100' : 'opacity-0'" class="transition-opacity duration-300 space-y-6">

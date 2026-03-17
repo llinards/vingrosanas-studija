@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component
-{
+new class extends Component {
     use WithFileUploads;
 
     public $video_thumbnail;
@@ -29,9 +28,9 @@ new class extends Component
         $settings = SiteSetting::getGroup('media');
 
         $this->current_video_thumbnail = $settings->get('video_thumbnail', '');
-        $this->current_video_file = $settings->get('video_file', '');
+        $this->current_video_file      = $settings->get('video_file', '');
 
-        $images = $settings->get('gallery_images', '[]');
+        $images                       = $settings->get('gallery_images', '[]');
         $this->current_gallery_images = json_decode($images, true) ?: [];
     }
 
@@ -41,8 +40,8 @@ new class extends Component
     protected function rules(): array
     {
         return [
-            'video_thumbnail' => ['nullable', 'image', 'max:400'],
-            'video_file' => ['nullable', 'file', 'mimetypes:video/mp4,video/quicktime', 'max:102400'],
+            'video_thumbnail'      => ['nullable', 'image', 'max:400'],
+            'video_file'           => ['nullable', 'file', 'mimetypes:video/mp4,video/quicktime', 'max:51200'],
             'new_gallery_images.*' => ['nullable', 'image', 'max:400'],
         ];
     }
@@ -53,12 +52,12 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'video_thumbnail.image' => __('Failam jābūt attēlam.'),
-            'video_thumbnail.max' => __('Attēls nedrīkst pārsniegt 400KB.'),
-            'video_file.mimetypes' => __('Failam jābūt MP4 vai MOV video.'),
-            'video_file.max' => __('Video nedrīkst pārsniegt 100MB.'),
+            'video_thumbnail.image'      => __('Failam jābūt attēlam.'),
+            'video_thumbnail.max'        => __('Attēls nedrīkst pārsniegt 400KB.'),
+            'video_file.mimetypes'       => __('Failam jābūt MP4 vai MOV video.'),
+            'video_file.max'             => __('Video nedrīkst pārsniegt 50MB.'),
             'new_gallery_images.*.image' => __('Failam jābūt attēlam.'),
-            'new_gallery_images.*.max' => __('Attēls nedrīkst pārsniegt 400KB.'),
+            'new_gallery_images.*.max'   => __('Attēls nedrīkst pārsniegt 400KB.'),
         ];
     }
 
@@ -97,40 +96,40 @@ new class extends Component
         $this->validate();
 
         $thumbnailPath = $this->current_video_thumbnail;
-        $videoPath = $this->current_video_file;
+        $videoPath     = $this->current_video_file;
 
         if ($this->video_thumbnail) {
             $this->deleteOldFile($this->current_video_thumbnail);
-            $stored = $this->video_thumbnail->store('content/media', 'public');
-            $thumbnailPath = 'storage/'.$stored;
+            $stored                        = $this->video_thumbnail->store('content/media', 'public');
+            $thumbnailPath                 = 'storage/'.$stored;
             $this->current_video_thumbnail = $thumbnailPath;
-            $this->video_thumbnail = null;
+            $this->video_thumbnail         = null;
         }
 
         if ($this->video_file) {
             $this->deleteOldFile($this->current_video_file);
-            $stored = $this->video_file->store('content/media', 'public');
-            $videoPath = 'storage/'.$stored;
+            $stored                   = $this->video_file->store('content/media', 'public');
+            $videoPath                = 'storage/'.$stored;
             $this->current_video_file = $videoPath;
-            $this->video_file = null;
+            $this->video_file         = null;
         }
 
         $galleryImages = $this->current_gallery_images;
 
         foreach ($this->new_gallery_images as $newImage) {
             if ($newImage) {
-                $stored = $newImage->store('content/media', 'public');
+                $stored          = $newImage->store('content/media', 'public');
                 $galleryImages[] = 'storage/'.$stored;
             }
         }
 
         $this->current_gallery_images = $galleryImages;
-        $this->new_gallery_images = [];
+        $this->new_gallery_images     = [];
 
         SiteSetting::setGroup('media', [
             'video_thumbnail' => ['value' => $thumbnailPath, 'type' => 'image'],
-            'video_file' => ['value' => $videoPath, 'type' => 'string'],
-            'gallery_images' => ['value' => json_encode($galleryImages, JSON_UNESCAPED_UNICODE), 'type' => 'json'],
+            'video_file'      => ['value' => $videoPath, 'type' => 'string'],
+            'gallery_images'  => ['value' => json_encode($galleryImages, JSON_UNESCAPED_UNICODE), 'type' => 'json'],
         ]);
 
         Flux::toast(
@@ -151,22 +150,22 @@ new class extends Component
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-            ->title(__('Mediji'));
+                    ->title(__('Video / Galerija'));
     }
 };
 ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:heading class="mb-4" level="1" size="xl">{{ __('Saturs') }}</flux:heading>
-    <flux:separator />
+    <flux:separator/>
 
-    <x-content.layout :heading="__('Mediji')" :subheading="__('Video un galerijas attēli.')">
+    <x-content.layout :heading="__('Video / Galerija')" :subheading="__('Video un galerijas attēli.')">
         <form wire:submit="save" class="space-y-6">
             <flux:heading level="4">{{ __('Video') }}</flux:heading>
 
             @if ($current_video_thumbnail && !$video_thumbnail)
                 <div>
-                    <flux:label>{{ __('Pašreizējais sīktēls') }}</flux:label>
+                    <flux:label>{{ __('Pašreizējais attēls') }}</flux:label>
                     <flux:file-item
                         :heading="basename($current_video_thumbnail)"
                         :image="asset($current_video_thumbnail)"
@@ -175,7 +174,8 @@ new class extends Component
                 </div>
             @endif
 
-            <flux:file-upload wire:model="video_thumbnail" :label="$current_video_thumbnail ? __('Jauns video sīktēls (neobligāts)') : __('Video sīktēls')">
+            <flux:file-upload wire:model="video_thumbnail"
+                              :label="$current_video_thumbnail ? __('Jauns video attēls (neobligāts)') : __('Video attēls')">
                 <flux:file-upload.dropzone
                     :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
                     :text="__('JPG, PNG līdz 400KB')"
@@ -189,7 +189,7 @@ new class extends Component
                     :size="$video_thumbnail->getSize()"
                 >
                     <x-slot name="actions">
-                        <flux:file-item.remove wire:click="removeVideoThumbnail" />
+                        <flux:file-item.remove wire:click="removeVideoThumbnail"/>
                     </x-slot>
                 </flux:file-item>
             @endif
@@ -204,10 +204,11 @@ new class extends Component
                 </div>
             @endif
 
-            <flux:file-upload wire:model="video_file" :label="$current_video_file ? __('Jauns video fails (neobligāts)') : __('Video fails')">
+            <flux:file-upload wire:model="video_file"
+                              :label="$current_video_file ? __('Jauns video fails (neobligāts)') : __('Video fails')">
                 <flux:file-upload.dropzone
                     :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
-                    :text="__('MP4, MOV līdz 100MB')"
+                    :text="__('MP4, MOV līdz 50MB')"
                 />
             </flux:file-upload>
 
@@ -217,12 +218,12 @@ new class extends Component
                     :size="$video_file->getSize()"
                 >
                     <x-slot name="actions">
-                        <flux:file-item.remove wire:click="removeVideoFile" />
+                        <flux:file-item.remove wire:click="removeVideoFile"/>
                     </x-slot>
                 </flux:file-item>
             @endif
 
-            <flux:separator />
+            <flux:separator/>
 
             <div class="space-y-4">
                 <flux:heading level="4">{{ __('Galerija') }}</flux:heading>
@@ -237,7 +238,7 @@ new class extends Component
                                     :image="asset($image)"
                                 >
                                     <x-slot name="actions">
-                                        <flux:file-item.remove wire:click="removeExistingGalleryImage({{ $index }})" />
+                                        <flux:file-item.remove wire:click="removeExistingGalleryImage({{ $index }})"/>
                                     </x-slot>
                                 </flux:file-item>
                             @endforeach
@@ -262,7 +263,7 @@ new class extends Component
                                     :size="$newImage->getSize()"
                                 >
                                     <x-slot name="actions">
-                                        <flux:file-item.remove wire:click="removeNewGalleryImage({{ $index }})" />
+                                        <flux:file-item.remove wire:click="removeNewGalleryImage({{ $index }})"/>
                                     </x-slot>
                                 </flux:file-item>
                             @endforeach

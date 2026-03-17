@@ -74,13 +74,11 @@
 
 @theme {
     /* Typography */
-    --font-sans:
-        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
-        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
-        "Noto Color Emoji";
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
     --font-heading: "Oswald", ui-sans-serif, system-ui, sans-serif;
-    --font-heading-bold:
-        "Oswald-SemiBold", ui-sans-serif, system-ui, sans-serif;
+    --font-heading-bold: "Oswald-SemiBold", ui-sans-serif, system-ui, sans-serif;
     --font-body: "Archivo", ui-sans-serif, system-ui, sans-serif;
     --font-body-bold: "Archivo-SemiBold", ui-sans-serif, system-ui, sans-serif;
 
@@ -614,6 +612,28 @@ button {
     #coaches .f-carousel__slide.is-selected {
         opacity: 1;
     }
+}
+
+/* ============================================================================
+   About Us Content (CMS rich text output)
+   ========================================================================== */
+
+.about-us-content {
+    @apply space-y-3;
+}
+
+.about-us-content h1,
+.about-us-content h2,
+.about-us-content h3 {
+    @apply pb-0;
+}
+
+.about-us-content p {
+    @apply font-body text-black text-base md:text-lg;
+}
+
+.about-us-content ul {
+    @apply list-disc pl-4;
 }
 
 /* ============================================================================

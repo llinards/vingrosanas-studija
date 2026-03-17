@@ -143,37 +143,39 @@ new class extends Component
 
             <flux:separator />
 
-            <div class="space-y-4">
+            <div class="grid gap-6 sm:grid-cols-2">
                 @foreach (['left' => __('Kreisais attēls'), 'right' => __('Labais attēls')] as $side => $label)
-                    @if (${'current_image_'.$side} && !${'image_'.$side})
-                        <div>
-                            <flux:label>{{ __('Pašreizējais') }} — {{ $label }}</flux:label>
-                            <flux:file-item
-                                :heading="basename(${'current_image_'.$side})"
-                                :image="asset(${'current_image_'.$side})"
-                                class="mt-2"
+                    <div class="space-y-4">
+                        @if (${'current_image_'.$side} && !${'image_'.$side})
+                            <div>
+                                <flux:label>{{ __('Pašreizējais') }} — {{ $label }}</flux:label>
+                                <flux:file-item
+                                    :heading="basename(${'current_image_'.$side})"
+                                    :image="asset(${'current_image_'.$side})"
+                                    class="mt-2"
+                                />
+                            </div>
+                        @endif
+
+                        <flux:file-upload wire:model="image_{{ $side }}" :label="${'current_image_'.$side} ? __('Jauns') . ' — ' . $label . ' ' . __('(neobligāts)') : $label">
+                            <flux:file-upload.dropzone
+                                :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
+                                :text="__('JPG, PNG līdz 400KB')"
                             />
-                        </div>
-                    @endif
+                        </flux:file-upload>
 
-                    <flux:file-upload wire:model="image_{{ $side }}" :label="${'current_image_'.$side} ? __('Jauns') . ' — ' . $label . ' ' . __('(neobligāts)') : $label">
-                        <flux:file-upload.dropzone
-                            :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
-                            :text="__('JPG, PNG līdz 400KB')"
-                        />
-                    </flux:file-upload>
-
-                    @if (${'image_'.$side})
-                        <flux:file-item
-                            :heading="${'image_'.$side}->getClientOriginalName()"
-                            :image="${'image_'.$side}->temporaryUrl()"
-                            :size="${'image_'.$side}->getSize()"
-                        >
-                            <x-slot name="actions">
-                                <flux:file-item.remove wire:click="removeImage{{ ucfirst($side) }}" />
-                            </x-slot>
-                        </flux:file-item>
-                    @endif
+                        @if (${'image_'.$side})
+                            <flux:file-item
+                                :heading="${'image_'.$side}->getClientOriginalName()"
+                                :image="${'image_'.$side}->temporaryUrl()"
+                                :size="${'image_'.$side}->getSize()"
+                            >
+                                <x-slot name="actions">
+                                    <flux:file-item.remove wire:click="removeImage{{ ucfirst($side) }}" />
+                                </x-slot>
+                            </flux:file-item>
+                        @endif
+                    </div>
                 @endforeach
             </div>
 

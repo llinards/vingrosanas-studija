@@ -6,7 +6,7 @@
             <flux:navlist.item :href="route('admin.content.quote')" wire:navigate>{{ __('Citāts') }}</flux:navlist.item>
             <flux:navlist.item :href="route('admin.content.about')" wire:navigate>{{ __('Par mums') }}</flux:navlist.item>
             <flux:navlist.item :href="route('admin.content.new-premises')" wire:navigate>{{ __('Jaunās telpas') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('admin.content.media')" wire:navigate>{{ __('Mediji') }}</flux:navlist.item>
+            <flux:navlist.item :href="route('admin.content.media')" wire:navigate>{{ __('Video / Galerija') }}</flux:navlist.item>
             <flux:navlist.item :href="route('admin.content.seo')" wire:navigate>{{ __('SEO') }}</flux:navlist.item>
         </flux:navlist>
     </div>

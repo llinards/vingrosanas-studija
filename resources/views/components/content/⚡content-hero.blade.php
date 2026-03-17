@@ -6,8 +6,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new class extends Component
-{
+new class extends Component {
     use WithFileUploads;
 
     public string $heading = '';
@@ -22,8 +21,8 @@ new class extends Component
     {
         $settings = SiteSetting::getGroup('hero');
 
-        $this->heading = $settings->get('heading', '');
-        $this->cta_text = $settings->get('cta_text', '');
+        $this->heading                  = $settings->get('heading', '');
+        $this->cta_text                 = $settings->get('cta_text', '');
         $this->current_background_image = $settings->get('background_image', '');
     }
 
@@ -33,8 +32,8 @@ new class extends Component
     protected function rules(): array
     {
         return [
-            'heading' => ['required', 'string', 'max:255'],
-            'cta_text' => ['required', 'string', 'max:100'],
+            'heading'          => ['required', 'string', 'max:255'],
+            'cta_text'         => ['required', 'string', 'max:100'],
             'background_image' => ['nullable', 'image', 'max:400'],
         ];
     }
@@ -45,10 +44,10 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'heading.required' => __('Virsraksts ir obligāts.'),
-            'cta_text.required' => __('Pogas teksts ir obligāts.'),
+            'heading.required'       => __('Virsraksts ir obligāts.'),
+            'cta_text.required'      => __('Pogas teksts ir obligāts.'),
             'background_image.image' => __('Failam jābūt attēlam.'),
-            'background_image.max' => __('Attēls nedrīkst pārsniegt 400KB.'),
+            'background_image.max'   => __('Attēls nedrīkst pārsniegt 400KB.'),
         ];
     }
 
@@ -66,15 +65,15 @@ new class extends Component
 
         if ($this->background_image) {
             $this->deleteOldImage($this->current_background_image);
-            $stored = $this->background_image->store('content/hero', 'public');
-            $imagePath = 'storage/'.$stored;
+            $stored                         = $this->background_image->store('content/hero', 'public');
+            $imagePath                      = 'storage/'.$stored;
             $this->current_background_image = $imagePath;
-            $this->background_image = null;
+            $this->background_image         = null;
         }
 
         SiteSetting::setGroup('hero', [
-            'heading' => ['value' => $this->heading, 'type' => 'string'],
-            'cta_text' => ['value' => $this->cta_text, 'type' => 'string'],
+            'heading'          => ['value' => $this->heading, 'type' => 'string'],
+            'cta_text'         => ['value' => $this->cta_text, 'type' => 'string'],
             'background_image' => ['value' => $imagePath, 'type' => 'image'],
         ]);
 
@@ -96,21 +95,21 @@ new class extends Component
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-            ->title(__('Sākumlapa'));
+                    ->title(__('Sākumlapa'));
     }
 };
 ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
     <flux:heading class="mb-4" level="1" size="xl">{{ __('Saturs') }}</flux:heading>
-    <flux:separator />
+    <flux:separator/>
 
     <x-content.layout :heading="__('Sākumlapa')" :subheading="__('Sākumlapas virsraksts un fona attēls.')">
         <form wire:submit="save" class="space-y-6">
-            <flux:input wire:model="heading" :label="__('Virsraksts')" />
-            <flux:input wire:model="cta_text" :label="__('Pogas teksts')" />
+            <flux:input wire:model="heading" :label="__('Virsraksts')"/>
+            <flux:input wire:model="cta_text" :label="__('Pogas teksts')"/>
 
-            <flux:separator />
+            <flux:separator/>
 
             <div class="space-y-4">
                 @if ($current_background_image && !$background_image)
@@ -124,7 +123,8 @@ new class extends Component
                     </div>
                 @endif
 
-                <flux:file-upload wire:model="background_image" :label="$current_background_image ? __('Jauns fona attēls (neobligāts)') : __('Fona attēls')">
+                <flux:file-upload wire:model="background_image"
+                                  :label="$current_background_image ? __('Jauns fona attēls') : __('Fona attēls')">
                     <flux:file-upload.dropzone
                         :heading="__('Ievelc failu šeit vai klikšķini, lai pievienotu')"
                         :text="__('JPG, PNG līdz 400KB')"
@@ -138,7 +138,7 @@ new class extends Component
                         :size="$background_image->getSize()"
                     >
                         <x-slot name="actions">
-                            <flux:file-item.remove wire:click="removeImage" />
+                            <flux:file-item.remove wire:click="removeImage"/>
                         </x-slot>
                     </flux:file-item>
                 @endif
