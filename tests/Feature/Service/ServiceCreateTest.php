@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Coach;
+use App\Models\Service;
 use App\Models\ServiceType;
 use App\Models\User;
 use Livewire\Livewire;
@@ -135,10 +136,10 @@ test('validation messages are in latvian', function () {
         ->assertSee('Nosaukums ir obligāts.');
 });
 
-test('can create a new service type from modal', function () {
+test('can create a new service type inline', function () {
     Livewire::test('service.service-create')
-        ->set('newServiceTypeName', 'Grupu nodarbības')
-        ->call('saveServiceType')
+        ->set('serviceTypeSearch', 'Grupu nodarbības')
+        ->call('createServiceType')
         ->assertHasNoErrors();
 
     $this->assertDatabaseHas('service_types', ['name' => 'Grupu nodarbības']);
@@ -146,8 +147,8 @@ test('can create a new service type from modal', function () {
 
 test('new service type is auto-selected after creation', function () {
     $component = Livewire::test('service.service-create')
-        ->set('newServiceTypeName', 'Individuālās nodarbības')
-        ->call('saveServiceType')
+        ->set('serviceTypeSearch', 'Individuālās nodarbības')
+        ->call('createServiceType')
         ->assertHasNoErrors();
 
     $serviceType = ServiceType::where('name', 'Individuālās nodarbības')->first();
@@ -156,16 +157,44 @@ test('new service type is auto-selected after creation', function () {
 
 test('new service type name is required', function () {
     Livewire::test('service.service-create')
-        ->set('newServiceTypeName', '')
-        ->call('saveServiceType')
-        ->assertHasErrors(['newServiceTypeName' => 'required']);
+        ->set('serviceTypeSearch', '')
+        ->call('createServiceType')
+        ->assertHasErrors(['serviceTypeSearch' => 'required']);
 });
 
 test('new service type name must be unique', function () {
     ServiceType::factory()->create(['name' => 'Joga']);
 
     Livewire::test('service.service-create')
-        ->set('newServiceTypeName', 'Joga')
-        ->call('saveServiceType')
-        ->assertHasErrors(['newServiceTypeName' => 'unique']);
+        ->set('serviceTypeSearch', 'Joga')
+        ->call('createServiceType')
+        ->assertHasErrors(['serviceTypeSearch' => 'unique']);
+});
+
+test('can delete a service type with no services', function () {
+    $serviceType = ServiceType::factory()->create(['name' => 'Dzēšamais']);
+
+    Livewire::test('service.service-create')
+        ->call('deleteServiceType', $serviceType->id);
+
+    $this->assertDatabaseMissing('service_types', ['id' => $serviceType->id]);
+});
+
+test('cannot delete a service type that has services', function () {
+    $serviceType = ServiceType::factory()->create();
+    Service::factory()->create(['service_type_id' => $serviceType->id]);
+
+    Livewire::test('service.service-create')
+        ->call('deleteServiceType', $serviceType->id);
+
+    $this->assertDatabaseHas('service_types', ['id' => $serviceType->id]);
+});
+
+test('deleting selected service type clears selection', function () {
+    $serviceType = ServiceType::factory()->create();
+
+    Livewire::test('service.service-create')
+        ->set('service_type_id', $serviceType->id)
+        ->call('deleteServiceType', $serviceType->id)
+        ->assertSet('service_type_id', null);
 });

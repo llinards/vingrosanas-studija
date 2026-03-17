@@ -24,21 +24,30 @@
                     @endforeach
                 </flux:select>
             @endif
-            <div class="flex items-end gap-2">
-                <div class="flex-1">
-                    <flux:select wire:model="service_type_id" :label="__('Pakalpojuma veids')">
-                        <flux:select.option value="">{{ __('Izvēlieties veidu') }}</flux:select.option>
-                        @foreach($this->serviceTypes as $serviceType)
-                            <flux:select.option :value="$serviceType->id">{{ $serviceType->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                </div>
-                <flux:modal.trigger name="create-service-type">
-                    <flux:button variant="outline" icon="plus"/>
-                </flux:modal.trigger>
-            </div>
+            <flux:pillbox wire:model="service_type_id" variant="combobox" :label="__('Pakalpojuma veids')"
+                          :placeholder="__('Meklē vai izveido jaunu...')">
+                <x-slot name="input">
+                    <flux:pillbox.input wire:model="serviceTypeSearch" :placeholder="__('Meklē vai izveido jaunu...')"/>
+                </x-slot>
 
-            <x-service.new-service-type-modal/>
+                @foreach($this->serviceTypes as $serviceType)
+                    <flux:pillbox.option :value="$serviceType->id">
+                        <div class="flex items-center justify-between w-full">
+                            <span>{{ $serviceType->name }}</span>
+                            @if(!$serviceType->services()->exists())
+                                <button type="button" wire:click.stop="deleteServiceType({{ $serviceType->id }})"
+                                        class="ml-2 text-zinc-400 hover:text-red-500">
+                                    <flux:icon.trash variant="micro" class="size-4"/>
+                                </button>
+                            @endif
+                        </div>
+                    </flux:pillbox.option>
+                @endforeach
+
+                <flux:pillbox.option.create wire:click="createServiceType" min-length="2">
+                    {{ __('Izveidot') }} "<span wire:text="serviceTypeSearch"></span>"
+                </flux:pillbox.option.create>
+            </flux:pillbox>
 
             <flux:separator/>
 

@@ -28,7 +28,7 @@ trait HasServiceForm
 
     public string $sessions_count = '';
 
-    public string $newServiceTypeName = '';
+    public string $serviceTypeSearch = '';
 
     /**
      * @var array<int, array{participant_count: string, price: string}>
@@ -141,24 +141,22 @@ trait HasServiceForm
     }
 
     /**
-     * Create and save a new service type from the modal form.
-     *
-     * After creation, automatically selects the new service type and closes the modal.
+     * Create a new service type from the pillbox input and select it.
      */
-    public function saveServiceType(): void
+    public function createServiceType(): void
     {
         $this->validate([
-            'newServiceTypeName' => ['required', 'string', 'max:255', 'unique:service_types,name'],
+            'serviceTypeSearch' => ['required', 'string', 'max:255', 'unique:service_types,name'],
         ], [
-            'newServiceTypeName.required' => __('Nosaukums ir obligāts.'),
-            'newServiceTypeName.max' => __('Nosaukums nedrīkst pārsniegt 255 rakstzīmes.'),
-            'newServiceTypeName.unique' => __('Šāds pakalpojuma veids jau eksistē.'),
+            'serviceTypeSearch.required' => __('Nosaukums ir obligāts.'),
+            'serviceTypeSearch.max' => __('Nosaukums nedrīkst pārsniegt 255 rakstzīmes.'),
+            'serviceTypeSearch.unique' => __('Šāds pakalpojuma veids jau eksistē.'),
         ]);
 
-        $serviceType = ServiceType::create(['name' => $this->newServiceTypeName]);
+        $serviceType = ServiceType::create(['name' => $this->serviceTypeSearch]);
 
         $this->service_type_id = $serviceType->id;
-        $this->newServiceTypeName = '';
+        $this->serviceTypeSearch = '';
 
         unset($this->serviceTypes);
 
@@ -166,7 +164,36 @@ trait HasServiceForm
             text: __('Pakalpojuma veids izveidots!'),
             variant: 'success',
         );
+    }
 
-        $this->modal('create-service-type')->close();
+    /**
+     * Delete a service type if it has no associated services.
+     */
+    public function deleteServiceType(int $serviceTypeId): void
+    {
+        $serviceType = ServiceType::findOrFail($serviceTypeId);
+
+        if ($serviceType->services()->exists()) {
+            Flux::toast(
+                text: __('Nevar dzēst — šim veidam ir piesaistīti pakalpojumi.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+
+            return;
+        }
+
+        $serviceType->delete();
+
+        if ($this->service_type_id === $serviceTypeId) {
+            $this->service_type_id = null;
+        }
+
+        unset($this->serviceTypes);
+
+        Flux::toast(
+            text: __('Pakalpojuma veids dzēsts!'),
+            variant: 'success',
+        );
     }
 }
