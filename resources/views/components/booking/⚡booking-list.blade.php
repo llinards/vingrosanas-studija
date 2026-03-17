@@ -34,7 +34,7 @@ new class extends Component {
      * Whether to show only today's bookings.
      */
     #[Url]
-    public bool $todayOnly = false;
+    public bool $todayOnly = true;
 
     /**
      * Whether to show only past bookings.

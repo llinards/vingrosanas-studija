@@ -8,6 +8,7 @@ use App\Mail\BookingRefunded;
 use App\Mail\MembershipConfirmation;
 use App\Mail\MembershipRefunded;
 use App\Mail\NewBookingNotification;
+use App\Mail\NewMembershipNotification;
 use App\Models\Booking;
 use App\Models\Membership;
 use Illuminate\Http\Request;
@@ -119,6 +120,16 @@ class StripeWebhookController extends Controller
         $membership->load('bookings.schedule.service.coach');
 
         Mail::to($membership->email)->send(new MembershipConfirmation($membership));
+
+        // Send notification to each unique coach
+        $coachEmails = $membership->bookings
+            ->map(fn ($booking) => $booking->schedule->service->coach->email ?? null)
+            ->filter()
+            ->unique();
+
+        foreach ($coachEmails as $coachEmail) {
+            Mail::to($coachEmail)->send(new NewMembershipNotification($membership));
+        }
 
         Log::info('Membership payment completed', [
             'membership_id' => $membership->id,

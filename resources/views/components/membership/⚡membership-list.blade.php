@@ -25,7 +25,7 @@ new class extends Component {
      * Whether to show only active memberships.
      */
     #[Url]
-    public bool $activeOnly = false;
+    public bool $activeOnly = true;
 
     /**
      * Whether to show only expired memberships.
@@ -46,7 +46,7 @@ new class extends Component {
     {
         if (empty($this->paymentStatuses)) {
             $this->paymentStatuses = collect(PaymentStatus::cases())
-                ->map(fn (PaymentStatus $status) => $status->value)
+                ->map(fn(PaymentStatus $status) => $status->value)
                 ->all();
         }
     }
@@ -66,14 +66,17 @@ new class extends Component {
     public function memberships(): LengthAwarePaginator
     {
         return Membership::query()
-            ->with('service')
-            ->when($this->search, fn ($query) => $query->search($this->search))
-            ->whereIn('payment_status', $this->paymentStatuses)
-            ->when($this->activeOnly, fn ($query) => $query->active())
-            ->when($this->expiredOnly, fn ($query) => $query->where('period_end', '<', today()))
-            ->withCount(['bookings' => fn ($query) => $query->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+                         ->with('service')
+                         ->when($this->search, fn($query) => $query->search($this->search))
+                         ->whereIn('payment_status', $this->paymentStatuses)
+                         ->when($this->activeOnly, fn($query) => $query->active())
+                         ->when($this->expiredOnly, fn($query) => $query->where('period_end', '<', today()))
+                         ->withCount([
+                             'bookings' => fn($query) => $query->whereNotIn('payment_status',
+                                 [PaymentStatus::Refunded, PaymentStatus::Failed])
+                         ])
+                         ->orderBy('created_at', 'desc')
+                         ->paginate(10);
     }
 
     /**
@@ -156,8 +159,10 @@ new class extends Component {
                                 <div class="text-xs text-zinc-500">{{ $membership->email }}</div>
                             </flux:table.cell>
                             <flux:table.cell>{{ $membership->tierLabel() }}</flux:table.cell>
-                            <flux:table.cell>{{ $membership->period_start->format('d.m.Y') }} — {{ $membership->period_end->format('d.m.Y') }}</flux:table.cell>
-                            <flux:table.cell>{{ $membership->bookings_count }}/{{ $membership->sessions_total }}</flux:table.cell>
+                            <flux:table.cell>{{ $membership->period_start->format('d.m.Y') }}
+                                — {{ $membership->period_end->format('d.m.Y') }}</flux:table.cell>
+                            <flux:table.cell>{{ $membership->bookings_count }}
+                                /{{ $membership->sessions_total }}</flux:table.cell>
                             <flux:table.cell>
                                 <flux:badge size="sm" :color="match($membership->payment_status->value) {
                                     'paid' => 'green',
@@ -168,7 +173,8 @@ new class extends Component {
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex gap-2">
-                                    <flux:button href="{{ route('admin.memberships.edit', $membership) }}" variant="primary"
+                                    <flux:button href="{{ route('admin.memberships.edit', $membership) }}"
+                                                 variant="primary"
                                                  size="sm"
                                                  icon="pencil">
                                     </flux:button>
