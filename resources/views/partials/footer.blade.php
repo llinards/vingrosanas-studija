@@ -12,16 +12,16 @@
             <ul>
                 <li class="list-heading">{{ __('Menu') }}</li>
                 <li>
-                    <flux:link href="#aboutUs">{{ __('Par mums') }}</flux:link>
+                    <flux:link href="/#aboutUs">{{ __('Par mums') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#coaches">{{ __('Treneri') }}</flux:link>
+                    <flux:link href="/#coaches">{{ __('Treneri') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#services">{{ __('Pakalpojumi') }}</flux:link>
+                    <flux:link href="/#services">{{ __('Pakalpojumi') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="#contactForm">{{ __('Kontakti') }}</flux:link>
+                    <flux:link href="/#contactForm">{{ __('Kontakti') }}</flux:link>
                 </li>
             </ul>
             <ul>
@@ -40,7 +40,7 @@
                 </li>
                 <li>
                     <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela
-                        20 A') }}<br />
+                        20 A') }}<br/>
                         {{ __('Sigulda') }}
                     </flux:link>
                 </li>
@@ -50,12 +50,12 @@
                     <li>{{ __('Pieseko') }}</li>
                     <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-4">
                         <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
-                            rel="noopener noreferrer">
-                            <flux:icon.instagram />
+                                   rel="noopener noreferrer">
+                            <flux:icon.instagram/>
                         </flux:link>
 
                         <flux:link href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
-                            <flux:icon.facebook />
+                            <flux:icon.facebook/>
                         </flux:link>
                     </li>
                 </ul>
@@ -68,14 +68,14 @@
             </flux:text>
             <flux:text>{{ __('Dizains:') }}
                 <flux:link href="https://www.simpledesign.lv" class="text-white decoration-white" target="_black"
-                    rel="noopener noreferrer">
+                           rel="noopener noreferrer">
                     SIMPLE DESIGN
                 </flux:link>
             </flux:text>
             <flux:text>
                 {{ __('Izstrāde:') }}
                 <flux:link href="https://www.slmedia.lv" class="text-white decoration-white" target="_black"
-                    rel="noopener noreferrer">
+                           rel="noopener noreferrer">
                     S&L
                     Media
                 </flux:link>

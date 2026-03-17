@@ -1,6 +1,7 @@
 <x-layouts.main :title="__('Privātuma politika')">
     <div class="container mx-auto pt-36 pb-12 px-4 space-y-6">
         <flux:heading level="1">{{ __('Privātuma politika') }}</flux:heading>
+        <flux:text>{{ __('Pēdējoreiz atjaunināts: 17.03.2026') }}</flux:text>
         <flux:heading level="3">@lang('1. Personas datu apstrāde')</flux:heading>
         <flux:text>
             @lang('Mēs apkopojam un apstrādājam jūsu personas datus tikai tad, ja tas ir nepieciešams, lai nodrošinātu mūsu mājaslapas darbību, uzlabotu lietotāja pieredzi un sniegtu jums mūsu pakalpojumus. Mēs veicam šo datu apstrādi, pamatojoties uz likumīgām interesēm, līguma izpildi, tiesisko pienākumu izpildi vai jūsu piekrišanu.')
