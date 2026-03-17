@@ -63,9 +63,9 @@ test('booking list initializes with all attendance statuses selected', function 
 });
 
 test('booking list filters bookings by selected attendance statuses', function () {
-    $attendedBooking = Booking::factory()->attended()->create();
-    Booking::factory()->create(['attendance_status' => AttendanceStatus::Pending]);
-    Booking::factory()->missed()->create();
+    $attendedBooking = Booking::factory()->attended()->create(['booking_date' => today()]);
+    Booking::factory()->create(['attendance_status' => AttendanceStatus::Pending, 'booking_date' => today()]);
+    Booking::factory()->missed()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('attendanceStatuses', [AttendanceStatus::Attended->value]);

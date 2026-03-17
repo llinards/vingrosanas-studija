@@ -23,7 +23,7 @@ test('booking list page requires authentication', function () {
 });
 
 test('booking list displays all bookings', function () {
-    $bookings = Booking::factory()->count(3)->create();
+    $bookings = Booking::factory()->count(3)->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -39,7 +39,7 @@ test('booking list shows empty state when no bookings exist', function () {
 });
 
 test('booking list displays customer and service names', function () {
-    $booking = Booking::factory()->create();
+    $booking = Booking::factory()->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -48,7 +48,7 @@ test('booking list displays customer and service names', function () {
 });
 
 test('booking list shows payment status badge', function () {
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -66,7 +66,7 @@ test('can destroy a booking', function () {
 });
 
 test('bookings list refreshes after deletion', function () {
-    $bookings = Booking::factory()->count(2)->create();
+    $bookings = Booking::factory()->count(2)->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->assertSee($bookings[0]->name)
@@ -82,7 +82,8 @@ test('booking list displays bookings with soonest booking date first by default'
     $earlierBooking = Booking::factory()->create(['booking_date' => now()->addDays(1)]);
     $laterBooking = Booking::factory()->create(['booking_date' => now()->addDays(3)]);
 
-    $component = Livewire::test('booking.booking-list');
+    $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false);
 
     $bookings = $component->instance()->bookings;
     expect($bookings->first()->id)->toBe($earlierBooking->id);
@@ -90,7 +91,7 @@ test('booking list displays bookings with soonest booking date first by default'
 });
 
 test('booking list paginates results', function () {
-    Booking::factory()->count(15)->create();
+    Booking::factory()->count(15)->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list');
 
@@ -108,9 +109,9 @@ test('booking list can navigate to second page', function () {
 });
 
 test('booking list shows all bookings regardless of payment status', function () {
-    Booking::factory()->create(['payment_status' => PaymentStatus::Paid]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Paid, 'booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list');
 
@@ -122,7 +123,8 @@ test('booking list excludes past bookings by default', function () {
     $futureBooking = Booking::factory()->create(['booking_date' => now()->addDays(1)]);
     $pastBooking = Booking::factory()->past()->create();
 
-    $component = Livewire::test('booking.booking-list');
+    $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
@@ -130,7 +132,7 @@ test('booking list excludes past bookings by default', function () {
 });
 
 test('booking list displays participant count', function () {
-    Booking::factory()->create(['participant_count' => 3]);
+    Booking::factory()->create(['participant_count' => 3, 'booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -159,9 +161,9 @@ test('booking list initializes with all payment statuses selected', function () 
 });
 
 test('booking list filters bookings by selected payment statuses', function () {
-    $paidBooking = Booking::factory()->paid()->create();
-    $pendingBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
-    $failedBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
+    $paidBooking = Booking::factory()->paid()->create(['booking_date' => today()]);
+    $pendingBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
+    $failedBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('paymentStatuses', [PaymentStatus::Paid->value]);
@@ -172,10 +174,10 @@ test('booking list filters bookings by selected payment statuses', function () {
 });
 
 test('booking list can filter by multiple payment statuses', function () {
-    Booking::factory()->paid()->create();
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Failed]);
-    Booking::factory()->refunded()->create();
+    Booking::factory()->paid()->create(['booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
+    Booking::factory()->refunded()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('paymentStatuses', [PaymentStatus::Paid->value, PaymentStatus::Pending->value]);
@@ -185,8 +187,8 @@ test('booking list can filter by multiple payment statuses', function () {
 });
 
 test('booking list shows no bookings when no payment statuses are selected', function () {
-    Booking::factory()->paid()->create();
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->paid()->create(['booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('paymentStatuses', []);
@@ -196,7 +198,7 @@ test('booking list shows no bookings when no payment statuses are selected', fun
 });
 
 test('booking list resets pagination when payment status filter changes', function () {
-    Booking::factory()->paid()->count(15)->create();
+    Booking::factory()->paid()->count(15)->create(['booking_date' => today()]);
 
     Livewire::test('booking.booking-list')
         ->call('gotoPage', 2)
@@ -212,7 +214,7 @@ test('booking list payment status filter is reflected in url query string', func
 });
 
 test('booking list displays payment status filter checkboxes', function () {
-    Booking::factory()->create();
+    Booking::factory()->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -222,10 +224,10 @@ test('booking list displays payment status filter checkboxes', function () {
         ->assertSee('Atmaksāts');
 });
 
-test('booking list today only filter is off by default', function () {
+test('booking list today only filter is on by default', function () {
     $component = Livewire::test('booking.booking-list');
 
-    expect($component->instance()->todayOnly)->toBeFalse();
+    expect($component->instance()->todayOnly)->toBeTrue();
 });
 
 test('booking list today only filter shows only today bookings', function () {
@@ -283,7 +285,7 @@ test('booking list today only filter works with payment status filter', function
 });
 
 test('booking list displays today only filter checkbox', function () {
-    Booking::factory()->create();
+    Booking::factory()->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -302,6 +304,7 @@ test('booking list past only filter shows only past bookings when checked', func
     $todayBooking = Booking::factory()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false)
         ->set('pastOnly', true);
 
     $bookings = $component->instance()->bookings;
@@ -314,6 +317,7 @@ test('booking list past only filter excludes today bookings', function () {
     $todayBooking = Booking::factory()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false)
         ->set('pastOnly', true);
 
     $bookings = $component->instance()->bookings;
@@ -327,6 +331,7 @@ test('booking list past only filter shows today and future when unchecked', func
     $todayBooking = Booking::factory()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false)
         ->set('pastOnly', false);
 
     $bookings = $component->instance()->bookings;
@@ -359,6 +364,7 @@ test('booking list past only filter works with payment status filter', function 
     $futurePaid = Booking::factory()->paid()->create(['booking_date' => now()->addDay()]);
 
     $component = Livewire::test('booking.booking-list')
+        ->set('todayOnly', false)
         ->set('pastOnly', true)
         ->set('paymentStatuses', [PaymentStatus::Paid->value]);
 
@@ -368,7 +374,7 @@ test('booking list past only filter works with payment status filter', function 
 });
 
 test('booking list displays past only filter checkbox', function () {
-    Booking::factory()->create();
+    Booking::factory()->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
@@ -382,8 +388,8 @@ test('booking list search is empty by default', function () {
 });
 
 test('booking list filters by search query', function () {
-    $foundBooking = Booking::factory()->create(['name' => 'TestName', 'surname' => 'TestSurname']);
-    Booking::factory()->create(['name' => 'Other', 'surname' => 'Person']);
+    $foundBooking = Booking::factory()->create(['name' => 'TestName', 'surname' => 'TestSurname', 'booking_date' => today()]);
+    Booking::factory()->create(['name' => 'Other', 'surname' => 'Person', 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', 'TestName');
@@ -394,8 +400,8 @@ test('booking list filters by search query', function () {
 });
 
 test('booking list searches by surname', function () {
-    $foundBooking = Booking::factory()->create(['surname' => 'Smith']);
-    Booking::factory()->create(['surname' => 'Johnson']);
+    $foundBooking = Booking::factory()->create(['surname' => 'Smith', 'booking_date' => today()]);
+    Booking::factory()->create(['surname' => 'Johnson', 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', 'Smith');
@@ -406,8 +412,8 @@ test('booking list searches by surname', function () {
 });
 
 test('booking list searches by phone', function () {
-    $foundBooking = Booking::factory()->create(['phone' => '+37112345678']);
-    Booking::factory()->create(['phone' => '+37187654321']);
+    $foundBooking = Booking::factory()->create(['phone' => '+37112345678', 'booking_date' => today()]);
+    Booking::factory()->create(['phone' => '+37187654321', 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', '12345678');
@@ -418,8 +424,8 @@ test('booking list searches by phone', function () {
 });
 
 test('booking list searches by email', function () {
-    $foundBooking = Booking::factory()->create(['email' => 'unique123@test.com']);
-    Booking::factory()->create(['email' => 'different456@test.com']);
+    $foundBooking = Booking::factory()->create(['email' => 'unique123@test.com', 'booking_date' => today()]);
+    Booking::factory()->create(['email' => 'different456@test.com', 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', 'unique123');
@@ -430,8 +436,8 @@ test('booking list searches by email', function () {
 });
 
 test('booking list search respects payment status filter', function () {
-    Booking::factory()->paid()->create(['name' => 'Test User']);
-    Booking::factory()->create(['name' => 'Test User', 'payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->paid()->create(['name' => 'Test User', 'booking_date' => today()]);
+    Booking::factory()->create(['name' => 'Test User', 'payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', 'Test')
@@ -443,7 +449,7 @@ test('booking list search respects payment status filter', function () {
 });
 
 test('booking list search resets pagination', function () {
-    Booking::factory()->paid()->count(15)->create();
+    Booking::factory()->paid()->count(15)->create(['booking_date' => today()]);
 
     Livewire::test('booking.booking-list')
         ->set('search', 'Test')
@@ -460,7 +466,7 @@ test('booking list search is reflected in url query string', function () {
 });
 
 test('booking list displays search input', function () {
-    Booking::factory()->create();
+    Booking::factory()->create(['booking_date' => today()]);
 
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
