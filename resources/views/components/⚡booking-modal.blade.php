@@ -817,7 +817,7 @@ new class extends Component
                             {{-- Show participant count selection AFTER schedule is selected (for exclusive services) --}}
                             @if($this->schedule_id && $this->isExclusiveService && count($this->availablePriceTiers) > 1)
                                 <flux:radio.group wire:model.live="participant_count" :label="__('Dalībnieku skaits')"
-                                                  variant="cards">
+                                                  variant="cards" class="flex-wrap">
                                     @foreach($this->availablePriceTiers as $tier)
                                         <flux:radio :value="$tier->participant_count"
                                                     :label="$tier->participant_count . ' ' . ($tier->participant_count === 1 ? __('persona') : __('personas'))"

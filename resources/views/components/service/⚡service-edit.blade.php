@@ -125,4 +125,4 @@ new class extends Component
 ?>
 
 
-<x-service.service-form :heading="__('Rediģēt pakalpojumu')"/>
+<x-service.service-form :heading="__('Rediģēt pakalpojumu')" :editing="true"/>

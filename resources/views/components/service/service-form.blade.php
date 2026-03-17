@@ -1,33 +1,20 @@
-@props(['heading'])
+@props(['heading', 'editing' => false])
 
 <div class="flex justify-center">
     <div class="w-full max-w-2xl">
         <flux:heading level="1" size="xl" class="mb-6">{{ $heading }}</flux:heading>
 
         <form wire:submit="save" class="flex flex-col gap-6">
-            <flux:switch wire:model.live="is_membership" :label="__('Abonements')"
-                         :description="__('Ja ieslēgts, šis pakalpojums ir abonements ar noteiktu nodarbību skaitu.')"/>
+            @if(!$editing)
+                <flux:switch wire:model.live="is_membership" :label="__('Abonements')"
+                             :description="__('Ja ieslēgts, šis pakalpojums ir abonements ar noteiktu nodarbību skaitu.')"/>
+            @endif
 
-            <div class="flex flex-col gap-6 sm:flex-row ">
-                <div class="sm:flex-1">
-
-                    <flux:input
-                        wire:model="name"
-                        :label="__('Nosaukums')"
-                        :placeholder="__('Ievadi pakalpojuma nosaukumu')"
-                    />
-                </div>
-                <div class="sm:flex-1">
-                    <flux:input
-                        wire:model="price"
-                        :label="__('Cena 1 personai (EUR)')"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        :placeholder="__('Ievadi cenu (piem., 25.00)')"
-                    />
-                </div>
-            </div>
+            <flux:input
+                wire:model="name"
+                :label="__('Nosaukums')"
+                :placeholder="__('Ievadi pakalpojuma nosaukumu')"
+            />
 
             @if(!$this->is_membership)
                 <flux:select wire:model="coach_id" :label="__('Treneris')">
@@ -56,33 +43,59 @@
             <flux:separator/>
 
             @if($this->is_membership)
-                <flux:input
-                    wire:model="sessions_count"
-                    :label="__('Nodarbību skaits')"
-                    type="number"
-                    min="1"
-                    :placeholder="__('Piem., 4 vai 9')"
-                />
+                <div class="flex flex-col gap-6 sm:flex-row">
+                    <div class="sm:flex-1">
+                        <flux:input
+                            wire:model="price"
+                            :label="__('Cena (EUR)')"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            :placeholder="__('Ievadi cenu (piem., 25.00)')"
+                        />
+                    </div>
+                    <div class="sm:flex-1">
+                        <flux:input
+                            wire:model="sessions_count"
+                            :label="__('Nodarbību skaits')"
+                            type="number"
+                            min="1"
+                            :placeholder="__('Piem., 4 vai 9')"
+                        />
+                    </div>
+                </div>
             @else
                 {{-- Price Tiers Section --}}
                 <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <flux:heading size="sm">{{ __('Cenas vairākiem dalībniekiem') }}</flux:heading>
-                        <flux:button wire:click.prevent="addPriceTier" variant="ghost" size="sm" icon="plus">
-                            {{ __('Pievienot') }}
-                        </flux:button>
-                    </div>
+                    <flux:heading size="sm">{{ __('Cenas') }}</flux:heading>
 
-                    <flux:text size="sm" class="text-zinc-500">
-                        {{ __('Pievieno cenas, ja vēlies atļaut rezervāciju vairākām personām vienlaikus.') }}
-                    </flux:text>
+                    <div class="flex items-end gap-4">
+                        <div class="w-32">
+                            <flux:input
+                                :label="__('Dalībnieki')"
+                                value="1"
+                                disabled
+                            />
+                        </div>
+                        <div class="flex-1">
+                            <flux:input
+                                wire:model="price"
+                                :label="__('Cena kopā (EUR)')"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                :placeholder="__('Cena')"
+                            />
+                        </div>
+                        {{-- Spacer to align with tier rows that have a delete button --}}
+                        <div class="size-10 shrink-0"></div>
+                    </div>
 
                     @foreach($this->priceTiers as $index => $tier)
                         <div class="flex items-end gap-4" wire:key="tier-{{ $index }}">
                             <div class="w-32">
                                 <flux:input
                                     wire:model="priceTiers.{{ $index }}.participant_count"
-                                    :label="$index === 0 ? __('Dalībnieki') : null"
                                     type="number"
                                     min="2"
                                     :placeholder="__('Skaits')"
@@ -91,7 +104,6 @@
                             <div class="flex-1">
                                 <flux:input
                                     wire:model="priceTiers.{{ $index }}.price"
-                                    :label="$index === 0 ? __('Cena kopā (EUR)') : null"
                                     type="number"
                                     step="0.01"
                                     min="0"
@@ -103,11 +115,9 @@
                         </div>
                     @endforeach
 
-                    @if(count($this->priceTiers) === 0)
-                        <flux:text size="sm" class="text-zinc-400 italic">
-                            {{ __('Nav pievienotu papildu cenu. Rezervācija būs pieejama tikai 1 personai.') }}
-                        </flux:text>
-                    @endif
+                    <flux:button wire:click.prevent="addPriceTier" variant="ghost" size="sm" icon="plus">
+                        {{ __('Pievienot cenu vairākiem dalībniekiem') }}
+                    </flux:button>
                 </div>
 
                 <flux:separator/>
