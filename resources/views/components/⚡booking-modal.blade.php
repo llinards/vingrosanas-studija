@@ -766,12 +766,12 @@ new class extends Component {
                         ? [1 => __('Treniņš'), 2 => __('Laiks'), 3 => __('Dati'), 4 => __('Maksājums')]
                         : [1 => __('Abonements'), 2 => __('Nodarbības'), 3 => __('Dati'), 4 => __('Maksājums')];
                 @endphp
-                <div class="flex items-start justify-center gap-2 mt-12 md:mt-0">
+                <div class="flex items-start justify-center gap-1 md:gap-2 mt-8 md:mt-0">
                     @for($i = 1; $i <= 4; $i++)
-                        <div class="flex items-start gap-2">
+                        <div class="flex items-start gap-1 md:gap-2">
                             <div class="flex flex-col items-center gap-1">
                                 <div @class([
-                                    'flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                                    'flex size-7 md:size-8 items-center justify-center rounded-full text-xs md:text-sm font-medium transition-colors',
                                     'bg-blue text-white' => $step === $i,
                                     'bg-green-500 text-white cursor-pointer hover:bg-green-600' => $step > $i,
                                     'bg-zinc-200 text-zinc-500' => $step < $i,
@@ -779,13 +779,13 @@ new class extends Component {
                                      @if($step > $i) wire:click="goToStep({{ $i }})" @endif
                                 >
                                     @if($step > $i)
-                                        <flux:icon.check class="size-4"/>
+                                        <flux:icon.check class="size-3 md:size-4"/>
                                     @else
                                         {{ $i }}
                                     @endif
                                 </div>
                                 <span @class([
-                                    'text-xs whitespace-nowrap',
+                                    'text-[10px] md:text-xs whitespace-nowrap',
                                     'text-blue font-medium' => $step === $i,
                                     'text-green-600' => $step > $i,
                                     'text-zinc-400' => $step < $i,
@@ -793,7 +793,7 @@ new class extends Component {
                             </div>
                             @if($i < 4)
                                 <div @class([
-                                    'h-px w-8 mt-4',
+                                    'h-px w-4 md:w-8 mt-3.5 md:mt-4',
                                     'bg-green-500' => $step > $i,
                                     'bg-zinc-200' => $step <= $i,
                                 ])>
@@ -808,31 +808,28 @@ new class extends Component {
                     <div class="rounded-lg border border-zinc-200 p-3 space-y-1">
                         @if($mode === 'booking')
                             @if($this->selectedService)
-                                <div class="flex justify-between text-sm">
-                                    <flux:text class="text-zinc-500">{{ __('Treniņš') }}</flux:text>
-                                    <flux:text class="font-medium">{{ $this->selectedService->name }}</flux:text>
+                                <div class="flex justify-between gap-2 text-sm">
+                                    <flux:text class="text-zinc-500 shrink-0">{{ __('Treniņš') }}</flux:text>
+                                    <flux:text class="font-medium truncate">{{ $this->selectedService->name }}</flux:text>
                                 </div>
                             @endif
                             @if($step >= 3 && $this->selectedDate && $this->selectedSchedule)
-                                <div class="flex justify-between text-sm">
-                                    <flux:text class="text-zinc-500">{{ __('Datums') }}</flux:text>
-                                    <flux:text
-                                        class="font-medium">{{ Carbon::parse($this->selectedDate)->format('d.m.Y') }} {{ substr($this->selectedSchedule->start_time, 0, 5) }}</flux:text>
+                                <div class="flex justify-between gap-2 text-sm">
+                                    <flux:text class="text-zinc-500 shrink-0">{{ __('Datums') }}</flux:text>
+                                    <flux:text class="font-medium">{{ Carbon::parse($this->selectedDate)->format('d.m.Y') }} {{ substr($this->selectedSchedule->start_time, 0, 5) }}</flux:text>
                                 </div>
                             @endif
                             @if($this->service_id)
-                                <div class="flex justify-between text-sm">
-                                    <flux:text class="text-zinc-500">{{ __('Cena') }}</flux:text>
-                                    <flux:text
-                                        class="font-medium">{{ Number::currency($this->selectedPrice / 100, 'EUR') }}</flux:text>
+                                <div class="flex justify-between gap-2 text-sm">
+                                    <flux:text class="text-zinc-500 shrink-0">{{ __('Cena') }}</flux:text>
+                                    <flux:text class="font-medium">{{ Number::currency($this->selectedPrice / 100, 'EUR') }}</flux:text>
                                 </div>
                             @endif
                         @else
                             @if($this->membershipService)
-                                <div class="flex justify-between text-sm">
-                                    <flux:text class="text-zinc-500">{{ __('Abonements') }}</flux:text>
-                                    <flux:text class="font-medium">
-                                        {{ $this->membershipService->name }} &mdash; {{ Number::currency(($this->membershipService->price ?? 0) / 100, 'EUR') }}</flux:text>
+                                <div class="flex justify-between gap-2 text-sm">
+                                    <flux:text class="text-zinc-500 shrink-0">{{ __('Abonements') }}</flux:text>
+                                    <flux:text class="font-medium truncate">{{ $this->membershipService->name }} &mdash; {{ Number::currency(($this->membershipService->price ?? 0) / 100, 'EUR') }}</flux:text>
                                 </div>
                             @endif
                         @endif
