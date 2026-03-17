@@ -694,7 +694,7 @@ new class extends Component
 ?>
 
 <div id="bookingModal">
-    <flux:modal name="booking-modal" class="w-[calc(100vw-2rem)] max-w-lg" @close="$wire.resetModal()">
+    <flux:modal name="booking-modal" :dismissible="false" class="w-[calc(100vw-2rem)] max-w-lg" @close="$wire.resetModal()">
         <div class="space-y-6 p-6 md:p-8">
 
             @if($bookingComplete)
@@ -817,7 +817,7 @@ new class extends Component
                             {{-- Show participant count selection AFTER schedule is selected (for exclusive services) --}}
                             @if($this->schedule_id && $this->isExclusiveService && count($this->availablePriceTiers) > 1)
                                 <flux:radio.group wire:model.live="participant_count" :label="__('Dalībnieku skaits')"
-                                                  variant="cards" class="flex-wrap">
+                                                  variant="cards" class="grid grid-cols-3 gap-2">
                                     @foreach($this->availablePriceTiers as $tier)
                                         <flux:radio :value="$tier->participant_count"
                                                     :label="$tier->participant_count . ' ' . ($tier->participant_count === 1 ? __('persona') : __('personas'))"
