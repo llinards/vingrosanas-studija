@@ -19,8 +19,7 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Stripe\Exception\ApiErrorException;
 
-new class extends Component
-{
+new class extends Component {
     public int $step = 1;
 
     public string $mode = 'booking';
@@ -66,6 +65,8 @@ new class extends Component
 
     public bool $bookingComplete = false;
 
+    public bool $isProcessing = false;
+
     /**
      * Handle the set-booking-mode event dispatched from outside the component.
      */
@@ -93,30 +94,30 @@ new class extends Component
     {
         return ServiceType::whereHas('services', function ($query) {
             $query->where('is_active', true)
-                ->where('is_membership', false)
-                ->whereHas('schedules', fn ($q) => $q->where('is_active', true));
+                  ->where('is_membership', false)
+                  ->whereHas('schedules', fn($q) => $q->where('is_active', true));
         })->get();
     }
 
     #[Computed]
     public function filteredServices(): Collection
     {
-        if (! $this->service_type_id) {
+        if ( ! $this->service_type_id) {
             return new Collection;
         }
 
         return Service::with(['coach', 'priceTiers'])
-            ->where('is_active', true)
-            ->where('is_membership', false)
-            ->where('service_type_id', $this->service_type_id)
-            ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
-            ->get();
+                      ->where('is_active', true)
+                      ->where('is_membership', false)
+                      ->where('service_type_id', $this->service_type_id)
+                      ->whereHas('schedules', fn($query) => $query->where('is_active', true))
+                      ->get();
     }
 
     #[Computed]
     public function selectedService(): ?Service
     {
-        if (! $this->service_id) {
+        if ( ! $this->service_id) {
             return null;
         }
 
@@ -131,10 +132,10 @@ new class extends Component
     #[Computed]
     public function availablePriceTiers(): \Illuminate\Support\Collection
     {
-        $service = $this->selectedService;
+        $service  = $this->selectedService;
         $schedule = $this->selectedSchedule;
 
-        if (! $service) {
+        if ( ! $service) {
             return collect();
         }
 
@@ -151,14 +152,14 @@ new class extends Component
     #[Computed]
     public function activeSchedules(): Collection
     {
-        if (! $this->service_id) {
+        if ( ! $this->service_id) {
             return new Collection;
         }
 
         return Schedule::with('service.coach')
-            ->where('service_id', $this->service_id)
-            ->where('is_active', true)
-            ->get();
+                       ->where('service_id', $this->service_id)
+                       ->where('is_active', true)
+                       ->get();
     }
 
     #[Computed]
@@ -178,7 +179,7 @@ new class extends Component
     #[Computed]
     public function availableTimeSlots(): array
     {
-        if (! $this->selectedDate || ! $this->service_id) {
+        if ( ! $this->selectedDate || ! $this->service_id) {
             return [];
         }
 
@@ -192,7 +193,7 @@ new class extends Component
     #[Computed]
     public function selectedSchedule(): ?Schedule
     {
-        if (! $this->schedule_id) {
+        if ( ! $this->schedule_id) {
             return null;
         }
 
@@ -207,7 +208,7 @@ new class extends Component
     {
         $service = $this->selectedService;
 
-        if (! $service) {
+        if ( ! $service) {
             return 0;
         }
 
@@ -227,9 +228,9 @@ new class extends Component
     public function membershipServices(): Collection
     {
         return Service::where('is_membership', true)
-            ->where('is_active', true)
-            ->orderBy('sessions_count')
-            ->get();
+                      ->where('is_active', true)
+                      ->orderBy('sessions_count')
+                      ->get();
     }
 
     /**
@@ -249,8 +250,8 @@ new class extends Component
     {
         return ServiceType::whereHas('services', function ($query) {
             $query->where('is_active', true)
-                ->where('is_membership_eligible', true)
-                ->whereHas('schedules', fn ($q) => $q->where('is_active', true));
+                  ->where('is_membership_eligible', true)
+                  ->whereHas('schedules', fn($q) => $q->where('is_active', true));
         })->get();
     }
 
@@ -260,16 +261,16 @@ new class extends Component
     #[Computed]
     public function sessionFilteredServices(): Collection
     {
-        if (! $this->session_service_type_id) {
+        if ( ! $this->session_service_type_id) {
             return new Collection;
         }
 
         return Service::with('coach')
-            ->where('is_active', true)
-            ->where('is_membership_eligible', true)
-            ->where('service_type_id', $this->session_service_type_id)
-            ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
-            ->get();
+                      ->where('is_active', true)
+                      ->where('is_membership_eligible', true)
+                      ->where('service_type_id', $this->session_service_type_id)
+                      ->whereHas('schedules', fn($query) => $query->where('is_active', true))
+                      ->get();
     }
 
     /**
@@ -278,14 +279,14 @@ new class extends Component
     #[Computed]
     public function sessionActiveSchedules(): Collection
     {
-        if (! $this->session_service_id) {
+        if ( ! $this->session_service_id) {
             return new Collection;
         }
 
         return Schedule::with('service.coach')
-            ->where('service_id', $this->session_service_id)
-            ->where('is_active', true)
-            ->get();
+                       ->where('service_id', $this->session_service_id)
+                       ->where('is_active', true)
+                       ->get();
     }
 
     /**
@@ -310,7 +311,7 @@ new class extends Component
     #[Computed]
     public function sessionAvailableTimeSlots(): array
     {
-        if (! $this->session_date || ! $this->session_service_id) {
+        if ( ! $this->session_date || ! $this->session_service_id) {
             return [];
         }
 
@@ -336,8 +337,8 @@ new class extends Component
     public function updatedServiceId(): void
     {
         $this->participant_count = 1;
-        $this->selectedDate = null;
-        $this->schedule_id = null;
+        $this->selectedDate      = null;
+        $this->schedule_id       = null;
         unset(
             $this->activeSchedules,
             $this->unavailableDates,
@@ -349,7 +350,7 @@ new class extends Component
 
     public function updatedSelectedDate(): void
     {
-        $this->schedule_id = null;
+        $this->schedule_id       = null;
         $this->participant_count = 1;
         unset($this->availableTimeSlots, $this->availablePriceTiers);
     }
@@ -364,15 +365,15 @@ new class extends Component
 
     public function updatedSessionServiceTypeId(): void
     {
-        $this->session_service_id = null;
-        $this->session_date = null;
+        $this->session_service_id  = null;
+        $this->session_date        = null;
         $this->session_schedule_id = null;
         unset($this->sessionFilteredServices, $this->sessionActiveSchedules, $this->sessionUnavailableDates, $this->sessionAvailableTimeSlots);
     }
 
     public function updatedSessionServiceId(): void
     {
-        $this->session_date = null;
+        $this->session_date        = null;
         $this->session_schedule_id = null;
         unset($this->sessionActiveSchedules, $this->sessionUnavailableDates, $this->sessionAvailableTimeSlots);
     }
@@ -389,7 +390,9 @@ new class extends Component
 
     public function goToStep(int $step): void
     {
-        $this->step = $step;
+        if ($step < $this->step) {
+            $this->step = $step;
+        }
     }
 
     public function nextStep(): void
@@ -404,10 +407,10 @@ new class extends Component
             } else {
                 $this->validate([
                     'service_type_id' => ['required', 'exists:service_types,id'],
-                    'service_id' => ['required', 'exists:services,id'],
+                    'service_id'      => ['required', 'exists:services,id'],
                 ], [
                     'service_type_id.required' => __('Jums ir jāizvēlās nodarbība.'),
-                    'service_id.required' => __('Jums ir jāizvēlās treniņš.'),
+                    'service_id.required'      => __('Jums ir jāizvēlās treniņš.'),
                 ]);
             }
         }
@@ -415,25 +418,26 @@ new class extends Component
         if ($this->step === 2) {
             if ($this->mode === 'membership') {
                 if (count($this->sessions) !== $this->membershipService?->sessions_count ?? 0) {
-                    $this->addError('sessions', __('Jums ir jāizvēlās :count nodarbības.', ['count' => $this->membershipService?->sessions_count ?? 0]));
+                    $this->addError('sessions', __('Jums ir jāizvēlās :count nodarbības.',
+                        ['count' => $this->membershipService?->sessions_count ?? 0]));
 
                     return;
                 }
             } else {
                 $rules = [
                     'selectedDate' => ['required', 'date', 'after_or_equal:today'],
-                    'schedule_id' => ['required', 'exists:schedules,id'],
+                    'schedule_id'  => ['required', 'exists:schedules,id'],
                 ];
 
                 $messages = [
-                    'selectedDate.required' => __('Datums ir obligāts.'),
+                    'selectedDate.required'       => __('Datums ir obligāts.'),
                     'selectedDate.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),
-                    'schedule_id.required' => __('Laika slots ir obligāts.'),
+                    'schedule_id.required'        => __('Laika slots ir obligāts.'),
                 ];
 
                 // For exclusive services, validate participant count
                 if ($this->isExclusiveService && count($this->availablePriceTiers) > 1) {
-                    $rules['participant_count'] = ['required', 'integer', 'min:1'];
+                    $rules['participant_count']             = ['required', 'integer', 'min:1'];
                     $messages['participant_count.required'] = __('Dalībnieku skaits ir obligāts.');
                 }
 
@@ -443,20 +447,20 @@ new class extends Component
 
         if ($this->step === 3) {
             $this->validate([
-                'name' => ['required', 'string', 'max:255'],
+                'name'    => ['required', 'string', 'max:255'],
                 'surname' => ['required', 'string', 'max:255'],
-                'phone' => ['required', 'string', 'max:50'],
-                'email' => ['required', 'email', 'max:255'],
+                'phone'   => ['required', 'string', 'max:50'],
+                'email'   => ['required', 'email', 'max:255'],
             ], [
-                'name.required' => __('Vārds ir obligāts.'),
-                'name.max' => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
+                'name.required'    => __('Vārds ir obligāts.'),
+                'name.max'         => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
                 'surname.required' => __('Uzvārds ir obligāts.'),
-                'surname.max' => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
-                'phone.required' => __('Tālrunis ir obligāts.'),
-                'phone.max' => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
-                'email.required' => __('E-pasts ir obligāts.'),
-                'email.email' => __('E-pastam jābūt derīgai e-pasta adresei.'),
-                'email.max' => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
+                'surname.max'      => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+                'phone.required'   => __('Tālrunis ir obligāts.'),
+                'phone.max'        => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
+                'email.required'   => __('E-pasts ir obligāts.'),
+                'email.email'      => __('E-pastam jābūt derīgai e-pasta adresei.'),
+                'email.max'        => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
             ]);
         }
 
@@ -478,25 +482,37 @@ new class extends Component
     public function addSession(): void
     {
         $this->validate([
-            'session_service_id' => ['required', 'exists:services,id'],
-            'session_date' => ['required', 'date', 'after_or_equal:today'],
+            'session_service_id'  => ['required', 'exists:services,id'],
+            'session_date'        => ['required', 'date', 'after_or_equal:today'],
             'session_schedule_id' => ['required', 'exists:schedules,id'],
         ], [
-            'session_service_id.required' => __('Jums ir jāizvēlās pakalpojums.'),
-            'session_date.required' => __('Datums ir obligāts.'),
-            'session_date.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),
+            'session_service_id.required'  => __('Jums ir jāizvēlās pakalpojums.'),
+            'session_date.required'        => __('Datums ir obligāts.'),
+            'session_date.after_or_equal'  => __('Datumam jābūt šodienai vai nākotnē.'),
             'session_schedule_id.required' => __('Laika slots ir obligāts.'),
         ]);
+
+        // Prevent duplicate sessions (same schedule on the same date)
+        $isDuplicate = collect($this->sessions)->contains(
+            fn(array $session) => $session['schedule_id'] === $this->session_schedule_id
+                                  && $session['date'] === $this->session_date
+        );
+
+        if ($isDuplicate) {
+            $this->addError('session_schedule_id', __('Šī nodarbība jau ir pievienota.'));
+
+            return;
+        }
 
         $schedule = Schedule::with('service.coach')->findOrFail($this->session_schedule_id);
 
         $this->sessions[] = [
-            'service_id' => $schedule->service_id,
+            'service_id'   => $schedule->service_id,
             'service_name' => $schedule->service->name,
-            'coach_name' => $schedule->service->coach?->name ?? '',
-            'schedule_id' => $schedule->id,
-            'date' => $this->session_date,
-            'time' => substr((string) $schedule->start_time, 0, 5),
+            'coach_name'   => $schedule->service->coach?->name ?? '',
+            'schedule_id'  => $schedule->id,
+            'date'         => $this->session_date,
+            'time'         => substr((string) $schedule->start_time, 0, 5),
         ];
 
         // Auto-advance to customer info when all sessions are selected
@@ -508,9 +524,9 @@ new class extends Component
 
         // Reset session builder for next selection
         $this->session_service_type_id = null;
-        $this->session_service_id = null;
-        $this->session_date = null;
-        $this->session_schedule_id = null;
+        $this->session_service_id      = null;
+        $this->session_date            = null;
+        $this->session_schedule_id     = null;
         unset($this->sessionFilteredServices, $this->sessionActiveSchedules, $this->sessionUnavailableDates, $this->sessionAvailableTimeSlots);
     }
 
@@ -529,8 +545,13 @@ new class extends Component
 
     public function submitBooking(): void
     {
+        if ($this->isProcessing) {
+            return;
+        }
+        $this->isProcessing = true;
+
         $isExclusive = $this->isExclusiveService;
-        $price = $this->selectedPrice;
+        $price       = $this->selectedPrice;
 
         $booking = DB::transaction(function () use ($isExclusive) {
             $schedule = Schedule::findOrFail($this->schedule_id);
@@ -538,10 +559,10 @@ new class extends Component
             if ($isExclusive) {
                 // For exclusive services: fail if ANY active booking exists
                 $hasBooking = Booking::active()
-                    ->where('schedule_id', $this->schedule_id)
-                    ->whereDate('booking_date', $this->selectedDate)
-                    ->lockForUpdate()
-                    ->exists();
+                                     ->where('schedule_id', $this->schedule_id)
+                                     ->whereDate('booking_date', $this->selectedDate)
+                                     ->lockForUpdate()
+                                     ->exists();
 
                 if ($hasBooking) {
                     return null;
@@ -554,10 +575,10 @@ new class extends Component
             } else {
                 // For regular services: check remaining capacity (excluding inactive bookings)
                 $bookedParticipants = Booking::active()
-                    ->where('schedule_id', $this->schedule_id)
-                    ->whereDate('booking_date', $this->selectedDate)
-                    ->lockForUpdate()
-                    ->sum('participant_count');
+                                             ->where('schedule_id', $this->schedule_id)
+                                             ->whereDate('booking_date', $this->selectedDate)
+                                             ->lockForUpdate()
+                                             ->sum('participant_count');
 
                 $remaining = $schedule->max_capacity - $bookedParticipants;
 
@@ -567,19 +588,20 @@ new class extends Component
             }
 
             return Booking::create([
-                'schedule_id' => $this->schedule_id,
-                'booking_date' => $this->selectedDate,
-                'name' => $this->name,
-                'surname' => $this->surname,
-                'phone' => $this->phone,
-                'email' => $this->email,
+                'schedule_id'       => $this->schedule_id,
+                'booking_date'      => $this->selectedDate,
+                'name'              => $this->name,
+                'surname'           => $this->surname,
+                'phone'             => $this->phone,
+                'email'             => $this->email,
                 'participant_count' => $this->participant_count,
-                'payment_status' => PaymentStatus::Pending,
-                'expires_at' => now()->addMinutes(30),
+                'payment_status'    => PaymentStatus::Pending,
+                'expires_at'        => now()->addMinutes(30),
             ]);
         });
 
-        if (! $booking) {
+        if ( ! $booking) {
+            $this->isProcessing = false;
             $this->addError('schedule_id', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
             $this->step = 2;
 
@@ -590,6 +612,7 @@ new class extends Component
         try {
             $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $price);
         } catch (ApiErrorException $e) {
+            $this->isProcessing = false;
             $this->addError('booking', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
             $this->step = 3;
 
@@ -601,16 +624,23 @@ new class extends Component
 
     public function submitMembership(): void
     {
-        $membershipService = $this->membershipService;
-        $price = $this->membershipService?->price ?? 0;
+        if ($this->isProcessing) {
+            return;
+        }
+        $this->isProcessing = true;
 
-        if (! $membershipService || count($this->sessions) !== $membershipService->sessions_count) {
+        $membershipService = $this->membershipService;
+        $price             = $this->membershipService?->price ?? 0;
+
+        if ( ! $membershipService || count($this->sessions) !== $membershipService->sessions_count) {
+            $this->isProcessing = false;
+
             return;
         }
 
         // Period: 30 days from purchase date
         $periodStart = today();
-        $periodEnd = today()->addDays(30);
+        $periodEnd   = today()->addDays(30);
 
         $result = DB::transaction(function () use ($membershipService, $price, $periodStart, $periodEnd) {
             // Verify capacity for all sessions
@@ -618,9 +648,9 @@ new class extends Component
                 $schedule = Schedule::lockForUpdate()->findOrFail($session['schedule_id']);
 
                 $bookedParticipants = Booking::active()
-                    ->where('schedule_id', $session['schedule_id'])
-                    ->whereDate('booking_date', $session['date'])
-                    ->sum('participant_count');
+                                             ->where('schedule_id', $session['schedule_id'])
+                                             ->whereDate('booking_date', $session['date'])
+                                             ->sum('participant_count');
 
                 $remaining = $schedule->max_capacity - $bookedParticipants;
 
@@ -630,38 +660,40 @@ new class extends Component
             }
 
             $membership = Membership::create([
-                'email' => $this->email,
-                'name' => $this->name,
-                'surname' => $this->surname,
-                'phone' => $this->phone,
-                'service_id' => $membershipService->id,
-                'price' => $price,
+                'email'          => $this->email,
+                'name'           => $this->name,
+                'surname'        => $this->surname,
+                'phone'          => $this->phone,
+                'service_id'     => $membershipService->id,
+                'price'          => $price,
                 'sessions_total' => $membershipService->sessions_count,
-                'period_start' => $periodStart,
-                'period_end' => $periodEnd,
+                'period_start'   => $periodStart,
+                'period_end'     => $periodEnd,
                 'payment_status' => PaymentStatus::Pending,
-                'expires_at' => now()->addMinutes(30),
+                'expires_at'     => now()->addMinutes(30),
             ]);
 
             foreach ($this->sessions as $session) {
                 Booking::create([
-                    'membership_id' => $membership->id,
-                    'schedule_id' => $session['schedule_id'],
-                    'booking_date' => $session['date'],
-                    'name' => $this->name,
-                    'surname' => $this->surname,
-                    'phone' => $this->phone,
-                    'email' => $this->email,
+                    'membership_id'     => $membership->id,
+                    'schedule_id'       => $session['schedule_id'],
+                    'booking_date'      => $session['date'],
+                    'name'              => $this->name,
+                    'surname'           => $this->surname,
+                    'phone'             => $this->phone,
+                    'email'             => $this->email,
                     'participant_count' => 1,
-                    'payment_status' => PaymentStatus::Paid,
+                    'payment_status'    => PaymentStatus::Paid,
                 ]);
             }
 
             return $membership;
         });
 
-        if (! $result) {
-            $this->addError('sessions', __('Kāds no izvēlētajiem laikiem vairs nav pieejams. Lūdzu, pārbaudiet un mēģiniet vēlreiz.'));
+        if ( ! $result) {
+            $this->isProcessing = false;
+            $this->addError('sessions',
+                __('Kāds no izvēlētajiem laikiem vairs nav pieejams. Lūdzu, pārbaudiet un mēģiniet vēlreiz.'));
             $this->step = 2;
 
             return;
@@ -670,6 +702,7 @@ new class extends Component
         try {
             $checkout = app(CreateMembershipCheckoutSession::class)->execute($result);
         } catch (ApiErrorException $e) {
+            $this->isProcessing = false;
             $this->addError('membership', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
             $this->step = 3;
 
@@ -712,7 +745,8 @@ new class extends Component
 ?>
 
 <div id="bookingModal">
-    <flux:modal name="booking-modal" :dismissible="false" class="w-[calc(100vw-2rem)] max-w-lg" @close="$wire.resetModal()">
+    <flux:modal name="booking-modal" :dismissible="false" class="w-[calc(100vw-2rem)] max-w-lg"
+                @close="$wire.resetModal()">
         <div class="space-y-6 p-6 md:p-8">
 
             @if($bookingComplete)
@@ -727,24 +761,39 @@ new class extends Component
                 </div>
             @else
                 {{-- STEP INDICATOR --}}
-                <div class="flex items-center justify-center gap-2 mt-12 md:mt-0">
+                @php
+                    $stepLabels = $mode === 'booking'
+                        ? [1 => __('Treniņš'), 2 => __('Laiks'), 3 => __('Dati'), 4 => __('Maksājums')]
+                        : [1 => __('Abonements'), 2 => __('Nodarbības'), 3 => __('Dati'), 4 => __('Maksājums')];
+                @endphp
+                <div class="flex items-start justify-center gap-2 mt-12 md:mt-0">
                     @for($i = 1; $i <= 4; $i++)
-                        <div class="flex items-center gap-2">
-                            <div @class([
-                                'flex size-8 items-center justify-center rounded-full text-sm font-medium',
-                                'bg-blue text-white' => $step === $i,
-                                'bg-green-500 text-white' => $step > $i,
-                                'bg-zinc-200 text-zinc-500' => $step < $i,
-                            ])>
-                                @if($step > $i)
-                                    <flux:icon.check class="size-4"/>
-                                @else
-                                    {{ $i }}
-                                @endif
+                        <div class="flex items-start gap-2">
+                            <div class="flex flex-col items-center gap-1">
+                                <div @class([
+                                    'flex size-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
+                                    'bg-blue text-white' => $step === $i,
+                                    'bg-green-500 text-white cursor-pointer hover:bg-green-600' => $step > $i,
+                                    'bg-zinc-200 text-zinc-500' => $step < $i,
+                                ])
+                                     @if($step > $i) wire:click="goToStep({{ $i }})" @endif
+                                >
+                                    @if($step > $i)
+                                        <flux:icon.check class="size-4"/>
+                                    @else
+                                        {{ $i }}
+                                    @endif
+                                </div>
+                                <span @class([
+                                    'text-xs whitespace-nowrap',
+                                    'text-blue font-medium' => $step === $i,
+                                    'text-green-600' => $step > $i,
+                                    'text-zinc-400' => $step < $i,
+                                ])>{{ $stepLabels[$i] }}</span>
                             </div>
                             @if($i < 4)
                                 <div @class([
-                                    'h-px w-8',
+                                    'h-px w-8 mt-4',
                                     'bg-green-500' => $step > $i,
                                     'bg-zinc-200' => $step <= $i,
                                 ])>
@@ -753,6 +802,42 @@ new class extends Component
                         </div>
                     @endfor
                 </div>
+
+                {{-- SELECTION SUMMARY (shown on steps 2-3) --}}
+                @if($step >= 2 && $step <= 3)
+                    <div class="rounded-lg border border-zinc-200 p-3 space-y-1">
+                        @if($mode === 'booking')
+                            @if($this->selectedService)
+                                <div class="flex justify-between text-sm">
+                                    <flux:text class="text-zinc-500">{{ __('Treniņš') }}</flux:text>
+                                    <flux:text class="font-medium">{{ $this->selectedService->name }}</flux:text>
+                                </div>
+                            @endif
+                            @if($step >= 3 && $this->selectedDate && $this->selectedSchedule)
+                                <div class="flex justify-between text-sm">
+                                    <flux:text class="text-zinc-500">{{ __('Datums') }}</flux:text>
+                                    <flux:text
+                                        class="font-medium">{{ Carbon::parse($this->selectedDate)->format('d.m.Y') }} {{ substr($this->selectedSchedule->start_time, 0, 5) }}</flux:text>
+                                </div>
+                            @endif
+                            @if($this->service_id)
+                                <div class="flex justify-between text-sm">
+                                    <flux:text class="text-zinc-500">{{ __('Cena') }}</flux:text>
+                                    <flux:text
+                                        class="font-medium">{{ Number::currency($this->selectedPrice / 100, 'EUR') }}</flux:text>
+                                </div>
+                            @endif
+                        @else
+                            @if($this->membershipService)
+                                <div class="flex justify-between text-sm">
+                                    <flux:text class="text-zinc-500">{{ __('Abonements') }}</flux:text>
+                                    <flux:text class="font-medium">
+                                        {{ $this->membershipService->name }} &mdash; {{ Number::currency(($this->membershipService->price ?? 0) / 100, 'EUR') }}</flux:text>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                @endif
 
                 {{-- STEP 1: SERVICE SELECTION --}}
                 @if($step === 1)
@@ -778,9 +863,15 @@ new class extends Component
                                     @foreach($this->filteredServices as $service)
                                         <flux:select.option :value="$service->id">
                                             {{ $service->name }} ({{ $service->coach->name }})
+                                            — @if($service->priceTiers->count() > 1)
+                                                {{ __('no') }} {{ Number::currency($service->priceTiers->min('price') / 100, 'EUR') }}
+                                            @else
+                                                {{ Number::currency($service->price / 100, 'EUR') }}
+                                            @endif
                                         </flux:select.option>
                                     @endforeach
                                 </flux:select>
+
                             @endif
                         @else
                             {{-- Membership: tier selection --}}
@@ -794,12 +885,12 @@ new class extends Component
                                 @endforeach
                             </flux:radio.group>
 
-                            @error('selectedMembershipServiceId')
-                                <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
-                            @enderror
                         @endif
 
-                        <div class="flex justify-end">
+                        <div class="flex justify-between">
+                            <flux:modal.close>
+                                <flux:button class="button small tertiary">{{ __('Atcelt') }}</flux:button>
+                            </flux:modal.close>
                             <flux:button wire:click="nextStep"
                                          class="button small primary">{{ __('Tālāk') }}</flux:button>
                         </div>
@@ -856,7 +947,8 @@ new class extends Component
                         <div class="space-y-6">
                             <flux:heading size="lg">
                                 {{ __('Izvēlieties nodarbības') }}
-                                <flux:badge size="sm" color="{{ count($sessions) === $this->membershipService?->sessions_count ?? 0 ? 'green' : 'zinc' }}">
+                                <flux:badge size="sm"
+                                            color="{{ count($sessions) === $this->membershipService?->sessions_count ?? 0 ? 'green' : 'zinc' }}">
                                     {{ count($sessions) }}/{{ $this->membershipService?->sessions_count ?? 0 }}
                                 </flux:badge>
                             </flux:heading>
@@ -865,15 +957,18 @@ new class extends Component
                             @if(count($sessions) > 0)
                                 <div class="space-y-2">
                                     @foreach($sessions as $index => $session)
-                                        <div class="flex items-center justify-between rounded-lg border p-3" wire:key="session-{{ $index }}">
+                                        <div class="flex items-center justify-between rounded-lg border p-3"
+                                             wire:key="session-{{ $index }}">
                                             <div>
-                                                <flux:text class="font-medium">{{ $session['service_name'] }}</flux:text>
+                                                <flux:text
+                                                    class="font-medium">{{ $session['service_name'] }}</flux:text>
                                                 <flux:text class="text-sm text-zinc-500">
                                                     {{ Carbon::parse($session['date'])->format('d.m.Y') }} {{ $session['time'] }}
                                                     — {{ $session['coach_name'] }}
                                                 </flux:text>
                                             </div>
-                                            <flux:button wire:click="removeSession({{ $index }})" variant="ghost" size="sm" icon="x-mark"/>
+                                            <flux:button wire:click="removeSession({{ $index }})" variant="ghost"
+                                                         size="sm" icon="x-mark"/>
                                         </div>
                                     @endforeach
                                 </div>
@@ -892,7 +987,8 @@ new class extends Component
 
                                 @if($this->session_service_type_id)
                                     <flux:select wire:model.live="session_service_id" :label="__('Treniņš')">
-                                        <flux:select.option value="">{{ __('Izvēlieties treniņu') }}</flux:select.option>
+                                        <flux:select.option
+                                            value="">{{ __('Izvēlieties treniņu') }}</flux:select.option>
                                         @foreach($this->sessionFilteredServices as $service)
                                             <flux:select.option :value="$service->id">
                                                 {{ $service->name }} ({{ $service->coach->name }})
@@ -905,12 +1001,14 @@ new class extends Component
                                     <div class="flex justify-center">
                                         <flux:calendar wire:model.live="session_date" min="today"
                                                        :max="now()->addDays(30)->toDateString()"
-                                                       :unavailable="$this->sessionUnavailableDates" locale="lv" start-day="1"/>
+                                                       :unavailable="$this->sessionUnavailableDates" locale="lv"
+                                                       start-day="1"/>
                                     </div>
                                 @endif
 
                                 @if($this->session_date && count($this->sessionAvailableTimeSlots) > 0)
-                                    <flux:radio.group wire:model.live="session_schedule_id" :label="__('Pieejamie laiki')" variant="cards">
+                                    <flux:radio.group wire:model.live="session_schedule_id"
+                                                      :label="__('Pieejamie laiki')" variant="cards">
                                         @foreach($this->sessionAvailableTimeSlots as $slot)
                                             <flux:radio :value="$slot['schedule_id']"
                                                         :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
@@ -918,22 +1016,25 @@ new class extends Component
                                         @endforeach
                                     </flux:radio.group>
                                 @elseif($this->session_date)
-                                    <flux:text class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
+                                    <flux:text
+                                        class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
                                 @endif
 
                             @endif
 
                             @error('sessions')
-                                <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
+                            <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
                             @enderror
-
                             <div class="flex justify-between">
-                                <flux:button wire:click="previousStep" class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
+                                <flux:button wire:click="previousStep"
+                                             class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
                                 @if(count($sessions) === ($this->membershipService?->sessions_count ?? 0))
-                                    <flux:button wire:click="nextStep" class="button small primary">{{ __('Tālāk') }}</flux:button>
+                                    <flux:button wire:click="nextStep"
+                                                 class="button small primary">{{ __('Tālāk') }}</flux:button>
                                 @elseif($this->session_schedule_id)
                                     <flux:button wire:click="addSession" class="button small primary">
-                                        {{ __('Pievienot nodarbību') }} ({{ count($sessions) + 1 }}/{{ $this->membershipService?->sessions_count ?? 0 }})
+                                        {{ __('Pievienot nodarbību') }} ({{ count($sessions) + 1 }}
+                                        /{{ $this->membershipService?->sessions_count ?? 0 }})
                                     </flux:button>
                                 @endif
                             </div>
@@ -951,6 +1052,13 @@ new class extends Component
                         <flux:input wire:model="phone" :label="__('Tālrunis')" :placeholder="__('Ievadiet tālruni')"/>
                         <flux:input wire:model="email" type="email" :label="__('E-pasts')"
                                     :placeholder="__('Ievadiet e-pastu')"/>
+
+                        @error('booking')
+                        <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
+                        @enderror
+                        @error('membership')
+                        <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
+                        @enderror
 
                         <div class="flex justify-between">
                             <flux:button wire:click="previousStep"
@@ -1012,7 +1120,8 @@ new class extends Component
                                 <flux:separator/>
                                 <div class="flex justify-between">
                                     <flux:text class="font-medium">{{ __('Cena') }}</flux:text>
-                                    <flux:text class="font-semibold">{{ Number::currency(($this->membershipService?->price ?? 0) / 100, 'EUR') }}</flux:text>
+                                    <flux:text
+                                        class="font-semibold">{{ Number::currency(($this->membershipService?->price ?? 0) / 100, 'EUR') }}</flux:text>
                                 </div>
                             </div>
 
@@ -1042,7 +1151,8 @@ new class extends Component
                             <flux:button wire:click="previousStep"
                                          class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <flux:button wire:click="{{ $mode === 'booking' ? 'submitBooking' : 'submitMembership' }}"
-                                         class="button small primary">{{ __('Apmaksāt ar karti') }}</flux:button>
+                                         class="button small primary"
+                                         :disabled="$isProcessing">{{ __('Apmaksāt ar karti') }}</flux:button>
                         </div>
                     </div>
                 @endif
