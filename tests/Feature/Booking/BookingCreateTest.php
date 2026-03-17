@@ -31,7 +31,7 @@ test('can create a booking with valid data', function () {
         ->set('service_type_id', $schedule->service->service_type_id)
         ->set('service_id', $schedule->service_id)
         ->set('schedule_id', $schedule->id)
-        ->set('booking_date', '2026-03-15')
+        ->set('booking_date', $futureDate = now()->addDays(3)->toDateString())
         ->set('name', 'Jānis')
         ->set('surname', 'Bērziņš')
         ->set('phone', '+37120000000')
@@ -51,7 +51,7 @@ test('can create a booking with valid data', function () {
     ]);
 
     $booking = Booking::latest()->first();
-    expect($booking->booking_date->format('Y-m-d'))->toBe('2026-03-15');
+    expect($booking->booking_date->format('Y-m-d'))->toBe($futureDate);
 });
 
 test('service is required', function () {

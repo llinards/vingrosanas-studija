@@ -4,6 +4,7 @@ use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Schedule;
+use App\Models\Service;
 use Livewire\Livewire;
 
 test('check-in page renders successfully', function () {
@@ -166,4 +167,27 @@ test('check-in reset form returns to initial state', function () {
         ->assertSet('email', '')
         ->assertSet('checkedInServiceName', null)
         ->assertSet('matchingBookings', null);
+});
+
+test('check-in works for service without coach', function () {
+    $service = Service::factory()->membership()->create();
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'start_time' => '10:00',
+    ]);
+
+    $booking = Booking::factory()->paid()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => today()->toDateString(),
+        'email' => 'test@example.com',
+    ]);
+
+    Livewire::test('check-in')
+        ->set('email', 'test@example.com')
+        ->call('checkIn')
+        ->assertSet('checkedIn', true)
+        ->assertSet('checkedInCoachName', '')
+        ->assertSet('checkedInServiceName', $service->name);
+
+    expect($booking->fresh()->attendance_status)->toBe(AttendanceStatus::Attended);
 });

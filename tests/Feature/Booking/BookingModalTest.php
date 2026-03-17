@@ -275,3 +275,24 @@ test('exclusive service hides remaining capacity on time slots', function () {
 
     Carbon::setTestNow();
 });
+
+test('step 2 rejects past booking date', function () {
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'is_active' => true,
+    ]);
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('step', 2)
+        ->set('selectedDate', now()->subDay()->toDateString())
+        ->set('schedule_id', $schedule->id)
+        ->call('nextStep')
+        ->assertHasErrors(['selectedDate' => 'after_or_equal']);
+});

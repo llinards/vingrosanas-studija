@@ -209,7 +209,7 @@ trait HasBookingForm
         return [
             'service_id' => ['required', 'exists:services,id'],
             'schedule_id' => ['required', 'exists:schedules,id'],
-            'booking_date' => ['required', 'date'],
+            'booking_date' => ['required', 'date', 'after_or_equal:today'],
             'participant_count' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
@@ -234,6 +234,7 @@ trait HasBookingForm
             'schedule_id.exists' => __('Izvēlētais grafiks neeksistē.'),
             'booking_date.required' => __('Datums ir obligāts.'),
             'booking_date.date' => __('Datumam jābūt derīgam datumam.'),
+            'booking_date.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),
             'participant_count.required' => __('Dalībnieku skaits ir obligāts.'),
             'participant_count.integer' => __('Dalībnieku skaitam jābūt skaitlim.'),
             'participant_count.min' => __('Dalībnieku skaitam jābūt vismaz 1.'),

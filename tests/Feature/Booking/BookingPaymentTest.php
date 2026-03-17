@@ -158,3 +158,41 @@ test('stripe webhook handles checkout session completed event', function () {
     Mail::assertQueued(BookingConfirmation::class);
     Mail::assertQueued(NewBookingNotification::class);
 });
+
+test('duplicate checkout session completed webhook does not send duplicate emails', function () {
+    $booking = Booking::factory()->paid()->create([
+        'stripe_checkout_session_id' => 'cs_test_duplicate',
+        'payment_reference' => 'pi_test_existing',
+    ]);
+
+    $payload = json_encode([
+        'id' => 'evt_test_duplicate',
+        'type' => 'checkout.session.completed',
+        'data' => [
+            'object' => [
+                'id' => 'cs_test_duplicate',
+                'payment_intent' => 'pi_test_existing',
+                'metadata' => [
+                    'booking_id' => $booking->id,
+                ],
+            ],
+        ],
+    ]);
+
+    $timestamp = time();
+    $secret = config('services.stripe.webhook_secret');
+
+    if (empty($secret)) {
+        $this->markTestSkipped('Stripe webhook secret not configured');
+    }
+
+    $signedPayload = "{$timestamp}.{$payload}";
+    $signature = hash_hmac('sha256', $signedPayload, $secret);
+
+    $this->postJson(route('stripe.webhook'), json_decode($payload, true), [
+        'Stripe-Signature' => "t={$timestamp},v1={$signature}",
+    ])->assertSuccessful();
+
+    Mail::assertNotQueued(BookingConfirmation::class);
+    Mail::assertNotQueued(NewBookingNotification::class);
+});

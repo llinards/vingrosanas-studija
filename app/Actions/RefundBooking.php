@@ -7,6 +7,8 @@ use App\Mail\BookingRefunded;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Stripe\Exception\ApiErrorException;
+use Stripe\Refund;
 use Stripe\Stripe;
 
 class RefundBooking
@@ -15,6 +17,7 @@ class RefundBooking
      * Process a full refund for the given booking via Stripe.
      *
      * @throws RefundNotAllowedException
+     * @throws ApiErrorException
      */
     public function execute(Booking $booking): void
     {
@@ -26,9 +29,19 @@ class RefundBooking
 
         Stripe::setApiKey(config('cashier.secret'));
 
-        $refund = \Stripe\Refund::create([
-            'payment_intent' => $booking->payment_reference,
-        ]);
+        try {
+            $refund = Refund::create([
+                'payment_intent' => $booking->payment_reference,
+            ]);
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe refund failed', [
+                'booking_id' => $booking->id,
+                'payment_intent' => $booking->payment_reference,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
 
         $booking->markAsRefunded($refund->id);
 

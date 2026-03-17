@@ -3,7 +3,9 @@
 namespace App\Actions;
 
 use App\Models\Membership;
+use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
 
 class CreateMembershipCheckoutSession
@@ -12,6 +14,8 @@ class CreateMembershipCheckoutSession
      * Create a Stripe Checkout Session for a membership.
      *
      * @return array{url: string, session_id: string}
+     *
+     * @throws ApiErrorException
      */
     public function execute(Membership $membership): array
     {
@@ -25,27 +29,36 @@ class CreateMembershipCheckoutSession
                 .' - '.$booking->schedule->service->name)
             ->join(', ');
 
-        $session = Session::create([
-            'mode' => 'payment',
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => config('cashier.currency', 'eur'),
-                    'product_data' => [
-                        'name' => 'Abonements - '.$membership->tierLabel(),
-                        'description' => $sessionDetails,
+        try {
+            $session = Session::create([
+                'mode' => 'payment',
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => config('cashier.currency', 'eur'),
+                        'product_data' => [
+                            'name' => 'Abonements - '.$membership->tierLabel(),
+                            'description' => $sessionDetails,
+                        ],
+                        'unit_amount' => $membership->price,
                     ],
-                    'unit_amount' => $membership->price,
+                    'quantity' => 1,
+                ]],
+                'customer_email' => $membership->email,
+                'success_url' => route('membership.success', ['membership' => $membership->id]).'?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('home').'?membership_cancelled=1',
+                'metadata' => [
+                    'membership_id' => $membership->id,
                 ],
-                'quantity' => 1,
-            ]],
-            'customer_email' => $membership->email,
-            'success_url' => route('membership.success', ['membership' => $membership->id]).'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('home').'?membership_cancelled=1',
-            'metadata' => [
+                'expires_at' => now()->addMinutes(30)->timestamp,
+            ]);
+        } catch (ApiErrorException $e) {
+            Log::error('Stripe membership checkout session creation failed', [
                 'membership_id' => $membership->id,
-            ],
-            'expires_at' => now()->addMinutes(30)->timestamp,
-        ]);
+                'error' => $e->getMessage(),
+            ]);
+
+            throw $e;
+        }
 
         $membership->update([
             'stripe_checkout_session_id' => $session->id,

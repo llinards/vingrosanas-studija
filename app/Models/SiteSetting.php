@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SiteSetting extends Model
 {
@@ -52,15 +53,17 @@ class SiteSetting extends Model
      */
     public static function setGroup(string $group, array $data): void
     {
-        foreach ($data as $key => $entry) {
-            static::updateOrCreate(
-                ['group' => $group, 'key' => $key],
-                [
-                    'value' => $entry['value'] ?? null,
-                    'type' => $entry['type'] ?? 'string',
-                ],
-            );
-        }
+        DB::transaction(function () use ($group, $data) {
+            foreach ($data as $key => $entry) {
+                static::updateOrCreate(
+                    ['group' => $group, 'key' => $key],
+                    [
+                        'value' => $entry['value'] ?? null,
+                        'type' => $entry['type'] ?? 'string',
+                    ],
+                );
+            }
+        });
 
         Cache::forget('site_settings');
     }

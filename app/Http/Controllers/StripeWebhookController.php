@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\Membership;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Stripe\Exception\SignatureVerificationException;
@@ -76,6 +77,11 @@ class StripeWebhookController extends Controller
             return response('Booking not found', 404);
         }
 
+        // Skip if already processed (idempotency guard for webhook retries)
+        if ($booking->payment_status === PaymentStatus::Paid) {
+            return response('Already processed', 200);
+        }
+
         // Mark the booking as paid
         $booking->markAsPaid($session->payment_intent);
 
@@ -113,6 +119,11 @@ class StripeWebhookController extends Controller
             ]);
 
             return response('Membership not found', 404);
+        }
+
+        // Skip if already processed (idempotency guard for webhook retries)
+        if ($membership->payment_status === PaymentStatus::Paid) {
+            return response('Already processed', 200);
         }
 
         $membership->markAsPaid($session->payment_intent);
@@ -242,14 +253,16 @@ class StripeWebhookController extends Controller
 
         $refundId = $charge->refunds->data[0]->id ?? 're_unknown';
 
-        $membership->markAsRefunded($refundId);
+        DB::transaction(function () use ($membership, $refundId) {
+            $membership->markAsRefunded($refundId);
 
-        // Mark all linked bookings as refunded
-        $membership->bookings()->update([
-            'payment_status' => PaymentStatus::Refunded,
-            'refund_reference' => $refundId,
-            'refunded_at' => now(),
-        ]);
+            // Mark all linked bookings as refunded
+            $membership->bookings()->update([
+                'payment_status' => PaymentStatus::Refunded,
+                'refund_reference' => $refundId,
+                'refunded_at' => now(),
+            ]);
+        });
 
         Mail::to($membership->email)->send(new MembershipRefunded($membership));
 

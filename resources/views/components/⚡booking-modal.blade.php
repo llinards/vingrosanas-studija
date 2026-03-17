@@ -13,9 +13,11 @@ use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Stripe\Exception\ApiErrorException;
 
 new class extends Component
 {
@@ -419,12 +421,13 @@ new class extends Component
                 }
             } else {
                 $rules = [
-                    'selectedDate' => ['required', 'date'],
+                    'selectedDate' => ['required', 'date', 'after_or_equal:today'],
                     'schedule_id' => ['required', 'exists:schedules,id'],
                 ];
 
                 $messages = [
                     'selectedDate.required' => __('Datums ir obligāts.'),
+                    'selectedDate.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),
                     'schedule_id.required' => __('Laika slots ir obligāts.'),
                 ];
 
@@ -476,11 +479,12 @@ new class extends Component
     {
         $this->validate([
             'session_service_id' => ['required', 'exists:services,id'],
-            'session_date' => ['required', 'date'],
+            'session_date' => ['required', 'date', 'after_or_equal:today'],
             'session_schedule_id' => ['required', 'exists:schedules,id'],
         ], [
             'session_service_id.required' => __('Jums ir jāizvēlās pakalpojums.'),
             'session_date.required' => __('Datums ir obligāts.'),
+            'session_date.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),
             'session_schedule_id.required' => __('Laika slots ir obligāts.'),
         ]);
 
@@ -489,7 +493,7 @@ new class extends Component
         $this->sessions[] = [
             'service_id' => $schedule->service_id,
             'service_name' => $schedule->service->name,
-            'coach_name' => $schedule->service->coach->name,
+            'coach_name' => $schedule->service->coach?->name ?? '',
             'schedule_id' => $schedule->id,
             'date' => $this->session_date,
             'time' => substr((string) $schedule->start_time, 0, 5),
@@ -583,7 +587,14 @@ new class extends Component
         }
 
         // Create Stripe Checkout Session and redirect
-        $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $price);
+        try {
+            $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $price);
+        } catch (ApiErrorException $e) {
+            $this->addError('booking', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
+            $this->step = 3;
+
+            return;
+        }
 
         $this->redirect($checkout['url'], navigate: false);
     }
@@ -656,7 +667,14 @@ new class extends Component
             return;
         }
 
-        $checkout = app(CreateMembershipCheckoutSession::class)->execute($result);
+        try {
+            $checkout = app(CreateMembershipCheckoutSession::class)->execute($result);
+        } catch (ApiErrorException $e) {
+            $this->addError('membership', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
+            $this->step = 3;
+
+            return;
+        }
 
         $this->redirect($checkout['url'], navigate: false);
     }

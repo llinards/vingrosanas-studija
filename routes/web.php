@@ -51,7 +51,7 @@ Route::get('membership/{membership}/success', static function (Membership $membe
 Route::livewire('membership/{membership}/manage', 'membership.membership-manage')
     ->name('membership.manage');
 
-Route::view('check-in', 'check-in')->name('check-in');
+Route::view('check-in', 'check-in')->name('check-in')->middleware('throttle:10,1');
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::redirect('/', '/admin/bookings')->name('dashboard');

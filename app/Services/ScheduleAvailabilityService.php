@@ -92,7 +92,7 @@ class ScheduleAvailabilityService
                 $slots[] = [
                     'schedule_id' => $schedule->id,
                     'start_time' => substr((string) $schedule->start_time, 0, 5),
-                    'coach_name' => $schedule->service->coach->name,
+                    'coach_name' => $schedule->service->coach?->name ?? '',
                     'remaining' => $remaining,
                     'max_capacity' => $schedule->max_capacity,
                 ];
@@ -121,7 +121,7 @@ class ScheduleAvailabilityService
      */
     private function isAfterNow(Schedule $schedule, Carbon $now): bool
     {
-        return Carbon::parse($schedule->start_time)->format('H:i') > $now->format('H:i');
+        return Carbon::parse($schedule->start_time)->setDateFrom($now)->isAfter($now);
     }
 
     /**

@@ -90,7 +90,7 @@ new class extends Component {
 
         $this->checkedIn            = true;
         $this->checkedInServiceName = $booking->schedule->service->name;
-        $this->checkedInCoachName   = $booking->schedule->service->coach->name;
+        $this->checkedInCoachName   = $booking->schedule->service->coach?->name ?? '';
         $this->checkedInDate        = $booking->booking_date->format('d.m.Y');
         $this->checkedInTime        = substr($booking->schedule->start_time, 0, 5);
         $this->matchingBookings     = null;
@@ -172,7 +172,7 @@ new class extends Component {
                                 <flux:text
                                     class="font-semibold">{{ $matchingBooking->schedule->service->name }}</flux:text>
                                 <flux:text
-                                    class="text-sm text-gray-500">{{ $matchingBooking->schedule->service->coach->name }}</flux:text>
+                                    class="text-sm text-gray-500">{{ $matchingBooking->schedule->service->coach?->name ?? '' }}</flux:text>
                             </div>
                             <flux:text
                                 class="font-semibold">{{ substr($matchingBooking->schedule->start_time, 0, 5) }}</flux:text>
