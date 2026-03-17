@@ -75,6 +75,15 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::view('memberships', 'dashboard.membership-list')->name('memberships.index');
     Route::livewire('memberships/{membership}/edit', 'membership.membership-edit')->name('memberships.edit');
 
+    Route::redirect('content', 'admin/content/contact');
+    Route::livewire('content/contact', 'content.content-contact')->name('content.contact');
+    Route::livewire('content/hero', 'content.content-hero')->name('content.hero');
+    Route::livewire('content/quote', 'content.content-quote')->name('content.quote');
+    Route::livewire('content/about', 'content.content-about')->name('content.about');
+    Route::livewire('content/new-premises', 'content.content-new-premises')->name('content.new-premises');
+    Route::livewire('content/media', 'content.content-media')->name('content.media');
+    Route::livewire('content/seo', 'content.content-seo')->name('content.seo');
+
     Route::redirect('settings', 'settings/profile');
     Route::livewire('settings/profile', Profile::class)->name('settings.profile');
     Route::livewire('settings/password', Password::class)->name('settings.password');

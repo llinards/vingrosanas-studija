@@ -63,11 +63,11 @@
                     </flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist class="nav-icons flex flex-row gap-x-4 absolute bottom-16">
-                    <flux:navlist.item href="https://www.facebook.com/vs.sigulda" target="_blank"
+                    <flux:navlist.item href="{{ site('contact', 'facebook_url', 'https://www.facebook.com/vs.sigulda') }}" target="_blank"
                         rel="noopener noreferrer">
                         <flux:icon.facebook />
                     </flux:navlist.item>
-                    <flux:navlist.item href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                    <flux:navlist.item href="{{ site('contact', 'instagram_url', 'https://www.instagram.com/vingrosanas.studija') }}" target="_blank"
                         rel="noopener noreferrer">
                         <flux:icon.instagram />
                     </flux:navlist.item>

@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         Coach::factory()->count(3)->create();
 
         $this->call([
+            SiteSettingSeeder::class,
             ServiceTypeSeeder::class,
             ServiceSeeder::class,
             ScheduleSeeder::class,

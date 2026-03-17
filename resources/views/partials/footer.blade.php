@@ -5,7 +5,7 @@
             <div class="w-26">
                 <img src="{{ asset('images/vingrosanas_studija_logo-blue.svg') }}" alt="">
             </div>
-            <flux:heading level="2">{{ __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam') }}</flux:heading>
+            <flux:heading level="2">{{ site('hero', 'heading', __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam')) }}</flux:heading>
         </div>
 
         <div class="pt-12 pb-12 md:flex md:flex-row space-y-6 md:space-y-0 md:gap-x-12 lg:gap-x-24">
@@ -33,15 +33,13 @@
             <ul>
                 <li class="list-heading">{{ __('Kontakti') }}</li>
                 <li>
-                    <flux:link href="tel:+37126620757">+371 26620757</flux:link>
+                    <flux:link href="tel:{{ site('contact', 'phone', '+37126620757') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone', '+37126620757')) }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="mailto:info@vingrosanasstudija.lv">info@vingrosanasstudija.lv</flux:link>
+                    <flux:link href="mailto:{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}">{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">{{ __('Strēlnieku iela
-                        20 A') }}<br/>
-                        {{ __('Sigulda') }}
+                    <flux:link href="{{ site('contact', 'google_maps_url', 'https://maps.app.goo.gl/UdGP64Acxz2RVPJe7') }}" target="_blank">{{ site('contact', 'address', __('Strēlnieku iela 20 A, Sigulda')) }}
                     </flux:link>
                 </li>
             </ul>
@@ -49,12 +47,12 @@
                 <ul class="list-heading md:text-end">
                     <li>{{ __('Pieseko') }}</li>
                     <li class="flex items-end md:justify-end mt-1 md:mt-2 gap-x-4">
-                        <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                        <flux:link href="{{ site('contact', 'instagram_url', 'https://www.instagram.com/vingrosanas.studija') }}" target="_blank"
                                    rel="noopener noreferrer">
                             <flux:icon.instagram/>
                         </flux:link>
 
-                        <flux:link href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
+                        <flux:link href="{{ site('contact', 'facebook_url', 'https://www.facebook.com/vs.sigulda') }}" target="_blank" rel="noopener noreferrer">
                             <flux:icon.facebook/>
                         </flux:link>
                     </li>

@@ -27,6 +27,9 @@
             <flux:navlist.item icon="identification" :href="route('admin.memberships.index')"
                                :current="request()->routeIs('admin.memberships.*')"
                                wire:navigate>{{ __('Abonementi') }}</flux:navlist.item>
+            <flux:navlist.item icon="document-text" :href="route('admin.content.contact')"
+                               :current="request()->routeIs('admin.content.*')"
+                               wire:navigate>{{ __('Saturs') }}</flux:navlist.item>
         </flux:navlist.group>
     </flux:navlist>
 

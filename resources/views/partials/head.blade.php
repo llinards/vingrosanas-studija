@@ -6,7 +6,7 @@
 
 {{-- Meta Description --}}
 <meta name="description"
-      content="{{ $metaDescription ?? 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.' }}">
+      content="{{ $metaDescription ?? site('seo', 'meta_description', 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.') }}">
 
 {{-- Canonical URL --}}
 <link rel="canonical" href="{{ $canonical ?? url()->current() }}">
@@ -19,10 +19,10 @@
 <meta property="og:site_name" content="{{ config('app.name') }}">
 <meta property="og:title" content="{{ isset($title) ? $title . ' · ' . config('app.name') : config('app.name') }}">
 <meta property="og:description"
-      content="{{ $metaDescription ?? 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.' }}">
+      content="{{ $metaDescription ?? site('seo', 'meta_description', 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.') }}">
 <meta property="og:url" content="{{ $canonical ?? url()->current() }}">
 <meta property="og:locale" content="lv_LV">
-<meta property="og:image" content="{{ $ogImage ?? asset('images/og-image.png') }}">
+<meta property="og:image" content="{{ $ogImage ?? asset(site('seo', 'og_image', 'images/og-image.png')) }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="{{ config('app.name') }}">
@@ -31,8 +31,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ isset($title) ? $title . ' · ' . config('app.name') : config('app.name') }}">
 <meta name="twitter:description"
-      content="{{ $metaDescription ?? 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.' }}">
-<meta name="twitter:image" content="{{ $ogImage ?? asset('images/og-image.png') }}">
+      content="{{ $metaDescription ?? site('seo', 'meta_description', 'Vingrošanas Studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam. Pieteikties nodarbībām var tiešsaistē.') }}">
+<meta name="twitter:image" content="{{ $ogImage ?? asset(site('seo', 'og_image', 'images/og-image.png')) }}">
 
 {{-- Favicons --}}
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -46,22 +46,22 @@
         "context": "https://schema.org",
         "type": "HealthClub",
         "name": "{{ config('app.name') }}",
-    "description": "Vingrošanas studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam.",
+    "description": "{{ site('seo', 'meta_description', 'Vingrošanas studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam.') }}",
     "url": "{{ config('app.url') }}",
-    "telephone": "+37126620757",
-    "email": "info@vingrosanasstudija.lv",
+    "telephone": "{{ site('contact', 'phone', '+37126620757') }}",
+    "email": "{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}",
     "address": {
         "type": "PostalAddress",
-        "streetAddress": "Strēlnieku iela 20 A",
+        "streetAddress": "{{ site('contact', 'address', 'Strēlnieku iela 20 A, Sigulda') }}",
         "addressLocality": "Sigulda",
         "addressCountry": "LV"
     },
     "sameAs": [
-        "https://www.instagram.com/vingrosanas.studija/",
-        "https://www.facebook.com/vs.sigulda"
+        "{{ site('contact', 'instagram_url', 'https://www.instagram.com/vingrosanas.studija/') }}",
+        "{{ site('contact', 'facebook_url', 'https://www.facebook.com/vs.sigulda') }}"
     ],
     "logo": "{{ asset('images/vingrosanas_studija_logo.svg') }}",
-    "image": "{{ asset('images/og-image.png') }}"
+    "image": "{{ asset(site('seo', 'og_image', 'images/og-image.png')) }}"
 }
 </script>
 
