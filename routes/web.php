@@ -54,7 +54,7 @@ Route::livewire('membership/{membership}/manage', 'membership.membership-manage'
 Route::view('check-in', 'check-in')->name('check-in');
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::redirect('/', 'admin/bookings')->name('dashboard');
+    Route::redirect('/', '/admin/bookings')->name('dashboard');
 
     Route::view('coaches', 'dashboard.coach-list')->name('coaches.index');
     Route::livewire('coaches/create', 'coach.coach-create')->name('coaches.create');
