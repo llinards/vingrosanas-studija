@@ -3,12 +3,15 @@
 namespace App\Livewire\Concerns;
 
 use App\Enums\DayOfWeek;
+use App\Models\Coach;
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 
 trait HasScheduleForm
 {
+    public ?int $coach_id = null;
+
     public ?int $service_id = null;
 
     public string $schedule_type = 'recurring';
@@ -24,12 +27,38 @@ trait HasScheduleForm
     public bool $is_active = false;
 
     /**
-     * Get all services with their coaches for the dropdown.
+     * Get all coaches that have non-membership services.
+     */
+    #[Computed]
+    public function coaches(): Collection
+    {
+        return Coach::whereHas('services', fn ($query) => $query->where('is_membership', false))
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Get services for the selected coach.
      */
     #[Computed]
     public function services(): Collection
     {
-        return Service::with('coach')->get();
+        if (! $this->coach_id) {
+            return new Collection;
+        }
+
+        return Service::where('coach_id', $this->coach_id)
+            ->where('is_membership', false)
+            ->get();
+    }
+
+    /**
+     * Reset service when coach changes.
+     */
+    public function updatedCoachId(): void
+    {
+        $this->service_id = null;
+        unset($this->services);
     }
 
     /**
@@ -57,6 +86,7 @@ trait HasScheduleForm
     protected function rules(): array
     {
         $rules = [
+            'coach_id' => ['required', 'exists:coaches,id'],
             'service_id' => ['required', 'exists:services,id'],
             'start_time' => ['required', 'date_format:H:i'],
             'max_capacity' => ['required', 'integer', 'min:1'],
@@ -79,6 +109,8 @@ trait HasScheduleForm
     protected function messages(): array
     {
         return [
+            'coach_id.required' => __('Treneris ir obligāts.'),
+            'coach_id.exists' => __('Izvēlētais treneris neeksistē.'),
             'service_id.required' => __('Pakalpojums ir obligāts.'),
             'service_id.exists' => __('Izvēlētais pakalpojums neeksistē.'),
             'day_of_week.required' => __('Nedēļas diena ir obligāta.'),

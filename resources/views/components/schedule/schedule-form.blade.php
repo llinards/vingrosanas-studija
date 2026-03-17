@@ -7,24 +7,30 @@
         <form wire:submit="save" class="flex flex-col gap-6">
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <flux:select wire:model="service_id" :label="__('Pakalpojums')">
-                        <flux:select.option value="">{{ __('Izvēlies pakalpojumu') }}</flux:select.option>
-                        @foreach($this->services as $service)
-                            <flux:select.option :value="$service->id">{{ $service->name }} ({{ $service->coach->name }})
-                            </flux:select.option>
+                    <flux:select wire:model.live="coach_id" :label="__('Treneris')">
+                        <flux:select.option value="">{{ __('Izvēlies treneri') }}</flux:select.option>
+                        @foreach($this->coaches as $coach)
+                            <flux:select.option :value="$coach->id">{{ $coach->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </div>
                 <div class="flex-1">
-                    <flux:input
-                        wire:model="max_capacity"
-                        :label="__('Maks. dalībnieki')"
-                        type="number"
-                        min="1"
-                        :placeholder="__('Ievadi maksimālo dalībnieku skaitu')"
-                    />
+                    <flux:select wire:model="service_id" :label="__('Pakalpojums')">
+                        <flux:select.option value="">{{ __('Izvēlies pakalpojumu') }}</flux:select.option>
+                        @foreach($this->services as $service)
+                            <flux:select.option :value="$service->id">{{ $service->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
                 </div>
             </div>
+
+            <flux:input
+                wire:model="max_capacity"
+                :label="__('Maks. dalībnieki')"
+                type="number"
+                min="1"
+                :placeholder="__('Ievadi maksimālo dalībnieku skaitu')"
+            />
 
             <flux:radio.group wire:model.live="schedule_type" :label="__('Grafika veids')" variant="segmented">
                 <flux:radio value="recurring" :label="__('Regulārs')"/>

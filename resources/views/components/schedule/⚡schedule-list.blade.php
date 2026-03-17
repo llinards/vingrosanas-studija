@@ -83,64 +83,69 @@ new class extends Component
             </flux:button>
         </div>
     @else
-        <div class="flex flex-col gap-6">
+        <flux:accordion transition>
             @foreach($this->schedules->groupBy(fn ($schedule) => $schedule->service->coach->name) as $coachName => $coachSchedules)
-                <div>
-                    <flux:heading level="2" size="lg" class="mb-3">{{ $coachName }}</flux:heading>
-                    <flux:table>
-                        <flux:table.columns>
-                            <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
-                            <flux:table.column>{{ __('Veids') }}</flux:table.column>
-                            <flux:table.column>{{ __('Diena/Datums') }}</flux:table.column>
-                            <flux:table.column>{{ __('Laiks') }}</flux:table.column>
-                            <flux:table.column>{{ __('Maks. dalībnieki') }}</flux:table.column>
-                            <flux:table.column>{{ __('Statuss') }}</flux:table.column>
-                            <flux:table.column>{{ __('Darbības') }}</flux:table.column>
-                        </flux:table.columns>
-                        <flux:table.rows>
-                            @foreach($coachSchedules as $schedule)
-                                <flux:table.row wire:key="schedule-{{ $schedule->id }}">
-                                    <flux:table.cell>{{ $schedule->service->name }}</flux:table.cell>
-                                    <flux:table.cell>
-                                        @if($schedule->day_of_week)
-                                            <flux:badge size="sm">{{ __('Regulārs') }}</flux:badge>
-                                        @else
-                                            <flux:badge size="sm" variant="pill">{{ __('Vienreizējs') }}</flux:badge>
-                                        @endif
-                                    </flux:table.cell>
-                                    <flux:table.cell>
-                                        @if($schedule->day_of_week)
-                                            {{ $schedule->day_of_week->label() }}
-                                        @else
-                                            {{ $schedule->date->format('d.m.Y') }}
-                                        @endif
-                                    </flux:table.cell>
-                                    <flux:table.cell>{{ substr($schedule->start_time, 0, 5) }}</flux:table.cell>
-                                    <flux:table.cell>{{ $schedule->max_capacity }}</flux:table.cell>
-                                    <flux:table.cell>
-                                        <flux:switch wire:click="toggleActive({{ $schedule->id }})"
-                                                     :checked="$schedule->is_active"/>
-                                    </flux:table.cell>
-                                    <flux:table.cell>
-                                        <div class="flex gap-2">
-                                            <flux:button href="{{ route('admin.schedules.edit', $schedule) }}"
-                                                         variant="primary" size="sm">
-                                                {{ __('Rediģēt') }}
-                                            </flux:button>
-                                            <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst grafiku?') }}"
-                                                         variant="danger"
-                                                         size="sm"
-                                                         wire:click="destroy({{ $schedule->id }})">
-                                                {{ __('Dzēst') }}
-                                            </flux:button>
-                                        </div>
-                                    </flux:table.cell>
-                                </flux:table.row>
-                            @endforeach
-                        </flux:table.rows>
-                    </flux:table>
-                </div>
+                <flux:accordion.item wire:key="coach-{{ Str::slug($coachName) }}">
+                    <flux:accordion.heading>
+                        {{ $coachName }} ({{ $coachSchedules->count() }})
+                    </flux:accordion.heading>
+
+                    <flux:accordion.content>
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column>{{ __('Pakalpojums') }}</flux:table.column>
+                                <flux:table.column>{{ __('Veids') }}</flux:table.column>
+                                <flux:table.column>{{ __('Diena/Datums') }}</flux:table.column>
+                                <flux:table.column>{{ __('Laiks') }}</flux:table.column>
+                                <flux:table.column>{{ __('Maks. dalībnieki') }}</flux:table.column>
+                                <flux:table.column>{{ __('Statuss') }}</flux:table.column>
+                                <flux:table.column>{{ __('Darbības') }}</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @foreach($coachSchedules as $schedule)
+                                    <flux:table.row wire:key="schedule-{{ $schedule->id }}">
+                                        <flux:table.cell>{{ $schedule->service->name }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            @if($schedule->day_of_week)
+                                                <flux:badge size="sm">{{ __('Regulārs') }}</flux:badge>
+                                            @else
+                                                <flux:badge size="sm" variant="pill">{{ __('Vienreizējs') }}</flux:badge>
+                                            @endif
+                                        </flux:table.cell>
+                                        <flux:table.cell>
+                                            @if($schedule->day_of_week)
+                                                {{ $schedule->day_of_week->label() }}
+                                            @else
+                                                {{ $schedule->date->format('d.m.Y') }}
+                                            @endif
+                                        </flux:table.cell>
+                                        <flux:table.cell>{{ substr($schedule->start_time, 0, 5) }}</flux:table.cell>
+                                        <flux:table.cell>{{ $schedule->max_capacity }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            <flux:switch wire:click="toggleActive({{ $schedule->id }})"
+                                                         :checked="$schedule->is_active"/>
+                                        </flux:table.cell>
+                                        <flux:table.cell>
+                                            <div class="flex gap-2">
+                                                <flux:button href="{{ route('admin.schedules.edit', $schedule) }}"
+                                                             variant="primary" size="sm">
+                                                    {{ __('Rediģēt') }}
+                                                </flux:button>
+                                                <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst grafiku?') }}"
+                                                             variant="danger"
+                                                             size="sm"
+                                                             wire:click="destroy({{ $schedule->id }})">
+                                                    {{ __('Dzēst') }}
+                                                </flux:button>
+                                            </div>
+                                        </flux:table.cell>
+                                    </flux:table.row>
+                                @endforeach
+                            </flux:table.rows>
+                        </flux:table>
+                    </flux:accordion.content>
+                </flux:accordion.item>
             @endforeach
-        </div>
+        </flux:accordion>
     @endif
 </div>

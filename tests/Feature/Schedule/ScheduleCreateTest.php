@@ -27,6 +27,7 @@ test('can create a recurring schedule with valid data', function () {
     $service = Service::factory()->create();
 
     Livewire::test('schedule.schedule-create')
+        ->set('coach_id', $service->coach_id)
         ->set('service_id', $service->id)
         ->set('schedule_type', 'recurring')
         ->set('day_of_week', DayOfWeek::Monday->value)
@@ -50,6 +51,7 @@ test('can create a specific date schedule with valid data', function () {
     $service = Service::factory()->create();
 
     Livewire::test('schedule.schedule-create')
+        ->set('coach_id', $service->coach_id)
         ->set('service_id', $service->id)
         ->set('schedule_type', 'specific')
         ->set('date', '2026-03-15')
@@ -157,6 +159,7 @@ test('can create a schedule with is_active enabled', function () {
     $service = Service::factory()->create();
 
     Livewire::test('schedule.schedule-create')
+        ->set('coach_id', $service->coach_id)
         ->set('service_id', $service->id)
         ->set('schedule_type', 'recurring')
         ->set('day_of_week', DayOfWeek::Wednesday->value)

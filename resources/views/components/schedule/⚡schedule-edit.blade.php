@@ -21,7 +21,10 @@ new class extends Component
      */
     public function mount(Schedule $schedule): void
     {
+        $schedule->load('service');
+
         $this->scheduleId = $schedule->id;
+        $this->coach_id = $schedule->service->coach_id;
         $this->service_id = $schedule->service_id;
         $this->schedule_type = $schedule->day_of_week !== null ? 'recurring' : 'specific';
         $this->day_of_week = $schedule->day_of_week?->value;
