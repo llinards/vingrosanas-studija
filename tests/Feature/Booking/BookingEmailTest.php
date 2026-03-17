@@ -2,6 +2,7 @@
 
 use App\Actions\CreateStripeCheckoutSession;
 use App\Mail\BookingConfirmation;
+use App\Mail\BookingRescheduled;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Coach;
@@ -122,4 +123,16 @@ test('new booking notification email contains customer data', function () {
     $mailable->assertSeeInHtml($booking->surname, escape: false);
     $mailable->assertSeeInHtml($booking->phone, escape: false);
     $mailable->assertSeeInHtml($booking->email, escape: false);
+});
+
+test('booking rescheduled email contains new schedule data', function () {
+    $booking = Booking::factory()->create();
+    $booking->load('schedule.service.coach');
+
+    $mailable = new BookingRescheduled($booking);
+
+    $mailable->assertSeeInHtml($booking->schedule->service->name, escape: false);
+    $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
+    $mailable->assertSeeInHtml($booking->booking_date->format('d.m.Y'), escape: false);
+    $mailable->assertSeeInHtml(substr($booking->schedule->start_time, 0, 5), escape: false);
 });

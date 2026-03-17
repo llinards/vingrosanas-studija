@@ -3,9 +3,11 @@
 use App\Actions\RefundBooking;
 use App\Exceptions\RefundNotAllowedException;
 use App\Livewire\Concerns\HasBookingForm;
+use App\Mail\BookingRescheduled;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -181,6 +183,9 @@ new class extends Component
         try {
             $booking = Booking::findOrFail($this->bookingId);
 
+            $scheduleChanged = $booking->schedule_id !== (int) $this->schedule_id;
+            $dateChanged = $booking->booking_date->format('Y-m-d') !== $this->booking_date;
+
             $booking->update([
                 'schedule_id' => $this->schedule_id,
                 'booking_date' => $this->booking_date,
@@ -192,6 +197,11 @@ new class extends Component
                 'payment_status' => $this->payment_status,
                 'attendance_status' => $this->attendance_status,
             ]);
+
+            if ($scheduleChanged || $dateChanged) {
+                $booking->load('schedule.service.coach');
+                Mail::to($booking->email)->send(new BookingRescheduled($booking));
+            }
 
             Flux::toast(
                 text: __('Rezervācija atjaunināta!'),

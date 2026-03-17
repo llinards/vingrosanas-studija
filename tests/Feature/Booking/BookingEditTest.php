@@ -1,9 +1,11 @@
 <?php
 
 use App\Enums\PaymentStatus;
+use App\Mail\BookingRescheduled;
 use App\Models\Booking;
 use App\Models\Schedule;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -113,4 +115,54 @@ test('validation messages are in latvian', function () {
         ->set('name', '')
         ->call('save')
         ->assertSee('Vārds ir obligāts.');
+});
+
+test('rescheduled email is sent when schedule changes', function () {
+    Mail::fake();
+
+    $booking = Booking::factory()->create(['email' => 'client@example.com']);
+    $newSchedule = Schedule::factory()->create(['is_active' => true]);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('service_type_id', $newSchedule->service->service_type_id)
+        ->set('service_id', $newSchedule->service_id)
+        ->set('schedule_id', $newSchedule->id)
+        ->set('booking_date', $booking->booking_date->format('Y-m-d'))
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.bookings.index'));
+
+    Mail::assertQueued(BookingRescheduled::class, function ($mail) {
+        return $mail->hasTo('client@example.com');
+    });
+});
+
+test('rescheduled email is sent when booking date changes', function () {
+    Mail::fake();
+
+    $booking = Booking::factory()->create(['email' => 'client@example.com']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('booking_date', now()->addWeek()->toDateString())
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.bookings.index'));
+
+    Mail::assertQueued(BookingRescheduled::class, function ($mail) {
+        return $mail->hasTo('client@example.com');
+    });
+});
+
+test('rescheduled email is not sent when schedule and date remain unchanged', function () {
+    Mail::fake();
+
+    $booking = Booking::factory()->create();
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('name', 'Updated Name')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.bookings.index'));
+
+    Mail::assertNotQueued(BookingRescheduled::class);
 });
