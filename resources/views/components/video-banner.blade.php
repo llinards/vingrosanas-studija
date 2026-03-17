@@ -7,7 +7,7 @@
 
     {{-- Video --}}
     <video x-show="playing" x-cloak class="w-full h-full object-cover" controls x-ref="video"
-        @click.away="playing = false; $refs.video.pause(); $refs.video.currentTime = 0">
+        @ended="playing = false; $refs.video.currentTime = 0">
         <source src="{{ asset(site('media', 'video_file', 'videos/rick-astley-never-gonna-give-you-up.mp4')) }}" type="video/mp4">
         {{ __('Diemžēl video nav iespējams atskaņot') }}
     </video>
