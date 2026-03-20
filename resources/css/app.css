@@ -134,7 +134,6 @@ body {
    Flux UI Component Overrides
    ========================================================================== */
 
-/* Flux UI Component Overrides */
 ui-modal {
     display: contents;
 }
@@ -401,7 +400,7 @@ footer li [data-flux-link] {
 }
 
 footer #copyright [data-flux-link] {
-    @apply hover:text-black
+    @apply hover:text-black;
 }
 
 /* ============================================================================
@@ -503,7 +502,7 @@ button {
 }
 
 .f-carousel.has-dots {
-    margin-bottom: 0px;
+    margin-bottom: 0;
 }
 
 #ownerCarousel .f-carousel__slide img,
@@ -537,9 +536,6 @@ button {
 #coachCarousel {
     --f-carousel-slide-width: calc((100%) / 1.2);
     --f-carousel-gap: 8px;
-}
-
-#coachCarousel {
     @apply h-auto min-h-140 sm:min-h-156 md:min-h-164;
 }
 
