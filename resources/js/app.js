@@ -3,45 +3,35 @@ import { Dots } from "@fancyapps/ui/dist/carousel/carousel.dots.js";
 import { Autoplay } from "@fancyapps/ui/dist/carousel/carousel.autoplay.js";
 import { Autoscroll } from "@fancyapps/ui/dist/carousel/carousel.autoscroll.js";
 
+function initAutoplayCarousel(element) {
+    Carousel(
+        element,
+        {
+            Autoplay: {
+                pauseOnHover: false,
+                showProgressbar: false,
+                timeout: 3000,
+            },
+        },
+        {
+            Autoplay,
+            Dots,
+        },
+    ).init();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
- 
     const galleryCarousel = document.getElementById("galleryCarousel");
     const ownerCarousel = document.getElementById("ownerCarousel");
     const workoutCarousel = document.getElementById("workoutCarousel");
     const coachCarousel = document.getElementById("coachCarousel");
 
     if (galleryCarousel) {
-        Carousel(
-            galleryCarousel,
-            {
-                Autoplay: {
-                    pauseOnHover: false,
-                    showProgressbar: false,
-                    timeout: 3000,
-                },
-            },
-            {
-                Autoplay,
-                Dots,
-            },
-        ).init();
+        initAutoplayCarousel(galleryCarousel);
     }
 
     if (ownerCarousel) {
-        Carousel(
-            ownerCarousel,
-            {
-                Autoplay: {
-                    pauseOnHover: false,
-                    showProgressbar: false,
-                    timeout: 3000,
-                },
-            },
-            {
-                Autoplay,
-                Dots,
-            },
-        ).init();
+        initAutoplayCarousel(ownerCarousel);
     }
 
     if (workoutCarousel) {
@@ -71,6 +61,4 @@ document.addEventListener("DOMContentLoaded", () => {
             {},
         ).init();
     }
-
-
 });
