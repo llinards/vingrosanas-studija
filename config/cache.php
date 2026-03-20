@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 return [
@@ -113,5 +114,21 @@ return [
     */
 
     'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | This option controls which classes may be unserialized when retrieving
+    | items from the cache. Setting this to `false` disables PHP object
+    | unserialization entirely. You may specify an array of fully
+    | qualified class names that are allowed to be unserialized.
+    |
+    */
+
+    'serializable_classes' => [
+        Collection::class,
+    ],
 
 ];
