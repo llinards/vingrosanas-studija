@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     /**
      * Get all services ordered by service type position and service position.
      */
@@ -17,11 +16,11 @@ new class extends Component
     public function services(): Collection
     {
         return Service::with(['serviceType', 'coach'])
-            ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
-            ->orderBy('service_types.position')
-            ->orderBy('services.position')
-            ->select('services.*')
-            ->get();
+                      ->join('service_types', 'services.service_type_id', '=', 'service_types.id')
+                      ->orderBy('service_types.position')
+                      ->orderBy('services.position')
+                      ->select('services.*')
+                      ->get();
     }
 
     /**
@@ -31,9 +30,9 @@ new class extends Component
      */
     public function updateServiceTypePosition(int $id, int $position): void
     {
-        $serviceType = ServiceType::findOrFail($id);
+        $serviceType  = ServiceType::findOrFail($id);
         $serviceTypes = ServiceType::query()->orderBy('position')->get();
-        $serviceTypes = $serviceTypes->reject(fn ($st) => $st->id === $id);
+        $serviceTypes = $serviceTypes->reject(fn($st) => $st->id === $id);
         $serviceTypes->splice($position, 0, [$serviceType]);
         $serviceTypes->each(function ($st, $index) {
             $st->update(['position' => $index]);
@@ -54,12 +53,12 @@ new class extends Component
      */
     public function updateServicePosition(int $id, int $position): void
     {
-        $service = Service::findOrFail($id);
+        $service  = Service::findOrFail($id);
         $services = Service::query()
-            ->where('service_type_id', $service->service_type_id)
-            ->orderBy('position')
-            ->get();
-        $services = $services->reject(fn ($s) => $s->id === $id);
+                           ->where('service_type_id', $service->service_type_id)
+                           ->orderBy('position')
+                           ->get();
+        $services = $services->reject(fn($s) => $s->id === $id);
         $services->splice($position, 0, [$service]);
         $services->each(function ($s, $index) {
             $s->update(['position' => $index]);
@@ -82,6 +81,23 @@ new class extends Component
 
         Flux::toast(
             text: $service->is_active ? __('Pakalpojums aktivizēts!') : __('Pakalpojums deaktivizēts.'),
+            variant: 'success',
+        );
+
+        unset($this->services);
+    }
+
+    /**
+     * Toggle membership eligibility for a service.
+     */
+    public function toggleMembershipEligible(Service $service): void
+    {
+        $service->update(['is_membership_eligible' => ! $service->is_membership_eligible]);
+
+        Flux::toast(
+            text: $service->is_membership_eligible
+                ? __('Pakalpojums tagad pieejams abonementam!')
+                : __('Pakalpojums vairs nav pieejams abonementam.'),
             variant: 'success',
         );
 
@@ -119,7 +135,8 @@ new class extends Component
     @if($this->services->isEmpty())
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav neviena pakalpojuma!') }}</flux:text>
-            <flux:button href="{{ route('admin.services.create') }}" wire:navigate class="mb-4">Pievienot jaunu pakalpojumu
+            <flux:button href="{{ route('admin.services.create') }}" wire:navigate class="mb-4">Pievienot jaunu
+                pakalpojumu
             </flux:button>
         </div>
     @else
@@ -141,6 +158,7 @@ new class extends Component
                                 <flux:table.column>{{ __('Nosaukums') }}</flux:table.column>
                                 <flux:table.column>{{ __('Treneris') }}</flux:table.column>
                                 <flux:table.column>{{ __('Cena') }}</flux:table.column>
+                                <flux:table.column>{{ __('Iekļaut abonementā?') }}</flux:table.column>
                                 <flux:table.column>{{ __('Statuss') }}</flux:table.column>
                                 <flux:table.column>{{ __('Darbības') }}</flux:table.column>
                             </flux:table.columns>
@@ -157,15 +175,27 @@ new class extends Component
                                             <div class="flex items-center gap-2">
                                                 {{ $service->name }}
                                                 @if($service->is_membership)
-                                                    <flux:badge size="sm" color="blue">{{ __('Abonements') }}</flux:badge>
+                                                    <flux:badge size="sm"
+                                                                color="blue">{{ __('Abonements') }}</flux:badge>
                                                 @endif
                                                 @if($service->is_exclusive)
-                                                    <flux:badge size="sm" color="purple">{{ __('Individuāls') }}</flux:badge>
+                                                    <flux:badge size="sm"
+                                                                color="purple">{{ __('Individuāls') }}</flux:badge>
                                                 @endif
                                             </div>
                                         </flux:table.cell>
-                                        <flux:table.cell>{{ $service->coach?->name ?? '—' }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            @if($service->coach?->name)
+                                                {{ $service->coach?->name }}
+                                            @endif
+                                        </flux:table.cell>
                                         <flux:table.cell>{{ Number::currency($service->price / 100, 'EUR') }}</flux:table.cell>
+                                        <flux:table.cell>
+                                            @if(!$service->is_membership)
+                                                <flux:switch wire:click="toggleMembershipEligible({{ $service->id }})"
+                                                             :checked="$service->is_membership_eligible"/>
+                                            @endif
+                                        </flux:table.cell>
                                         <flux:table.cell>
                                             <flux:switch wire:click="toggleActive({{ $service->id }})"
                                                          :checked="$service->is_active"/>
