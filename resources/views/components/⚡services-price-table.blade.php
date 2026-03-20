@@ -64,17 +64,11 @@ new class extends Component {
                                             <flux:table.row>
                                                 <flux:table.cell class="whitespace-normal">
                                                     @if($service->description)
-                                                        <flux:modal.trigger
-                                                            name="service-description-{{ $service->id }}">
-                                                            <flux:link as="button">{{ $service->name }}
-                                                                ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }}
-                                                                )
-                                                            </flux:link>
+                                                        <flux:modal.trigger name="service-description-{{ $service->id }}">
+                                                            <flux:link as="button">{{ $service->name }} ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }})</flux:link>
                                                         </flux:modal.trigger>
                                                     @else
-                                                        {{ $service->name }}
-                                                        ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }}
-                                                        )
+                                                        {{ $service->name }} ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }})
                                                     @endif
                                                 </flux:table.cell>
                                                 <flux:table.cell class="w-28" align="end">
