@@ -46,7 +46,7 @@ new class extends Component {
 
 <div>
     <div id="services" class="mx-auto max-w-7xl px-4 py-12">
-        <flux:heading level="2" class="">{{ __('Pakalpojumi un cenas') }}</flux:heading>
+        <flux:heading level="2" class="pb-6 md:pb-12">{{ __('Pakalpojumi un cenas') }}</flux:heading>
         <flux:accordion transition>
             @forelse ($this->serviceTypes as $serviceType)
                 <flux:accordion.item>

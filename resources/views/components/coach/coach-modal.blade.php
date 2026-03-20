@@ -4,7 +4,7 @@
              src="{{ $coachModalImg }}">
         <div class="space-y-6 md:space-y-12 flex flex-col justify-center">
             <div>
-                <flux:heading class="pb-0!" level="2">{{ $coachName }}</flux:heading>
+                <flux:heading level="2">{{ $coachName }}</flux:heading>
                 <flux:text>{{ $coachTitle }}</flux:text>
             </div>
             <div class="rich-text-content">

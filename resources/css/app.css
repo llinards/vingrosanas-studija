@@ -331,8 +331,7 @@ header h1 {
 h2 {
     font-family: var(--font-heading);
     @apply text-3xl md:text-6xl lg:text-7xl;
-    @apply uppercase text-gray pb-6 md:pb-12;
-    @apply leading-tight;
+    @apply uppercase text-gray leading-tight;
 }
 
 h3 {
@@ -345,20 +344,8 @@ h3 {
     @apply tracking-widest;
 }
 
-#coaches [data-flux-modal] h2 {
-    @apply text-3xl md:text-6xl lg:text-7xl;
-}
-
-[data-flux-accordion-item] h2 {
-    @apply pb-0;
-}
-
 #aboutUs h2 {
-    @apply lg:text-8xl pb-0;
-}
-
-#confirmModal h2 {
-    @apply pb-0;
+    @apply lg:text-8xl;
 }
 
 /* ============================================================================
@@ -402,12 +389,7 @@ footer .list-heading {
 }
 
 footer h2 {
-    @apply pb-0 md:text-4xl lg:text-5xl;
-    @apply text-3xl uppercase;
-}
-
-footer ul {
-    @apply space-y-1;
+    @apply md:text-4xl lg:text-5xl;
 }
 
 footer [data-flux-text] {
