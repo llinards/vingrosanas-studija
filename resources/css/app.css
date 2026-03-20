@@ -163,6 +163,7 @@ ui-modal {
 [data-flux-label] {
     font-family: var(--font-heading);
     @apply uppercase text-base font-bold text-gray;
+    @apply !mb-0 !leading-tight;
 }
 
 ui-checkbox {
@@ -171,10 +172,6 @@ ui-checkbox {
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
-}
-
-[data-flux-label] {
-    @apply !mb-0 !leading-tight;
 }
 
 [data-flux-error] {
@@ -212,20 +209,17 @@ ui-checkbox {
     @apply text-white;
 }
 
-/* #quote - quote */
-#quote [data-flux-text]:nth-of-type(1) {
+#quote .quote-text {
     font-family: var(--font-heading);
     @apply uppercase text-3xl md:text-4xl;
     @apply lg:text-5xl xl:text-6xl leading-normal;
 }
 
-/* #quote - owner title */
-#quote [data-flux-text]:nth-of-type(2) {
+#quote .quote-title {
     @apply text-base mb-2 opacity-75;
 }
 
-/* #quote - name */
-#quote [data-flux-text]:nth-of-type(3) {
+#quote .quote-name {
     font-family: var(--font-body-bold);
     @apply text-2xl;
 }
@@ -520,21 +514,6 @@ button {
 
 [data-flux-modal] > dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
-}
-
-.coach-bio-description h1,
-.coach-bio-description h2,
-.coach-bio-description h3 {
-    @apply pb-3 md:pb-4;
-}
-
-.coach-bio-description p {
-    @apply font-body text-black text-base md:text-lg;
-    @apply pb-3 md:pb-4;
-}
-
-.coach-bio-description ul {
-    @apply list-disc pl-4;
 }
 
 /* ============================================================================

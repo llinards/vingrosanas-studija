@@ -22,7 +22,7 @@ new class extends Component {
     @if($this->coaches->isNotEmpty())
     <flux:heading class="hidden" level="2">{{ __('Treneri') }}</flux:heading>
     {{-- DESKTOP--}}
-    <div class="hidden pb-12 lg:grid grid-cols-3 divide-x">
+    <div class="hidden pb-12 lg:grid grid-cols-3 gap-y-12 divide-x">
         @foreach($this->coaches as $coach)
         <div class="h-full">
             <x-coach.coach-card>

@@ -9,10 +9,10 @@
         <div
             class="h-full relative flex flex-col justify-center items-center text-center space-y-6 md:space-y-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-24">
             <flux:icon.quotes />
-            <flux:text>{{ site('quote', 'text', __('"Kustība ir dzīvesveids, veselība - ieguvums."')) }}</flux:text>
+            <flux:text class="quote-text">{{ site('quote', 'text', __('"Kustība ir dzīvesveids, veselība - ieguvums."')) }}</flux:text>
             <hr class="border-blue border-t w-18">
-            <flux:text>{{ site('quote', 'attribution_title', __('Vingrošanas studijas dibinātāja')) }}</flux:text>
-            <flux:text>{{ site('quote', 'attribution_name', __('Anete Platkēviča')) }}</flux:text>
+            <flux:text class="quote-title">{{ site('quote', 'attribution_title', __('Vingrošanas studijas dibinātāja')) }}</flux:text>
+            <flux:text class="quote-name">{{ site('quote', 'attribution_name', __('Anete Platkēviča')) }}</flux:text>
         </div>
     </div>
     <flux:icon.arrow-down class="md:hidden centered-icon" />
