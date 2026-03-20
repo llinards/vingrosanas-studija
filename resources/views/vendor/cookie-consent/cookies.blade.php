@@ -359,7 +359,8 @@
     }
 
     .cookies__name {
-        font-family: var(--font-body-bold);
+        font-family: var(--font-body);
+        font-weight: 600;
         color: var(--color-gray);
         flex-shrink: 0;
     }
