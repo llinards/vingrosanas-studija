@@ -43,6 +43,12 @@ new class extends Component {
     public bool $pastOnly = false;
 
     /**
+     * Whether to show only future bookings.
+     */
+    #[Url]
+    public bool $futureOnly = false;
+
+    /**
      * Search query for filtering bookings.
      */
     #[Url]
@@ -67,7 +73,46 @@ new class extends Component {
     }
 
     /**
-     * Reset pagination when any filter changes.
+     * Reset pagination and disable pastOnly when todayOnly is enabled.
+     */
+    public function updatedTodayOnly(): void
+    {
+        if ($this->todayOnly) {
+            $this->pastOnly = false;
+            $this->futureOnly = false;
+        }
+
+        $this->resetPage();
+    }
+
+    /**
+     * Reset pagination and disable todayOnly and futureOnly when pastOnly is enabled.
+     */
+    public function updatedPastOnly(): void
+    {
+        if ($this->pastOnly) {
+            $this->todayOnly = false;
+            $this->futureOnly = false;
+        }
+
+        $this->resetPage();
+    }
+
+    /**
+     * Reset pagination and disable todayOnly and pastOnly when futureOnly is enabled.
+     */
+    public function updatedFutureOnly(): void
+    {
+        if ($this->futureOnly) {
+            $this->todayOnly = false;
+            $this->pastOnly = false;
+        }
+
+        $this->resetPage();
+    }
+
+    /**
+     * Reset pagination when any other filter changes.
      */
     public function updated(): void
     {
@@ -86,7 +131,8 @@ new class extends Component {
                       ->whereIn('attendance_status', $this->attendanceStatuses)
                       ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
                       ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
-                      ->when(! $this->pastOnly && ! $this->todayOnly,
+                      ->when($this->futureOnly, fn($query) => $query->whereDate('booking_date', '>', today()))
+                      ->when(! $this->pastOnly && ! $this->todayOnly && ! $this->futureOnly,
                           fn($query) => $query->whereDate('booking_date', '>=', today()))
                       ->orderBy('booking_date', 'asc')
                       ->paginate(10);
@@ -159,6 +205,7 @@ new class extends Component {
                 <flux:checkbox.group>
                     <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
                     <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
+                    <flux:checkbox label="{{ __('Tikai nākotnes') }}" wire:model.live="futureOnly"/>
                 </flux:checkbox.group>
             </div>
         </div>

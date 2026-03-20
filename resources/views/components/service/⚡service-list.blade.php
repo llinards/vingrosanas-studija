@@ -123,16 +123,18 @@ new class extends Component
             </flux:button>
         </div>
     @else
-        <div class="flex flex-col gap-6" wire:sort="updateServiceTypePosition">
+        <flux:accordion transition wire:sort="updateServiceTypePosition">
             @foreach($this->services->groupBy(fn ($service) => $service->serviceType->id) as $serviceTypeId => $typeServices)
-                <div wire:key="service-type-{{ $serviceTypeId }}" wire:sort:item="{{ $serviceTypeId }}">
-                    <div class="mb-3 flex items-center gap-2">
-                        <div wire:sort:handle class="cursor-move">
-                            <flux:icon.bars-3 class="size-5 text-zinc-400 hover:text-zinc-600"/>
+                <flux:accordion.item wire:key="service-type-{{ $serviceTypeId }}" wire:sort:item="{{ $serviceTypeId }}">
+                    <flux:accordion.heading>
+                        <div class="flex items-center gap-2">
+                            <div wire:sort:handle class="cursor-move">
+                                <flux:icon.bars-3 class="size-5 text-zinc-400 hover:text-zinc-600"/>
+                            </div>
+                            {{ $typeServices->first()->serviceType->name }}
                         </div>
-                        <flux:heading level="2" size="lg">{{ $typeServices->first()->serviceType->name }}</flux:heading>
-                    </div>
-                    <div>
+                    </flux:accordion.heading>
+                    <flux:accordion.content>
                         <flux:table>
                             <flux:table.columns>
                                 <flux:table.column class="w-10"></flux:table.column>
@@ -187,9 +189,9 @@ new class extends Component
                                 @endforeach
                             </flux:table.rows>
                         </flux:table>
-                    </div>
-                </div>
+                    </flux:accordion.content>
+                </flux:accordion.item>
             @endforeach
-        </div>
+        </flux:accordion>
     @endif
 </div>
