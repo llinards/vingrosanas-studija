@@ -151,7 +151,7 @@ new class extends Component {
         </div>
 
         <div class="mt-8 text-center">
-            <flux:button wire:click="resetForm" class="button large primary">
+            <flux:button wire:click="resetForm" class="btn btn-lg btn-primary">
                 {{ __('Jauna reģistrācija') }}
             </flux:button>
         </div>
@@ -183,7 +183,7 @@ new class extends Component {
         </div>
 
         <div class="mt-8 text-center">
-            <flux:button wire:click="resetForm" class="button large primary">
+            <flux:button wire:click="resetForm" class="btn btn-lg btn-primary">
                 {{ __('Atpakaļ') }}
             </flux:button>
         </div>
@@ -198,7 +198,7 @@ new class extends Component {
             <form wire:submit="checkIn" class="space-y-6">
                 <flux:input wire:model="email" type="email" :label="__('E-pasts')"/>
                 <div class="text-center">
-                    <flux:button type="submit" class="button large primary">
+                    <flux:button type="submit" class="btn btn-lg btn-primary">
                         {{ __('Reģistrēties') }}
                     </flux:button>
                 </div>

@@ -35,7 +35,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <flux:button href="{{ route('home') }}" class="button large primary">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>
@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <flux:button href="{{ route('home') }}" class="button large primary">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>
@@ -67,7 +67,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <flux:button href="{{ route('home') }}" class="button large primary">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>
@@ -83,7 +83,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <flux:button href="{{ route('home') }}" class="button large primary">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>

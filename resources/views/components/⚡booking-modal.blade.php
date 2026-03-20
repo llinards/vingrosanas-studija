@@ -756,7 +756,7 @@ new class extends Component {
                     <flux:heading size="lg">{{ __('Rezervācija veiksmīga!') }}</flux:heading>
                     <flux:text>{{ __('Apstiprinājums nosūtīts uz Jūsu e-pastu.') }}</flux:text>
                     <flux:modal.close>
-                        <flux:button class="button small primary">{{ __('Aizvērt') }}</flux:button>
+                        <flux:button class="btn btn-sm btn-primary">{{ __('Aizvērt') }}</flux:button>
                     </flux:modal.close>
                 </div>
             @else
@@ -886,10 +886,10 @@ new class extends Component {
 
                         <div class="flex justify-between">
                             <flux:modal.close>
-                                <flux:button class="button small tertiary">{{ __('Atcelt') }}</flux:button>
+                                <flux:button class="btn btn-sm btn-tertiary">{{ __('Atcelt') }}</flux:button>
                             </flux:modal.close>
                             <flux:button wire:click="nextStep"
-                                         class="button small primary">{{ __('Tālāk') }}</flux:button>
+                                         class="btn btn-sm btn-primary">{{ __('Tālāk') }}</flux:button>
                         </div>
                     </div>
                 @endif
@@ -934,9 +934,9 @@ new class extends Component {
 
                             <div class="flex justify-between">
                                 <flux:button wire:click="previousStep"
-                                             class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
+                                             class="btn btn-sm btn-tertiary">{{ __('Atpakaļ') }}</flux:button>
                                 <flux:button wire:click="nextStep"
-                                             class="button small primary">{{ __('Tālāk') }}</flux:button>
+                                             class="btn btn-sm btn-primary">{{ __('Tālāk') }}</flux:button>
                             </div>
                         </div>
                     @else
@@ -1024,12 +1024,12 @@ new class extends Component {
                             @enderror
                             <div class="flex justify-between">
                                 <flux:button wire:click="previousStep"
-                                             class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
+                                             class="btn btn-sm btn-tertiary">{{ __('Atpakaļ') }}</flux:button>
                                 @if(count($sessions) === ($this->membershipService?->sessions_count ?? 0))
                                     <flux:button wire:click="nextStep"
-                                                 class="button small primary">{{ __('Tālāk') }}</flux:button>
+                                                 class="btn btn-sm btn-primary">{{ __('Tālāk') }}</flux:button>
                                 @elseif($this->session_schedule_id)
-                                    <flux:button wire:click="addSession" class="button small primary">
+                                    <flux:button wire:click="addSession" class="btn btn-sm btn-primary">
                                         {{ __('Pievienot nodarbību') }} ({{ count($sessions) + 1 }}
                                         /{{ $this->membershipService?->sessions_count ?? 0 }})
                                     </flux:button>
@@ -1059,9 +1059,9 @@ new class extends Component {
 
                         <div class="flex justify-between">
                             <flux:button wire:click="previousStep"
-                                         class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
+                                         class="btn btn-sm btn-tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <flux:button wire:click="nextStep"
-                                         class="button small primary">{{ __('Tālāk') }}</flux:button>
+                                         class="btn btn-sm btn-primary">{{ __('Tālāk') }}</flux:button>
                         </div>
                     </div>
                 @endif
@@ -1146,9 +1146,9 @@ new class extends Component {
 
                         <div class="flex justify-between">
                             <flux:button wire:click="previousStep"
-                                         class="button small tertiary">{{ __('Atpakaļ') }}</flux:button>
+                                         class="btn btn-sm btn-tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <flux:button wire:click="{{ $mode === 'booking' ? 'submitBooking' : 'submitMembership' }}"
-                                         class="button small primary"
+                                         class="btn btn-sm btn-primary"
                                          :disabled="$isProcessing">{{ __('Apmaksāt ar karti') }}</flux:button>
                         </div>
                     </div>

@@ -83,7 +83,7 @@ new class extends Component
                 <flux:error name="terms" />
             </flux:field>
         </div>
-        <flux:button type="submit" class="button large primary self-center">{{ __('Nosūtīt') }}</flux:button>
+        <flux:button type="submit" class="btn btn-lg btn-primary self-center">{{ __('Nosūtīt') }}</flux:button>
     </form>
 
     <flux:modal id="confirmModal"

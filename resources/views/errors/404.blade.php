@@ -8,7 +8,7 @@
         <flux:text class="mt-4 max-w-md">
             {{ __('Diemžēl meklētā lapa neeksistē vai ir pārvietota.') }}
         </flux:text>
-        <a href="{{ route('home') }}" class="button large primary mt-8">
+        <a href="{{ route('home') }}" class="btn btn-sm btn-primary mt-8">
             {{ __('Uz sākumu') }}
         </a>
     </div>

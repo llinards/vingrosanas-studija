@@ -31,7 +31,7 @@
                 </div>
 
                 <div class="mt-8 text-center space-y-4">
-                    <flux:button class="button large primary"
+                    <flux:button class="btn btn-lg btn-primary"
                                  href="{{ route('membership.manage', ['membership' => $membership, 'session_id' => $membership->stripe_checkout_session_id]) }}">
                         {{ __('Pārvaldīt abonementu') }}
                     </flux:button>
@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <flux:button href="{{ route('home') }}" class="button large primary">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
                         {{ __('Atgriezties uz sākumu') }}
                     </flux:button>
                 </div>

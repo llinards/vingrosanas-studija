@@ -8,8 +8,8 @@
         <flux:text class="mt-4 max-w-md">
             {{ __('Atvainojiet, radās neparedzēta kļūda. Lūdzu, mēģiniet vēlreiz vēlāk.') }}
         </flux:text>
-        <a href="{{ route('home') }}" class="button large primary mt-8">
+        <a href="{{ route('home') }}" class="btn btn-sm btn-primary mt-8">
             {{ __('Uz sākumu') }}
         </a>
     </div>
-    </x-layouts.main>
+</x-layouts.error>

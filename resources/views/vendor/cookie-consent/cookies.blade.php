@@ -11,8 +11,8 @@
                     @endif
                 </div>
                 <div class="cookies__actions">
-                    @cookieconsentbutton(action: 'accept.essentials', label: __('cookieConsent::cookies.essentials'), attributes: ['class' => 'cookiesBtn cookiesBtn--essentials button small tertiary'])
-                    @cookieconsentbutton(action: 'accept.all', label: __('cookieConsent::cookies.all'), attributes: ['class' => 'cookiesBtn cookiesBtn--accept button small primary'])
+                    @cookieconsentbutton(action: 'accept.essentials', label: __('cookieConsent::cookies.essentials'), attributes: ['class' => 'cookiesBtn cookiesBtn--essentials btn btn-sm btn-tertiary'])
+                    @cookieconsentbutton(action: 'accept.all', label: __('cookieConsent::cookies.all'), attributes: ['class' => 'cookiesBtn cookiesBtn--accept btn btn-sm btn-primary'])
                 </div>
             </div>
         </div>
@@ -68,7 +68,7 @@
                     @endforeach
                 </div>
                 <div class="cookies__save">
-                    <button type="submit" class="cookiesBtn__link button small primary">@lang('cookieConsent::cookies.save')</button>
+                    <button type="submit" class="cookiesBtn__link btn btn-sm btn-primary">@lang('cookieConsent::cookies.save')</button>
                 </div>
             </form>
         </div>

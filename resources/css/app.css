@@ -411,39 +411,39 @@ button {
     @apply cursor-pointer;
 }
 
-.button {
+.btn {
     font-family: var(--font-heading);
     @apply font-semibold border-2 tracking-wide transition-all;
     @apply duration-300 cursor-pointer uppercase rounded-3xl;
 }
 
-.large {
+.btn-lg {
     @apply px-7 py-6 text-xl md:px-10 md:py-7;
     @apply lg:px-12 lg:py-8 lg:text-3xl;
 }
 
-.small {
+.btn-sm {
     @apply px-5 py-4 text-base md:px-6 md:py-5 md:text-lg;
 }
 
-.primary {
+.btn-primary {
     @apply bg-blue border-blue text-white hover:opacity-70;
 }
 
-.secondary,
-.tertiary {
+.btn-secondary,
+.btn-tertiary {
     @apply hover:border-black hover:text-black;
 }
 
-.secondary {
+.btn-secondary {
     @apply bg-blue border-white text-white;
 }
 
-.secondary:focus {
+.btn-secondary:focus {
     @apply ring-black;
 }
 
-.tertiary {
+.btn-tertiary {
     @apply border-blue text-blue;
 }
 

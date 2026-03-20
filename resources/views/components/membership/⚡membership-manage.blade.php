@@ -331,7 +331,7 @@ new class extends Component {
                                 @elseif($this->canRebook($booking))
                                     @if($this->rebookingBookingId !== $booking->id)
                                         <flux:button wire:click="startRebook({{ $booking->id }})"
-                                                     class="button primary">
+                                                     class="btn btn-primary">
                                             {{ __('Pārplānot') }}
                                         </flux:button>
                                     @endif
@@ -391,7 +391,7 @@ new class extends Component {
                                     <flux:link as="button" wire:click="cancelRebook">{{ __('Atcelt') }}</flux:link>
                                     @if($this->rebook_schedule_id)
                                         <flux:button wire:click="confirmRebook"
-                                                     class="button primary">{{ __('Apstiprināt') }}</flux:button>
+                                                     class="btn btn-primary">{{ __('Apstiprināt') }}</flux:button>
                                     @endif
                                 </div>
                             </div>
