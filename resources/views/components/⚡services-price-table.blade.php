@@ -7,23 +7,25 @@ use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     #[Computed]
     public function serviceTypes(): Collection
     {
-        return ServiceType::with(['services' => fn ($query) => $query
-            ->where('is_active', true)
-            ->with('priceTiers')
-            ->orderBy('position')])
-            ->whereHas('services', fn ($query) => $query->where('is_active', true))
-            ->orderBy('position')
-            ->get()
-            ->each(function (ServiceType $serviceType): void {
-                $unique = $serviceType->services->unique(fn (Service $service) => $this->servicePricingFingerprint($service));
+        return ServiceType::with([
+            'services' => fn($query) => $query
+                ->where('is_active', true)
+                ->with('priceTiers')
+                ->orderBy('position')
+        ])
+                          ->whereHas('services', fn($query) => $query->where('is_active', true))
+                          ->orderBy('position')
+                          ->get()
+                          ->each(function (ServiceType $serviceType): void {
+                              $unique = $serviceType->services->unique(fn(Service $service
+                              ) => $this->servicePricingFingerprint($service));
 
-                $serviceType->setRelation('services', $unique);
-            });
+                              $serviceType->setRelation('services', $unique);
+                          });
     }
 
     private function servicePricingFingerprint(Service $service): string
@@ -31,7 +33,7 @@ new class extends Component
         if ($service->priceTiers->count() > 1) {
             $tiers = $service->priceTiers
                 ->sortBy('participant_count')
-                ->map(fn (ServicePriceTier $tier) => $tier->participant_count.':'.$tier->price)
+                ->map(fn(ServicePriceTier $tier) => $tier->participant_count.':'.$tier->price)
                 ->implode('|');
 
             return $service->name.'|'.$tiers;
@@ -61,7 +63,19 @@ new class extends Component
                                         @foreach($service->priceTiers as $tier)
                                             <flux:table.row>
                                                 <flux:table.cell class="whitespace-normal">
-                                                    {{ $service->name }} ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }})
+                                                    @if($service->description)
+                                                        <flux:modal.trigger
+                                                            name="service-description-{{ $service->id }}">
+                                                            <flux:link as="button">{{ $service->name }}
+                                                                ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }}
+                                                                )
+                                                            </flux:link>
+                                                        </flux:modal.trigger>
+                                                    @else
+                                                        {{ $service->name }}
+                                                        ({{ $tier->participant_count }} {{ $tier->participant_count === 1 ? __('persona') : __('personas') }}
+                                                        )
+                                                    @endif
                                                 </flux:table.cell>
                                                 <flux:table.cell class="w-28" align="end">
                                                     {{ Number::currency($tier->price / 100, 'EUR') }}
@@ -72,12 +86,29 @@ new class extends Component
                                         {{-- Service with single price --}}
                                         <flux:table.row>
                                             <flux:table.cell class="whitespace-normal">
-                                                {{ $service->name }}
+                                                @if($service->description)
+                                                    <flux:modal.trigger name="service-description-{{ $service->id }}">
+                                                        <flux:link as="button">{{ $service->name }}</flux:link>
+                                                    </flux:modal.trigger>
+                                                @else
+                                                    {{ $service->name }}
+                                                @endif
                                             </flux:table.cell>
                                             <flux:table.cell class="w-28" align="end">
                                                 {{ Number::currency($service->price / 100, 'EUR') }}
                                             </flux:table.cell>
                                         </flux:table.row>
+                                    @endif
+
+                                    @if($service->description)
+                                        <flux:modal
+                                            class="p-6 space-y-6"
+                                            name="service-description-{{ $service->id }}">
+                                            <flux:heading level="3" class="pt-8">{{ $service->name }}</flux:heading>
+                                            <div class="rich-text-content text-left w-full">
+                                                {!! $service->description !!}
+                                            </div>
+                                        </flux:modal>
                                     @endif
                                 @endforeach
                             </flux:table.rows>

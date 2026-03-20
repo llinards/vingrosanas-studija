@@ -2,6 +2,6 @@
 'section',
 ])
 
-<div class="about-us-content">
+<div class="rich-text-content">
     {!! site('about', $section.'_content', '') !!}
 </div>

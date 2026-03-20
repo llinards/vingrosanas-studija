@@ -16,6 +16,11 @@
                 :placeholder="__('Ievadi pakalpojuma nosaukumu')"
             />
 
+            <flux:editor wire:model="description"
+                         :label="__('Apraksts')"
+                         toolbar="bold italic | bullet ordered"
+                         :placeholder="__('Ievadi pakalpojuma aprakstu')"/>
+
             @if(!$this->is_membership)
                 <flux:select wire:model="coach_id" :label="__('Treneris')">
                     <flux:select.option value="">{{ __('Izvēlieties treneri') }}</flux:select.option>

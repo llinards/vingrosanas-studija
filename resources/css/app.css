@@ -618,22 +618,30 @@ button {
    About Us Content (CMS rich text output)
    ========================================================================== */
 
-.about-us-content {
+.rich-text-content {
     @apply space-y-3;
 }
 
-.about-us-content h1,
-.about-us-content h2,
-.about-us-content h3 {
+.rich-text-content h1,
+.rich-text-content h2,
+.rich-text-content h3 {
     @apply pb-0;
 }
 
-.about-us-content p {
+.rich-text-content p {
     @apply font-body text-black text-base md:text-lg;
 }
 
-.about-us-content ul {
+.rich-text-content ul {
     @apply list-disc pl-4;
+}
+
+.rich-text-content ol {
+    @apply list-decimal pl-4;
+}
+
+.rich-text-content li {
+    @apply font-body text-black text-base md:text-lg;
 }
 
 /* ============================================================================

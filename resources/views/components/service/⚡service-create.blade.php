@@ -24,6 +24,7 @@ new class extends Component
             DB::transaction(function () {
                 $service = Service::create([
                     'name' => $this->name,
+                    'description' => $this->description ?: null,
                     'service_type_id' => $this->service_type_id,
                     'coach_id' => $this->is_membership ? null : $this->coach_id,
                     'price' => (int) round($this->price * 100),

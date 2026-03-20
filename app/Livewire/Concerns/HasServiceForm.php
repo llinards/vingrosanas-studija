@@ -12,6 +12,8 @@ trait HasServiceForm
 {
     public string $name = '';
 
+    public string $description = '';
+
     public ?int $service_type_id = null;
 
     public ?int $coach_id = null;

@@ -24,6 +24,7 @@ new class extends Component
     {
         $this->serviceId = $service->id;
         $this->name = $service->name;
+        $this->description = $service->description ?? '';
         $this->service_type_id = $service->service_type_id;
         $this->coach_id = $service->coach_id;
         $this->price = (string) ($service->price / 100);
@@ -59,6 +60,7 @@ new class extends Component
 
                 $service->update([
                     'name' => $this->name,
+                    'description' => $this->description ?: null,
                     'service_type_id' => $this->service_type_id,
                     'coach_id' => $this->is_membership ? null : $this->coach_id,
                     'price' => (int) round($this->price * 100),
