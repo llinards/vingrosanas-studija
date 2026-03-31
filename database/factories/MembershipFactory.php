@@ -74,8 +74,8 @@ class MembershipFactory extends Factory
     public function expired(): static
     {
         return $this->state(fn (array $attributes) => [
-            'period_start' => today()->subMonth()->startOfMonth(),
-            'period_end' => today()->subMonth()->endOfMonth(),
+            'period_start' => today()->subMonthNoOverflow()->startOfMonth(),
+            'period_end' => today()->subMonthNoOverflow()->endOfMonth(),
         ]);
     }
 
