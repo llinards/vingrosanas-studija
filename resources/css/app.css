@@ -29,33 +29,17 @@
    ========================================================================== */
 
 @font-face {
-    font-family: "Oswald";
-    src: url("fonts/Oswald-Regular.ttf") format("truetype");
+    font-family: "League Spartan";
+    src: url("fonts/LeagueSpartan-Medium.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Poppins";
+    src: url("fonts/Poppins-Regular.ttf") format("truetype");
     font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Oswald";
-    src: url("fonts/Oswald-SemiBold.ttf") format("truetype");
-    font-weight: 600;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Archivo";
-    src: url("fonts/Archivo-Regular.ttf") format("truetype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Archivo";
-    src: url("fonts/Archivo-SemiBold.ttf") format("truetype");
-    font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
@@ -69,8 +53,8 @@
     --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
     "Noto Color Emoji";
-    --font-heading: "Oswald", ui-sans-serif, system-ui, sans-serif;
-    --font-body: "Archivo", ui-sans-serif, system-ui, sans-serif;
+    --font-heading: "League Spartan", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "Poppins", ui-sans-serif, system-ui, sans-serif;
 
     /* Brand Colors */
     --color-blue: #518ba9;
@@ -151,7 +135,7 @@ ui-modal {
 /* Form Fields */
 [data-flux-label] {
     font-family: var(--font-heading);
-    @apply uppercase text-base font-bold text-gray;
+    @apply uppercase text-base font-medium text-gray;
     @apply mb-0 leading-tight;
 }
 
@@ -183,7 +167,7 @@ ui-checkbox {
 
 [data-flux-heading] {
     font-family: var(--font-heading);
-    @apply font-semibold;
+    @apply font-medium;
 }
 
 #slogan h2 {
@@ -210,12 +194,12 @@ ui-checkbox {
 
 #quote .quote-name {
     font-family: var(--font-body);
-    @apply font-semibold text-2xl;
+    @apply font-normal text-2xl;
 }
 
 #confirmModal [data-flux-text] {
     font-family: var(--font-heading);
-    @apply uppercase font-semibold text-gray;
+    @apply uppercase font-medium text-gray;
 }
 
 /* Links */
@@ -369,7 +353,7 @@ ul {
 
 .list-heading {
     font-family: var(--font-heading);
-    @apply uppercase text-gray font-semibold text-base md:text-xl;
+    @apply uppercase text-gray font-medium text-base md:text-xl;
 }
 
 #contactDetails .list-heading {
@@ -412,7 +396,7 @@ button {
 
 .btn {
     font-family: var(--font-heading);
-    @apply font-semibold border-2 tracking-wide transition-all;
+    @apply font-medium border-2 tracking-wide transition-all;
     @apply duration-300 cursor-pointer uppercase rounded-3xl;
 }
 
