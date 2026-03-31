@@ -70,7 +70,7 @@ new class extends Component
 <div>
     <form wire:submit="submit" class="flex flex-col items-center justify-center w-full">
         <div
-            class="w-full border-6 border-blue rounded-4xl bg-beige shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
+            class="w-full border-6 border-blue rounded-4xl bg-surface shadow-2xl p-8 lg:p-12 space-y-6 mb-6 md:mb-12">
             <x-honeypot livewire-model="extraFields" />
             <flux:input wire:model="name" type="text" :label="__('Vārds*')" />
             <flux:input wire:model="surname" type="text" :label="__('Uzvārds*')" />

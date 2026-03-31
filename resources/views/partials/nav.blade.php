@@ -31,7 +31,7 @@
                 x-transition:enter-start="translate-x-full opacity-0" x-transition:enter-end="translate-x-0 opacity-100"
                 x-transition:leave="transition-all duration-300 ease-in"
                 x-transition:leave-start="translate-x-0 opacity-100" x-transition:leave-end="translate-x-full opacity-0"
-                class="bg-beige w-full md:w-1/2 lg:w-1/3 fixed inset-y-0 right-0 h-screen z-20
+                class="bg-surface w-full md:w-1/2 lg:w-1/3 fixed inset-y-0 right-0 h-screen z-20
                                                             flex flex-col items-center justify-center
                                                             overflow-y-auto overscroll-contain space-y-4 md:space-y-4 lg:space-y-6">
 

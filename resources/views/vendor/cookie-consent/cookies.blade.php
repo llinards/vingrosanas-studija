@@ -112,7 +112,7 @@
         max-width: 42rem;
         margin: 0 auto;
         background-color: var(--color-body);
-        border: 1px solid var(--color-beige);
+        border: 1px solid var(--color-surface);
         border-radius: 1rem;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         overflow: hidden;
@@ -345,7 +345,7 @@
         gap: 0.5rem;
         padding-top: 0.75rem;
         margin-top: 0.75rem;
-        border-top: 1px solid var(--color-beige);
+        border-top: 1px solid var(--color-surface);
         list-style: none;
         padding-left: 0;
     }

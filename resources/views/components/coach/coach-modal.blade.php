@@ -1,4 +1,4 @@
-<flux:modal class="bg-beige mx-4 lg:mx-auto p-6 md:p-12" name="{{ $coachModalName }}">
+<flux:modal class="bg-surface mx-4 lg:mx-auto p-6 md:p-12" name="{{ $coachModalName }}">
     <div class="flex flex-col md:grid lg:grid-cols-2 gap-x-12">
         <img class="mt-8 md:mt-4 lg:mt-0 max-h-156 lg:max-h-none lg:h-full object-cover w-full pb-3 md:pb-6 lg:pb-0"
              src="{{ $coachModalImg }}">
