@@ -3,7 +3,7 @@
 
     <div class="container mx-auto px-4 pt-6 h-full flex flex-col relative">
         {{-- HEADING AND CTA --}}
-        <div class="mt-auto pb-12 md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
+        <div class="mt-auto pb-[calc(3rem+env(safe-area-inset-bottom))] md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
             <flux:heading
                 level="1">{{ site('hero', 'heading', __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam')) }}</flux:heading>
             <flux:modal.trigger name="booking-modal">
