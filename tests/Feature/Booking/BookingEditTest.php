@@ -56,7 +56,7 @@ test('can update a booking', function () {
         ->set('service_type_id', $newSchedule->service->service_type_id)
         ->set('service_id', $newSchedule->service_id)
         ->set('schedule_id', $newSchedule->id)
-        ->set('booking_date', '2026-04-01')
+        ->set('booking_date', now()->addDay()->toDateString())
         ->set('name', 'Anna')
         ->set('surname', 'Ozola')
         ->set('phone', '+37129000000')
