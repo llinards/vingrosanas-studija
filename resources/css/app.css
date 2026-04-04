@@ -304,7 +304,7 @@ h1 {
     font-family: var(--font-heading);
     @apply text-4xl md:text-6xl lg:text-[5rem];
     @apply uppercase tracking-wide text-gray;
-    @apply leading-tight;
+    @apply leading-none;
 }
 
 header h1 {
@@ -314,7 +314,7 @@ header h1 {
 h2 {
     font-family: var(--font-heading);
     @apply text-3xl md:text-6xl lg:text-7xl;
-    @apply uppercase text-gray leading-tight;
+    @apply uppercase text-gray leading-none;
 }
 
 h3 {
