@@ -34,6 +34,8 @@
     font-weight: 500;
     font-style: normal;
     font-display: swap;
+    ascent-override: 100%;
+    descent-override: 25%;
 }
 
 @font-face {
