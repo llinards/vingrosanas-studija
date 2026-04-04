@@ -16,7 +16,7 @@ Route::post('stripe/webhook', StripeWebhookController::class)->name('stripe.webh
 Route::get('/', static function () {
     return view('welcome');
 })->name('home');
-Route::get('/privacy-policy', static function () {
+Route::get('/privatuma-politika', static function () {
     return view('privacy-policy');
 })->name('privacy-policy');
 
@@ -26,7 +26,7 @@ Route::get('booking/{booking}/success', static function (Booking $booking, Reque
             abort(404);
         }
     } else {
-        if (! Auth::check() || Auth::user()->email !== $booking->email) {
+        if ( ! Auth::check() || Auth::user()->email !== $booking->email) {
             abort(404);
         }
     }
@@ -49,7 +49,7 @@ Route::get('membership/{membership}/success', static function (Membership $membe
 })->name('membership.success');
 
 Route::livewire('membership/{membership}/manage', 'membership.membership-manage')
-    ->name('membership.manage');
+     ->name('membership.manage');
 
 Route::view('check-in', 'check-in')->name('check-in')->middleware('throttle:10,1');
 
@@ -88,13 +88,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::livewire('settings/profile', Profile::class)->name('settings.profile');
     Route::livewire('settings/password', Password::class)->name('settings.password');
     Route::livewire('settings/two-factor', TwoFactor::class)
-        ->middleware(
-            when(
-                Features::canManageTwoFactorAuthentication()
-                && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
-                ['password.confirm'],
-                [],
-            ),
-        )
-        ->name('settings.two-factor');
+         ->middleware(
+             when(
+                 Features::canManageTwoFactorAuthentication()
+                 && Features::optionEnabled(Features::twoFactorAuthentication(), 'confirmPassword'),
+                 ['password.confirm'],
+                 [],
+             ),
+         )
+         ->name('settings.two-factor');
 });

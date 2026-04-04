@@ -22,13 +22,14 @@
                     <flux:link href="/#services">{{ __('Pakalpojumi') }}</flux:link>
                 </li>
                 <li>
-                    <flux:link href="/#contactForm">{{ __('Kontakti') }}</flux:link>
+                    <flux:link href="/#kontakti">{{ __('Kontakti') }}</flux:link>
                 </li>
             </ul>
             <ul>
                 <li class="list-heading">{{ __('Informācija') }}</li>
                 <li>
-                    <flux:link href="/privacy-policy">{{ __('Privātuma politika') }}</flux:link>
+                    <flux:link href="{{ route('privacy-policy') }}">
+                        {{ __('Privātuma politika') }}</flux:link>
                 </li>
             </ul>
             <ul>

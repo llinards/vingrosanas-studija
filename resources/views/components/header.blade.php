@@ -10,7 +10,7 @@
                 <flux:button
                     class="btn btn-lg btn-primary">{{ site('hero', 'cta_text', __('Pieteikties')) }}</flux:button>
             </flux:modal.trigger>
-            <flux:button href="/#contactForm"
+            <flux:button href="/#kontakti"
                          class="btn btn-lg btn-primary mt-2">{{ __(('Jauns klients')) }}</flux:button>
         </div>
 

@@ -59,7 +59,7 @@
                     </flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:navlist.item href="/#contactForm" @click="open = false">{{ __('Kontakti') }}
+                    <flux:navlist.item href="/#kontakti" @click="open = false">{{ __('Kontakti') }}
                     </flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist class="nav-icons flex flex-row gap-x-4 absolute bottom-16">

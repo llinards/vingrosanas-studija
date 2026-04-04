@@ -19,7 +19,7 @@
 
         <div class="md:absolute md:bottom-10 md:left-1/2 md:-translate-x-1/2 z-10 flex flex-col md:flex-row gap-4 w-full bg-blue px-4 md:px-0 py-4 justify-center"
             x-on:click.stop>
-            <flux:button href="#contactForm" class="btn btn-lg btn-secondary"
+            <flux:button href="#kontakti" class="btn btn-lg btn-secondary"
                 x-on:click="$flux.modal('booking-and-consultation-modal').close()">{{ __('Pieteikties konsultācijai') }}
             </flux:button>
             <flux:modal.trigger name="booking-modal">
