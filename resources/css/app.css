@@ -305,7 +305,7 @@ footer [data-flux-icon] {
 h1 {
     font-family: var(--font-heading);
     @apply text-4xl md:text-6xl lg:text-[5rem];
-    @apply uppercase tracking-wide text-gray;
+    @apply uppercase text-gray;
     @apply leading-none;
 }
 
