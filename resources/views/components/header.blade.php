@@ -3,15 +3,16 @@
 
     <div class="container mx-auto px-4 pt-6 h-full flex flex-col relative">
         {{-- HEADING AND CTA --}}
-        <div class="mt-auto pb-[calc(3rem+env(safe-area-inset-bottom))] md:pb-36 md:max-w-1/5 space-y-4 md:space-y-6 flex flex-col items-start">
+        <div
+            class="mt-auto pb-[calc(3rem+env(safe-area-inset-bottom))] md:pb-36 md:max-w-1/5 gap-2 md:gap-3 flex flex-col items-start">
             <flux:heading
                 level="1">{{ site('hero', 'heading', __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam')) }}</flux:heading>
+            <flux:button href="/#kontakti"
+                         class="btn btn-lg btn-primary">{{ __(('Jauns klients')) }}</flux:button>
             <flux:modal.trigger name="booking-modal">
                 <flux:button
                     class="btn btn-lg btn-primary">{{ site('hero', 'cta_text', __('Pieteikties')) }}</flux:button>
             </flux:modal.trigger>
-            <flux:button href="/#kontakti"
-                         class="btn btn-lg btn-primary mt-2">{{ __(('Jauns klients')) }}</flux:button>
         </div>
 
         {{-- CONTACT/SOCIAL MEDIA ICONS --}}
