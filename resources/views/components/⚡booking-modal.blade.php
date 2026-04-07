@@ -872,7 +872,7 @@ new class extends Component {
                             @endif
                         @else
                             {{-- Membership: tier selection --}}
-                            <flux:radio.group wire:model.live="selectedMembershipServiceId" variant="cards">
+                            <flux:radio.group wire:model.live="selectedMembershipServiceId" variant="cards" class="grid grid-cols-2 gap-2">
                                 @foreach($this->membershipServices as $membershipOption)
                                     <flux:radio
                                         :value="$membershipOption->id"
