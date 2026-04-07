@@ -829,7 +829,11 @@ new class extends Component {
                             @if($this->membershipService)
                                 <div class="flex justify-between gap-2 text-sm">
                                     <flux:text class="text-zinc-500 shrink-0">{{ __('Abonements') }}</flux:text>
-                                    <flux:text class="font-medium truncate">{{ $this->membershipService->name }} &mdash; {{ Number::currency(($this->membershipService->price ?? 0) / 100, 'EUR') }}</flux:text>
+                                    <flux:text class="font-medium truncate">{{ $this->membershipService->name }}</flux:text>
+                                </div>
+                                <div class="flex justify-between gap-2 text-sm">
+                                    <flux:text class="text-zinc-500 shrink-0">{{ __('Cena') }}</flux:text>
+                                    <flux:text class="font-medium">{{ Number::currency(($this->membershipService->price ?? 0) / 100, 'EUR') }}</flux:text>
                                 </div>
                             @endif
                         @endif
