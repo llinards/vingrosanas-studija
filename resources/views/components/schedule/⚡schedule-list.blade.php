@@ -84,8 +84,9 @@ new class extends Component
         </div>
     @else
         <flux:accordion transition>
-            @foreach($this->schedules->groupBy(fn ($schedule) => $schedule->service->coach->name) as $coachName => $coachSchedules)
-                <flux:accordion.item wire:key="coach-{{ Str::slug($coachName) }}">
+            @foreach($this->schedules->groupBy(fn ($schedule) => $schedule->service->coach->id) as $coachId => $coachSchedules)
+                @php $coachName = $coachSchedules->first()->service->coach->name @endphp
+                <flux:accordion.item wire:key="coach-{{ $coachId }}">
                     <flux:accordion.heading>
                         {{ $coachName }} ({{ $coachSchedules->count() }})
                     </flux:accordion.heading>
@@ -143,6 +144,10 @@ new class extends Component
                                 @endforeach
                             </flux:table.rows>
                         </flux:table>
+
+                        <div class="mt-6">
+                            <livewire:coach.coach-unavailable-dates :coach-id="$coachId" :key="'unavailable-'.$coachId"/>
+                        </div>
                     </flux:accordion.content>
                 </flux:accordion.item>
             @endforeach

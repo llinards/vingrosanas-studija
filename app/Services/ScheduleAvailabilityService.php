@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Booking;
 use App\Models\Schedule;
+use App\Models\UnavailableDate;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
@@ -29,12 +30,40 @@ class ScheduleAvailabilityService
         $unavailable = [];
         $now = now();
 
+        $blocks = UnavailableDate::whereDate('start_date', '<=', $endDate->toDateString())
+            ->whereDate('end_date', '>=', $startDate->toDateString())
+            ->get();
+
+        $studioWideBlocks = $blocks->whereNull('coach_id');
+        $coachBlocks = $blocks->whereNotNull('coach_id');
+
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
-            $hasAvailableSlot = false;
-            $isToday = $date->isToday();
             $dateString = $date->toDateString();
 
+            $isStudioClosed = $studioWideBlocks->contains(
+                fn (UnavailableDate $block) => $block->start_date->toDateString() <= $dateString && $block->end_date->toDateString() >= $dateString,
+            );
+
+            if ($isStudioClosed) {
+                $unavailable[] = $dateString;
+
+                continue;
+            }
+
+            $blockedCoachIds = $coachBlocks
+                ->filter(fn (UnavailableDate $block) => $block->start_date->toDateString() <= $dateString && $block->end_date->toDateString() >= $dateString)
+                ->pluck('coach_id')
+                ->unique()
+                ->all();
+
+            $hasAvailableSlot = false;
+            $isToday = $date->isToday();
+
             foreach ($schedules as $schedule) {
+                if (in_array($schedule->service->coach_id, $blockedCoachIds, true)) {
+                    continue;
+                }
+
                 if (! $this->matchesDay($schedule, $date)) {
                     continue;
                 }
@@ -72,12 +101,24 @@ class ScheduleAvailabilityService
         ?int $excludeBookingId = null,
         array $extraBookings = [],
     ): array {
+        $blocks = UnavailableDate::forDate($date)->get();
+
+        if ($blocks->contains(fn (UnavailableDate $block) => $block->coach_id === null)) {
+            return [];
+        }
+
+        $blockedCoachIds = $blocks->pluck('coach_id')->filter()->unique()->all();
+
         $slots = [];
         $isToday = $date->isToday();
         $now = now();
         $dateString = $date->toDateString();
 
         foreach ($schedules as $schedule) {
+            if (in_array($schedule->service->coach_id, $blockedCoachIds, true)) {
+                continue;
+            }
+
             if (! $this->matchesDay($schedule, $date)) {
                 continue;
             }

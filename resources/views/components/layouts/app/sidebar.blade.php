@@ -21,6 +21,9 @@
             <flux:navlist.item icon="calendar-days" :href="route('admin.schedules.index')"
                                :current="request()->routeIs('admin.schedules.*')"
                                wire:navigate>{{ __('Grafiks') }}</flux:navlist.item>
+            <flux:navlist.item icon="no-symbol" :href="route('admin.closures.index')"
+                               :current="request()->routeIs('admin.closures.*')"
+                               wire:navigate>{{ __('Brīvdienas') }}</flux:navlist.item>
             <flux:navlist.item icon="ticket" :href="route('admin.bookings.index')"
                                :current="request()->routeIs('admin.bookings.*')"
                                wire:navigate>{{ __('Rezervācijas') }}</flux:navlist.item>

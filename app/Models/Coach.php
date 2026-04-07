@@ -21,6 +21,14 @@ class Coach extends Model
     }
 
     /**
+     * @return HasMany<UnavailableDate, $this>
+     */
+    public function unavailableDates(): HasMany
+    {
+        return $this->hasMany(UnavailableDate::class);
+    }
+
+    /**
      * Delete the coach's image from storage if it exists.
      */
     public function deleteImage(): void
