@@ -2,8 +2,10 @@
 
 use App\Enums\PaymentStatus;
 use App\Models\Membership;
+use App\Models\Service;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -13,43 +15,17 @@ use Livewire\WithPagination;
 new class extends Component {
     use WithPagination;
 
-    /**
-     * Selected payment statuses for filtering.
-     *
-     * @var array<int, string>
-     */
     #[Url]
-    public array $paymentStatuses = [];
+    public string $status = 'active';
 
-    /**
-     * Whether to show only active memberships.
-     */
     #[Url]
-    public bool $activeOnly = true;
+    public string $paymentStatus = '';
 
-    /**
-     * Whether to show only expired memberships.
-     */
     #[Url]
-    public bool $expiredOnly = false;
+    public string $serviceId = '';
 
-    /**
-     * Search query for filtering memberships.
-     */
     #[Url]
     public string $search = '';
-
-    /**
-     * Initialize the component with all payment statuses selected.
-     */
-    public function mount(): void
-    {
-        if (empty($this->paymentStatuses)) {
-            $this->paymentStatuses = collect(PaymentStatus::cases())
-                ->map(fn(PaymentStatus $status) => $status->value)
-                ->all();
-        }
-    }
 
     /**
      * Reset pagination when any filter changes.
@@ -60,7 +36,16 @@ new class extends Component {
     }
 
     /**
-     * Get paginated memberships filtered by payment status and search.
+     * @return Collection<int, Service>
+     */
+    #[Computed]
+    public function membershipServices(): Collection
+    {
+        return Service::where('is_membership', true)->orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * Get paginated memberships filtered by all active filters.
      */
     #[Computed]
     public function memberships(): LengthAwarePaginator
@@ -68,9 +53,10 @@ new class extends Component {
         return Membership::query()
                          ->with('service')
                          ->when($this->search, fn($query) => $query->search($this->search))
-                         ->whereIn('payment_status', $this->paymentStatuses)
-                         ->when($this->activeOnly, fn($query) => $query->active())
-                         ->when($this->expiredOnly, fn($query) => $query->where('period_end', '<', today()))
+                         ->when($this->paymentStatus, fn($query) => $query->where('payment_status', $this->paymentStatus))
+                         ->when($this->serviceId, fn($query) => $query->where('service_id', $this->serviceId))
+                         ->when($this->status === 'active', fn($query) => $query->where('period_end', '>=', today()))
+                         ->when($this->status === 'expired', fn($query) => $query->where('period_end', '<', today()))
                          ->withCount([
                              'bookings' => fn($query) => $query->whereNotIn('payment_status',
                                  [PaymentStatus::Refunded, PaymentStatus::Failed])
@@ -125,17 +111,26 @@ new class extends Component {
             <flux:input prefix-icon="magnifying-glass" type="search"
                         wire:model.live.debounce.300ms="search" placeholder="{{ __('Meklēt abonementus') }}"/>
 
-            <div class="flex flex-wrap items-end gap-8">
-                <flux:checkbox.group wire:model.live="paymentStatuses">
-                    @foreach(PaymentStatus::cases() as $status)
-                        <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
-                    @endforeach
-                </flux:checkbox.group>
+            <div class="flex flex-wrap items-end gap-4">
+                <flux:select wire:model.live="status" :label="__('Statuss')">
+                    <flux:select.option value="active">{{ __('Aktīvie') }}</flux:select.option>
+                    <flux:select.option value="expired">{{ __('Beigušies') }}</flux:select.option>
+                    <flux:select.option value="all">{{ __('Visi') }}</flux:select.option>
+                </flux:select>
 
-                <flux:checkbox.group>
-                    <flux:checkbox label="{{ __('Tikai aktīvie') }}" wire:model.live="activeOnly"/>
-                    <flux:checkbox label="{{ __('Tikai beigušies') }}" wire:model.live="expiredOnly"/>
-                </flux:checkbox.group>
+                <flux:select wire:model.live="paymentStatus" :label="__('Maksājuma statuss')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
+                    @foreach(PaymentStatus::cases() as $paymentStatusCase)
+                        <flux:select.option :value="$paymentStatusCase->value">{{ $paymentStatusCase->label() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <flux:select wire:model.live="serviceId" :label="__('Abonements')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
+                    @foreach($this->membershipServices as $service)
+                        <flux:select.option :value="$service->id">{{ $service->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
             </div>
         </div>
 

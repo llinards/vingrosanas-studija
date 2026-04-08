@@ -4,6 +4,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
+use App\Models\Service;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -51,9 +52,84 @@ test('membership list can filter by payment status', function () {
     $pending = Membership::factory()->create(['name' => 'Pending']);
 
     Livewire::test('membership.membership-list')
-        ->set('paymentStatuses', [PaymentStatus::Paid->value])
+        ->set('status', 'all')
+        ->set('paymentStatus', PaymentStatus::Paid->value)
         ->assertSee('Paid')
         ->assertDontSee('Pending');
+});
+
+test('membership list status defaults to active', function () {
+    $component = Livewire::test('membership.membership-list');
+
+    expect($component->instance()->status)->toBe('active');
+});
+
+test('membership list active status shows current and future memberships', function () {
+    $current = Membership::factory()->paid()->create(['name' => 'Current']);
+    $future = Membership::factory()->create([
+        'name' => 'Future',
+        'period_start' => today()->addMonth()->startOfMonth(),
+        'period_end' => today()->addMonth()->endOfMonth(),
+    ]);
+    $expired = Membership::factory()->paid()->expired()->create(['name' => 'Expired']);
+
+    Livewire::test('membership.membership-list')
+        ->assertSee('Current')
+        ->assertSee('Future')
+        ->assertDontSee('Expired');
+});
+
+test('membership list expired status shows only expired memberships', function () {
+    $active = Membership::factory()->paid()->create(['name' => 'Active']);
+    $expired = Membership::factory()->paid()->expired()->create(['name' => 'Expired']);
+
+    Livewire::test('membership.membership-list')
+        ->set('status', 'expired')
+        ->assertSee('Expired')
+        ->assertDontSee('Active');
+});
+
+test('membership list all status shows all memberships', function () {
+    $active = Membership::factory()->paid()->create(['name' => 'Active']);
+    $expired = Membership::factory()->paid()->expired()->create(['name' => 'Expired']);
+
+    Livewire::test('membership.membership-list')
+        ->set('status', 'all')
+        ->assertSee('Active')
+        ->assertSee('Expired');
+});
+
+test('membership list filters by membership plan', function () {
+    $service4 = Service::factory()->membership(4)->create(['name' => '4 nodarbības']);
+    $service9 = Service::factory()->membership(9)->create(['name' => '9 nodarbības']);
+
+    Membership::factory()->paid()->create(['name' => 'FourSession', 'service_id' => $service4->id]);
+    Membership::factory()->paid()->create(['name' => 'NineSession', 'service_id' => $service9->id]);
+
+    Livewire::test('membership.membership-list')
+        ->set('serviceId', (string) $service4->id)
+        ->assertSee('FourSession')
+        ->assertDontSee('NineSession');
+});
+
+test('membership list status filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['status' => 'expired'])
+        ->test('membership.membership-list')
+        ->assertSet('status', 'expired');
+});
+
+test('membership list payment status filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['paymentStatus' => PaymentStatus::Paid->value])
+        ->test('membership.membership-list')
+        ->assertSet('paymentStatus', PaymentStatus::Paid->value);
+});
+
+test('membership list service filter is reflected in url query string', function () {
+    $service = Service::factory()->membership(4)->create();
+
+    Livewire::withQueryParams(['serviceId' => (string) $service->id])
+        ->test('membership.membership-list')
+        ->assertSet('serviceId', (string) $service->id);
 });
 
 test('membership can be deleted from list', function () {
