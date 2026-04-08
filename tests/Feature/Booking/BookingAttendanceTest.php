@@ -52,43 +52,23 @@ test('booking list displays attendance status filter checkboxes', function () {
         ->assertSee('Neieradās');
 });
 
-test('booking list initializes with all attendance statuses selected', function () {
-    $component = Livewire::test('booking.booking-list');
-
-    $expectedStatuses = collect(AttendanceStatus::cases())
-        ->map(fn (AttendanceStatus $status) => $status->value)
-        ->all();
-
-    expect($component->instance()->attendanceStatuses)->toBe($expectedStatuses);
-});
-
-test('booking list filters bookings by selected attendance statuses', function () {
+test('booking list filters bookings by attendance status', function () {
     $attendedBooking = Booking::factory()->attended()->create(['booking_date' => today()]);
     Booking::factory()->create(['attendance_status' => AttendanceStatus::Pending, 'booking_date' => today()]);
     Booking::factory()->missed()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
-        ->set('attendanceStatuses', [AttendanceStatus::Attended->value]);
+        ->set('attendanceStatus', AttendanceStatus::Attended->value);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
     expect($bookings->first()->id)->toBe($attendedBooking->id);
 });
 
-test('booking list shows no bookings when no attendance statuses are selected', function () {
-    Booking::factory()->create();
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('attendanceStatuses', []);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(0);
-});
-
 test('booking list attendance status filter is reflected in url query string', function () {
-    Livewire::withQueryParams(['attendanceStatuses' => [AttendanceStatus::Attended->value]])
+    Livewire::withQueryParams(['attendanceStatus' => AttendanceStatus::Attended->value])
         ->test('booking.booking-list')
-        ->assertSet('attendanceStatuses', [AttendanceStatus::Attended->value]);
+        ->assertSet('attendanceStatus', AttendanceStatus::Attended->value);
 });
 
 test('booking create form includes attendance status field', function () {
