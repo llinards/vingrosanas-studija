@@ -1,7 +1,12 @@
 <?php
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Coach;
+use App\Models\Membership;
+use App\Models\Schedule;
+use App\Models\Service;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -82,8 +87,7 @@ test('booking list displays bookings with soonest booking date first by default'
     $earlierBooking = Booking::factory()->create(['booking_date' => now()->addDays(1)]);
     $laterBooking = Booking::factory()->create(['booking_date' => now()->addDays(3)]);
 
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false);
+    $component = Livewire::test('booking.booking-list');
 
     $bookings = $component->instance()->bookings;
     expect($bookings->first()->id)->toBe($earlierBooking->id);
@@ -108,7 +112,7 @@ test('booking list can navigate to second page', function () {
         ->assertSet('paginators.page', 2);
 });
 
-test('booking list shows all bookings regardless of payment status', function () {
+test('booking list shows all bookings regardless of payment status by default', function () {
     Booking::factory()->create(['payment_status' => PaymentStatus::Paid, 'booking_date' => today()]);
     Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
     Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
@@ -119,18 +123,6 @@ test('booking list shows all bookings regardless of payment status', function ()
     expect($bookings)->toHaveCount(3);
 });
 
-test('booking list excludes past bookings by default', function () {
-    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDays(1)]);
-    $pastBooking = Booking::factory()->past()->create();
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($futureBooking->id);
-});
-
 test('booking list displays participant count', function () {
     Booking::factory()->create(['participant_count' => 3, 'booking_date' => today()]);
 
@@ -139,62 +131,100 @@ test('booking list displays participant count', function () {
         ->assertSee('Dalībnieki');
 });
 
-test('booking list includes today bookings by default', function () {
+// --- Period filter ---
+
+test('booking list period defaults to upcoming', function () {
+    $component = Livewire::test('booking.booking-list');
+
+    expect($component->instance()->period)->toBe('upcoming');
+});
+
+test('booking list upcoming period shows today and future bookings', function () {
     $todayBooking = Booking::factory()->create(['booking_date' => today()]);
+    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
     $pastBooking = Booking::factory()->past()->create();
 
     $component = Livewire::test('booking.booking-list');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(2);
+    expect($bookings->pluck('id')->toArray())->toContain($todayBooking->id);
+    expect($bookings->pluck('id')->toArray())->toContain($futureBooking->id);
+});
+
+test('booking list today period shows only today bookings', function () {
+    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
+    $tomorrowBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
+    $pastBooking = Booking::factory()->past()->create();
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'today');
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
     expect($bookings->first()->id)->toBe($todayBooking->id);
 });
 
-test('booking list initializes with all payment statuses selected', function () {
-    $component = Livewire::test('booking.booking-list');
-
-    $expectedStatuses = collect(PaymentStatus::cases())
-        ->map(fn (PaymentStatus $status) => $status->value)
-        ->all();
-
-    expect($component->instance()->paymentStatuses)->toBe($expectedStatuses);
-});
-
-test('booking list filters bookings by selected payment statuses', function () {
-    $paidBooking = Booking::factory()->paid()->create(['booking_date' => today()]);
-    $pendingBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
-    $failedBooking = Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
+test('booking list past period shows only past bookings', function () {
+    $pastBooking = Booking::factory()->past()->create();
+    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
+    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
 
     $component = Livewire::test('booking.booking-list')
-        ->set('paymentStatuses', [PaymentStatus::Paid->value]);
+        ->set('period', 'past');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($pastBooking->id);
+});
+
+test('booking list all period shows all bookings', function () {
+    $pastBooking = Booking::factory()->past()->create();
+    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
+    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'all');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(3);
+});
+
+test('booking list period filter resets pagination', function () {
+    Booking::factory()->count(15)->create(['booking_date' => today()]);
+
+    Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->assertSet('paginators.page', 2)
+        ->set('period', 'all')
+        ->assertSet('paginators.page', 1);
+});
+
+test('booking list period filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['period' => 'past'])
+        ->test('booking.booking-list')
+        ->assertSet('period', 'past');
+});
+
+// --- Payment status filter ---
+
+test('booking list payment status defaults to all', function () {
+    $component = Livewire::test('booking.booking-list');
+
+    expect($component->instance()->paymentStatus)->toBe('');
+});
+
+test('booking list filters bookings by payment status', function () {
+    $paidBooking = Booking::factory()->paid()->create(['booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
+    Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('paymentStatus', PaymentStatus::Paid->value);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
     expect($bookings->first()->id)->toBe($paidBooking->id);
-});
-
-test('booking list can filter by multiple payment statuses', function () {
-    Booking::factory()->paid()->create(['booking_date' => today()]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Failed, 'booking_date' => today()]);
-    Booking::factory()->refunded()->create(['booking_date' => today()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('paymentStatuses', [PaymentStatus::Paid->value, PaymentStatus::Pending->value]);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(2);
-});
-
-test('booking list shows no bookings when no payment statuses are selected', function () {
-    Booking::factory()->paid()->create(['booking_date' => today()]);
-    Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('paymentStatuses', []);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(0);
 });
 
 test('booking list resets pagination when payment status filter changes', function () {
@@ -203,183 +233,137 @@ test('booking list resets pagination when payment status filter changes', functi
     Livewire::test('booking.booking-list')
         ->call('gotoPage', 2)
         ->assertSet('paginators.page', 2)
-        ->set('paymentStatuses', [PaymentStatus::Paid->value])
+        ->set('paymentStatus', PaymentStatus::Paid->value)
         ->assertSet('paginators.page', 1);
 });
 
 test('booking list payment status filter is reflected in url query string', function () {
-    Livewire::withQueryParams(['paymentStatuses' => [PaymentStatus::Paid->value]])
+    Livewire::withQueryParams(['paymentStatus' => PaymentStatus::Paid->value])
         ->test('booking.booking-list')
-        ->assertSet('paymentStatuses', [PaymentStatus::Paid->value]);
+        ->assertSet('paymentStatus', PaymentStatus::Paid->value);
 });
 
-test('booking list displays payment status filter checkboxes', function () {
-    Booking::factory()->create(['booking_date' => today()]);
+// --- Attendance status filter ---
 
-    $this->get(route('admin.bookings.index'))
-        ->assertSuccessful()
-        ->assertSee('Apmaksāts')
-        ->assertSee('Gaida apmaksu')
-        ->assertSee('Neizdevās')
-        ->assertSee('Atmaksāts');
-});
-
-test('booking list today only filter is on by default', function () {
+test('booking list attendance status defaults to all', function () {
     $component = Livewire::test('booking.booking-list');
 
-    expect($component->instance()->todayOnly)->toBeTrue();
+    expect($component->instance()->attendanceStatus)->toBe('');
 });
 
-test('booking list today only filter shows only today bookings', function () {
-    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-    $tomorrowBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
-    $pastBooking = Booking::factory()->past()->create();
+test('booking list filters bookings by attendance status', function () {
+    $attendedBooking = Booking::factory()->attended()->create(['booking_date' => today()]);
+    Booking::factory()->missed()->create(['booking_date' => today()]);
+    Booking::factory()->create(['booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', true);
+        ->set('attendanceStatus', AttendanceStatus::Attended->value);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($todayBooking->id);
+    expect($bookings->first()->id)->toBe($attendedBooking->id);
 });
 
-test('booking list today only filter shows all bookings when disabled', function () {
-    Booking::factory()->create(['booking_date' => today()]);
-    Booking::factory()->create(['booking_date' => now()->addDay()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(2);
-});
-
-test('booking list today only filter resets pagination', function () {
-    Booking::factory()->count(15)->create(['booking_date' => today()]);
-
-    Livewire::test('booking.booking-list')
-        ->call('gotoPage', 2)
-        ->assertSet('paginators.page', 2)
-        ->set('todayOnly', true)
-        ->assertSet('paginators.page', 1);
-});
-
-test('booking list today only filter is reflected in url query string', function () {
-    Livewire::withQueryParams(['todayOnly' => true])
+test('booking list attendance status filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['attendanceStatus' => AttendanceStatus::Attended->value])
         ->test('booking.booking-list')
-        ->assertSet('todayOnly', true);
+        ->assertSet('attendanceStatus', AttendanceStatus::Attended->value);
 });
 
-test('booking list today only filter works with payment status filter', function () {
-    $todayPaid = Booking::factory()->paid()->create(['booking_date' => today()]);
-    $todayPending = Booking::factory()->create(['booking_date' => today(), 'payment_status' => PaymentStatus::Pending]);
-    $tomorrowPaid = Booking::factory()->paid()->create(['booking_date' => now()->addDay()]);
+// --- Coach filter ---
+
+test('booking list filters bookings by coach', function () {
+    $coach1 = Coach::factory()->create();
+    $coach2 = Coach::factory()->create();
+
+    $service1 = Service::factory()->create(['coach_id' => $coach1->id]);
+    $service2 = Service::factory()->create(['coach_id' => $coach2->id]);
+
+    $schedule1 = Schedule::factory()->create(['service_id' => $service1->id]);
+    $schedule2 = Schedule::factory()->create(['service_id' => $service2->id]);
+
+    $booking1 = Booking::factory()->create(['schedule_id' => $schedule1->id, 'booking_date' => today()]);
+    $booking2 = Booking::factory()->create(['schedule_id' => $schedule2->id, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', true)
-        ->set('paymentStatuses', [PaymentStatus::Paid->value]);
+        ->set('coachId', (string) $coach1->id);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($todayPaid->id);
+    expect($bookings->first()->id)->toBe($booking1->id);
 });
 
-test('booking list displays today only filter checkbox', function () {
-    Booking::factory()->create(['booking_date' => today()]);
+test('booking list coach filter is reflected in url query string', function () {
+    $coach = Coach::factory()->create();
 
-    $this->get(route('admin.bookings.index'))
-        ->assertSuccessful()
-        ->assertSee('Tikai šodienas');
-});
-
-test('booking list past only filter is off by default', function () {
-    $component = Livewire::test('booking.booking-list');
-
-    expect($component->instance()->pastOnly)->toBeFalse();
-});
-
-test('booking list past only filter shows only past bookings when checked', function () {
-    $pastBooking = Booking::factory()->past()->create();
-    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
-    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false)
-        ->set('pastOnly', true);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($pastBooking->id);
-});
-
-test('booking list past only filter excludes today bookings', function () {
-    $pastBooking = Booking::factory()->past()->create();
-    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false)
-        ->set('pastOnly', true);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($pastBooking->id);
-});
-
-test('booking list past only filter shows today and future when unchecked', function () {
-    $pastBooking = Booking::factory()->past()->create();
-    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
-    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-
-    $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false)
-        ->set('pastOnly', false);
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(2);
-    expect($bookings->pluck('id')->toArray())->toContain($todayBooking->id);
-    expect($bookings->pluck('id')->toArray())->toContain($futureBooking->id);
-    expect($bookings->pluck('id')->toArray())->not->toContain($pastBooking->id);
-});
-
-test('booking list past only filter resets pagination', function () {
-    Booking::factory()->past()->count(15)->create();
-
-    Livewire::test('booking.booking-list')
-        ->set('pastOnly', true)
-        ->call('gotoPage', 2)
-        ->assertSet('paginators.page', 2)
-        ->set('pastOnly', false)
-        ->assertSet('paginators.page', 1);
-});
-
-test('booking list past only filter is reflected in url query string', function () {
-    Livewire::withQueryParams(['pastOnly' => true])
+    Livewire::withQueryParams(['coachId' => (string) $coach->id])
         ->test('booking.booking-list')
-        ->assertSet('pastOnly', true);
+        ->assertSet('coachId', (string) $coach->id);
 });
 
-test('booking list past only filter works with payment status filter', function () {
-    $pastPaid = Booking::factory()->paid()->past()->create();
-    $pastPending = Booking::factory()->past()->create(['payment_status' => PaymentStatus::Pending]);
-    $futurePaid = Booking::factory()->paid()->create(['booking_date' => now()->addDay()]);
+// --- Service filter ---
+
+test('booking list filters bookings by service', function () {
+    $service1 = Service::factory()->create();
+    $service2 = Service::factory()->create();
+
+    $schedule1 = Schedule::factory()->create(['service_id' => $service1->id]);
+    $schedule2 = Schedule::factory()->create(['service_id' => $service2->id]);
+
+    $booking1 = Booking::factory()->create(['schedule_id' => $schedule1->id, 'booking_date' => today()]);
+    $booking2 = Booking::factory()->create(['schedule_id' => $schedule2->id, 'booking_date' => today()]);
 
     $component = Livewire::test('booking.booking-list')
-        ->set('todayOnly', false)
-        ->set('pastOnly', true)
-        ->set('paymentStatuses', [PaymentStatus::Paid->value]);
+        ->set('serviceId', (string) $service1->id);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
-    expect($bookings->first()->id)->toBe($pastPaid->id);
+    expect($bookings->first()->id)->toBe($booking1->id);
 });
 
-test('booking list displays past only filter checkbox', function () {
-    Booking::factory()->create(['booking_date' => today()]);
+test('booking list service filter is reflected in url query string', function () {
+    $service = Service::factory()->create();
 
-    $this->get(route('admin.bookings.index'))
-        ->assertSuccessful()
-        ->assertSee('Tikai pagātnes');
+    Livewire::withQueryParams(['serviceId' => (string) $service->id])
+        ->test('booking.booking-list')
+        ->assertSet('serviceId', (string) $service->id);
 });
+
+// --- Booking type filter ---
+
+test('booking list filters membership bookings', function () {
+    $membership = Membership::factory()->paid()->create();
+    $membershipBooking = Booking::factory()->forMembership($membership)->create(['booking_date' => today()]);
+    $regularBooking = Booking::factory()->create(['booking_date' => today()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('bookingType', 'membership');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($membershipBooking->id);
+});
+
+test('booking list filters regular bookings', function () {
+    $membership = Membership::factory()->paid()->create();
+    Booking::factory()->forMembership($membership)->create(['booking_date' => today()]);
+    $regularBooking = Booking::factory()->create(['booking_date' => today()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('bookingType', 'regular');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($regularBooking->id);
+});
+
+test('booking list booking type filter is reflected in url query string', function () {
+    Livewire::withQueryParams(['bookingType' => 'membership'])
+        ->test('booking.booking-list')
+        ->assertSet('bookingType', 'membership');
+});
+
+// --- Search ---
 
 test('booking list search is empty by default', function () {
     $component = Livewire::test('booking.booking-list');
@@ -441,7 +425,7 @@ test('booking list search respects payment status filter', function () {
 
     $component = Livewire::test('booking.booking-list')
         ->set('search', 'Test')
-        ->set('paymentStatuses', [PaymentStatus::Paid->value]);
+        ->set('paymentStatus', PaymentStatus::Paid->value);
 
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
@@ -471,4 +455,51 @@ test('booking list displays search input', function () {
     $this->get(route('admin.bookings.index'))
         ->assertSuccessful()
         ->assertSee('Meklēt rezervācijas');
+});
+
+// --- Combined filters ---
+
+test('booking list period works with payment status filter', function () {
+    $todayPaid = Booking::factory()->paid()->create(['booking_date' => today()]);
+    Booking::factory()->create(['booking_date' => today(), 'payment_status' => PaymentStatus::Pending]);
+    Booking::factory()->paid()->create(['booking_date' => now()->addDay()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'today')
+        ->set('paymentStatus', PaymentStatus::Paid->value);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($todayPaid->id);
+});
+
+test('booking list combines multiple filters', function () {
+    $coach = Coach::factory()->create();
+    $service = Service::factory()->create(['coach_id' => $coach->id]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+
+    $matchingBooking = Booking::factory()->paid()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => today(),
+    ]);
+
+    // Wrong coach
+    Booking::factory()->paid()->create(['booking_date' => today()]);
+    // Wrong payment status
+    Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => today(),
+        'payment_status' => PaymentStatus::Pending,
+    ]);
+    // Wrong period
+    Booking::factory()->paid()->past()->create(['schedule_id' => $schedule->id]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'today')
+        ->set('paymentStatus', PaymentStatus::Paid->value)
+        ->set('coachId', (string) $coach->id);
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($matchingBooking->id);
 });

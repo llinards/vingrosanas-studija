@@ -3,8 +3,11 @@
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Coach;
+use App\Models\Service;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
@@ -14,105 +17,29 @@ use Livewire\WithPagination;
 new class extends Component {
     use WithPagination;
 
-    /**
-     * Selected payment statuses for filtering.
-     *
-     * @var array<int, string>
-     */
     #[Url]
-    public array $paymentStatuses = [];
+    public string $period = 'upcoming';
 
-    /**
-     * Selected attendance statuses for filtering.
-     *
-     * @var array<int, string>
-     */
     #[Url]
-    public array $attendanceStatuses = [];
+    public string $paymentStatus = '';
 
-    /**
-     * Whether to show only today's bookings.
-     */
     #[Url]
-    public bool $todayOnly = true;
+    public string $attendanceStatus = '';
 
-    /**
-     * Whether to show only past bookings.
-     */
     #[Url]
-    public bool $pastOnly = false;
+    public string $coachId = '';
 
-    /**
-     * Whether to show only future bookings.
-     */
     #[Url]
-    public bool $futureOnly = false;
+    public string $serviceId = '';
 
-    /**
-     * Search query for filtering bookings.
-     */
+    #[Url]
+    public string $bookingType = '';
+
     #[Url]
     public string $search = '';
 
     /**
-     * Initialize the component with all payment statuses selected.
-     */
-    public function mount(): void
-    {
-        if (empty($this->paymentStatuses)) {
-            $this->paymentStatuses = collect(PaymentStatus::cases())
-                ->map(fn(PaymentStatus $status) => $status->value)
-                ->all();
-        }
-
-        if (empty($this->attendanceStatuses)) {
-            $this->attendanceStatuses = collect(AttendanceStatus::cases())
-                ->map(fn(AttendanceStatus $status) => $status->value)
-                ->all();
-        }
-    }
-
-    /**
-     * Reset pagination and disable pastOnly when todayOnly is enabled.
-     */
-    public function updatedTodayOnly(): void
-    {
-        if ($this->todayOnly) {
-            $this->pastOnly = false;
-            $this->futureOnly = false;
-        }
-
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination and disable todayOnly and futureOnly when pastOnly is enabled.
-     */
-    public function updatedPastOnly(): void
-    {
-        if ($this->pastOnly) {
-            $this->todayOnly = false;
-            $this->futureOnly = false;
-        }
-
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination and disable todayOnly and pastOnly when futureOnly is enabled.
-     */
-    public function updatedFutureOnly(): void
-    {
-        if ($this->futureOnly) {
-            $this->todayOnly = false;
-            $this->pastOnly = false;
-        }
-
-        $this->resetPage();
-    }
-
-    /**
-     * Reset pagination when any other filter changes.
+     * Reset pagination when any filter changes.
      */
     public function updated(): void
     {
@@ -120,20 +47,43 @@ new class extends Component {
     }
 
     /**
-     * Get paginated bookings ordered by date ascending, filtered by payment status and optionally by today's date.
+     * @return Collection<int, Coach>
+     */
+    #[Computed]
+    public function coaches(): Collection
+    {
+        return Coach::orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * @return Collection<int, Service>
+     */
+    #[Computed]
+    public function services(): Collection
+    {
+        return Service::where('is_membership', false)->orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * Get paginated bookings filtered by all active filters.
      */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
                       ->when($this->search, fn($query) => $query->search($this->search))
-                      ->whereIn('payment_status', $this->paymentStatuses)
-                      ->whereIn('attendance_status', $this->attendanceStatuses)
-                      ->when($this->todayOnly, fn($query) => $query->whereDate('booking_date', today()))
-                      ->when($this->pastOnly, fn($query) => $query->whereDate('booking_date', '<', today()))
-                      ->when($this->futureOnly, fn($query) => $query->whereDate('booking_date', '>', today()))
-                      ->when(! $this->pastOnly && ! $this->todayOnly && ! $this->futureOnly,
-                          fn($query) => $query->whereDate('booking_date', '>=', today()))
+                      ->when($this->paymentStatus, fn($query) => $query->where('payment_status', $this->paymentStatus))
+                      ->when($this->attendanceStatus, fn($query) => $query->where('attendance_status', $this->attendanceStatus))
+                      ->when($this->coachId, fn($query) => $query->whereHas('schedule.service', fn($sq) => $sq->where('coach_id', $this->coachId)))
+                      ->when($this->serviceId, fn($query) => $query->whereHas('schedule', fn($sq) => $sq->where('service_id', $this->serviceId)))
+                      ->when($this->bookingType === 'membership', fn($query) => $query->whereNotNull('membership_id'))
+                      ->when($this->bookingType === 'regular', fn($query) => $query->whereNull('membership_id'))
+                      ->when(true, fn($query) => match ($this->period) {
+                          'today' => $query->whereDate('booking_date', today()),
+                          'past' => $query->whereDate('booking_date', '<', today()),
+                          'all' => $query,
+                          default => $query->whereDate('booking_date', '>=', today()),
+                      })
                       ->orderBy('booking_date', 'asc')
                       ->paginate(10);
     }
@@ -189,24 +139,47 @@ new class extends Component {
             <flux:input prefix-icon="magnifying-glass" type="search"
                         wire:model.live.debounce.300ms="search" placeholder="{{ __('Meklēt rezervācijas') }}"/>
 
-            <div class="flex flex-wrap items-end gap-8">
-                <flux:checkbox.group wire:model.live="paymentStatuses">
+            <div class="flex flex-wrap items-end gap-4">
+                <flux:select wire:model.live="period" :label="__('Periods')">
+                    <flux:select.option value="upcoming">{{ __('Šodiena + nākotne') }}</flux:select.option>
+                    <flux:select.option value="today">{{ __('Tikai šodiena') }}</flux:select.option>
+                    <flux:select.option value="past">{{ __('Pagātne') }}</flux:select.option>
+                    <flux:select.option value="all">{{ __('Visi') }}</flux:select.option>
+                </flux:select>
+
+                <flux:select wire:model.live="paymentStatus" :label="__('Maksājuma statuss')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
                     @foreach(PaymentStatus::cases() as $status)
-                        <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
+                        <flux:select.option :value="$status->value">{{ $status->label() }}</flux:select.option>
                     @endforeach
-                </flux:checkbox.group>
+                </flux:select>
 
-                <flux:checkbox.group wire:model.live="attendanceStatuses">
+                <flux:select wire:model.live="attendanceStatus" :label="__('Apmeklējuma statuss')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
                     @foreach(AttendanceStatus::cases() as $status)
-                        <flux:checkbox label="{{ $status->label() }}" value="{{ $status->value }}"/>
+                        <flux:select.option :value="$status->value">{{ $status->label() }}</flux:select.option>
                     @endforeach
-                </flux:checkbox.group>
+                </flux:select>
 
-                <flux:checkbox.group>
-                    <flux:checkbox label="{{ __('Tikai šodienas') }}" wire:model.live="todayOnly"/>
-                    <flux:checkbox label="{{ __('Tikai pagātnes') }}" wire:model.live="pastOnly"/>
-                    <flux:checkbox label="{{ __('Tikai nākotnes') }}" wire:model.live="futureOnly"/>
-                </flux:checkbox.group>
+                <flux:select wire:model.live="coachId" :label="__('Treneris')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
+                    @foreach($this->coaches as $coach)
+                        <flux:select.option :value="$coach->id">{{ $coach->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <flux:select wire:model.live="serviceId" :label="__('Pakalpojums')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
+                    @foreach($this->services as $service)
+                        <flux:select.option :value="$service->id">{{ $service->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
+                <flux:select wire:model.live="bookingType" :label="__('Rezervācijas veids')">
+                    <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
+                    <flux:select.option value="membership">{{ __('Abonements') }}</flux:select.option>
+                    <flux:select.option value="regular">{{ __('Parastā') }}</flux:select.option>
+                </flux:select>
             </div>
         </div>
 
