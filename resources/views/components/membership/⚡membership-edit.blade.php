@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PaymentStatus;
+use App\Models\Booking;
 use App\Models\Membership;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -129,6 +130,31 @@ new class extends Component
     }
 
     /**
+     * Delete a booking from the database.
+     */
+    public function destroyBooking(Booking $booking): void
+    {
+        try {
+            $booking->delete();
+
+            unset($this->bookings);
+
+            Flux::toast(
+                text: __('Rezervācija veiksmīgi dzēsta!'),
+                variant: 'success',
+            );
+        } catch (\Exception $e) {
+            Log::error($e);
+
+            Flux::toast(
+                text: __('Neizdevās dzēst rezervāciju. Lūdzu, mēģini vēlreiz.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        }
+    }
+
+    /**
      * Render the component view with the page title.
      */
     public function render(): \Illuminate\View\View
@@ -208,6 +234,7 @@ new class extends Component
                     <flux:table.column>{{ __('Treneris') }}</flux:table.column>
                     <flux:table.column>{{ __('Datums / Laiks') }}</flux:table.column>
                     <flux:table.column>{{ __('Apmeklējums') }}</flux:table.column>
+                    <flux:table.column>{{ __('Darbības') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach($this->bookings as $booking)
@@ -222,6 +249,20 @@ new class extends Component
                                     'missed' => 'red',
                                     'pending' => 'zinc',
                                 }">{{ $booking->attendance_status->label() }}</flux:badge>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                <div class="flex gap-2">
+                                    <flux:button href="{{ route('admin.bookings.edit', $booking) }}" variant="primary"
+                                                 size="sm"
+                                                 icon="pencil">
+                                    </flux:button>
+                                    <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst rezervāciju?') }}"
+                                                 variant="danger"
+                                                 size="sm"
+                                                 icon="trash"
+                                                 wire:click="destroyBooking({{ $booking->id }})">
+                                    </flux:button>
+                                </div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforeach
