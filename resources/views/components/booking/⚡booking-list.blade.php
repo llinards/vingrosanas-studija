@@ -199,13 +199,15 @@ new class extends Component {
                 <flux:table.rows>
                     @foreach($this->bookings as $booking)
                         <flux:table.row wire:key="booking-{{ $booking->id }}">
+                            <flux:table.cell>{{ $booking->name }} {{ $booking->surname }}</flux:table.cell>
                             <flux:table.cell>
-                                <div>{{ $booking->name }} {{ $booking->surname }}</div>
-                                @if($booking->isMembershipBooking())
-                                    <flux:badge size="sm" color="purple">{{ __('Abonements') }}</flux:badge>
-                                @endif
+                                <div class="flex items-center gap-2">
+                                    {{ $booking->schedule->service->name }}
+                                    @if($booking->isMembershipBooking())
+                                        <flux:badge size="sm" color="purple">{{ __('Abonements') }}</flux:badge>
+                                    @endif
+                                </div>
                             </flux:table.cell>
-                            <flux:table.cell>{{ $booking->schedule->service->name }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->schedule->service->coach->name }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->booking_date->format('d.m.Y') }}
                                 / {{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
