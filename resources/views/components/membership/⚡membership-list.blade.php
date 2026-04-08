@@ -61,7 +61,7 @@ new class extends Component {
                              'bookings' => fn($query) => $query->whereNotIn('payment_status',
                                  [PaymentStatus::Refunded, PaymentStatus::Failed])
                          ])
-                         ->orderBy('created_at', 'desc')
+                         ->orderBy('period_start', 'asc')
                          ->paginate(10);
     }
 
