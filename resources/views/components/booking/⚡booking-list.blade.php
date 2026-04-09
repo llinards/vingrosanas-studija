@@ -4,6 +4,7 @@ use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Coach;
+use App\Models\Schedule;
 use App\Models\Service;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -85,6 +86,7 @@ new class extends Component {
                           default => $query->whereDate('booking_date', '>=', today()),
                       })
                       ->orderBy('booking_date', 'asc')
+                      ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
                       ->paginate(10);
     }
 
