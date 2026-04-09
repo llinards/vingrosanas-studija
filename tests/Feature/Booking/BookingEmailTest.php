@@ -129,8 +129,13 @@ test('booking rescheduled email contains new schedule data', function () {
     $booking = Booking::factory()->create();
     $booking->load('schedule.service.coach');
 
-    $mailable = new BookingRescheduled($booking);
+    $originalDate = now()->subWeek();
+    $originalTime = '09:00:00';
 
+    $mailable = new BookingRescheduled($booking, $originalDate, $originalTime);
+
+    $mailable->assertSeeInHtml($originalDate->format('d.m.Y'), escape: false);
+    $mailable->assertSeeInHtml('09:00', escape: false);
     $mailable->assertSeeInHtml($booking->schedule->service->name, escape: false);
     $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
     $mailable->assertSeeInHtml($booking->booking_date->format('d.m.Y'), escape: false);

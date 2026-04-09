@@ -132,8 +132,10 @@ test('rescheduled email is sent when schedule changes', function () {
         ->assertHasNoErrors()
         ->assertRedirect(route('admin.bookings.index'));
 
-    Mail::assertQueued(BookingRescheduled::class, function ($mail) {
-        return $mail->hasTo('client@example.com');
+    Mail::assertQueued(BookingRescheduled::class, function ($mail) use ($booking) {
+        return $mail->hasTo('client@example.com')
+            && $mail->originalDate->equalTo($booking->booking_date)
+            && $mail->originalTime === $booking->schedule->start_time;
     });
 });
 
@@ -141,6 +143,7 @@ test('rescheduled email is sent when booking date changes', function () {
     Mail::fake();
 
     $booking = Booking::factory()->create(['email' => 'client@example.com']);
+    $originalDate = $booking->booking_date->copy();
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
         ->set('booking_date', now()->addWeek()->toDateString())
@@ -148,8 +151,9 @@ test('rescheduled email is sent when booking date changes', function () {
         ->assertHasNoErrors()
         ->assertRedirect(route('admin.bookings.index'));
 
-    Mail::assertQueued(BookingRescheduled::class, function ($mail) {
-        return $mail->hasTo('client@example.com');
+    Mail::assertQueued(BookingRescheduled::class, function ($mail) use ($originalDate) {
+        return $mail->hasTo('client@example.com')
+            && $mail->originalDate->equalTo($originalDate);
     });
 });
 

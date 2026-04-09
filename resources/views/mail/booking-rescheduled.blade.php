@@ -3,6 +3,11 @@
 
 Jūsu rezervācijas laiks ir mainīts.
 
+**Iepriekšējā rezervācijas informācija:**
+
+- **Datums:** {{ $originalDate->format('d.m.Y') }}
+- **Laiks:** {{ substr($originalTime, 0, 5) }}
+
 **Jaunā rezervācijas informācija:**
 
 - **Pakalpojums:** {{ $booking->schedule->service->name }}

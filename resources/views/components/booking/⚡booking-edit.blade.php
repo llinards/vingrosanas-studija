@@ -185,6 +185,8 @@ new class extends Component
 
             $scheduleChanged = $booking->schedule_id !== (int) $this->schedule_id;
             $dateChanged = $booking->booking_date->format('Y-m-d') !== $this->booking_date;
+            $originalDate = $booking->booking_date->copy();
+            $originalTime = $booking->schedule->start_time;
 
             $booking->update([
                 'schedule_id' => $this->schedule_id,
@@ -200,7 +202,7 @@ new class extends Component
 
             if ($scheduleChanged || $dateChanged) {
                 $booking->load('schedule.service.coach');
-                Mail::to($booking->email)->send(new BookingRescheduled($booking));
+                Mail::to($booking->email)->send(new BookingRescheduled($booking, $originalDate, $originalTime));
             }
 
             Flux::toast(

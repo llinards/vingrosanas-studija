@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Carbon;
 
 class BookingRescheduled extends Mailable implements ShouldQueue
 {
@@ -18,7 +19,11 @@ class BookingRescheduled extends Mailable implements ShouldQueue
     /**
      * Create a new message instance.
      */
-    public function __construct(public Booking $booking) {}
+    public function __construct(
+        public Booking $booking,
+        public Carbon $originalDate,
+        public string $originalTime,
+    ) {}
 
     /**
      * Get the message envelope.
