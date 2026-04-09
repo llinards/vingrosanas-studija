@@ -159,6 +159,7 @@ class Booking extends Model
             'booking_date' => 'date',
             'participant_count' => 'integer',
             'expires_at' => 'datetime',
+            'payment_reminder_sent_at' => 'datetime',
             'refunded_at' => 'datetime',
         ];
     }

@@ -160,6 +160,7 @@ class Membership extends Model
             'sessions_total' => 'integer',
             'price' => 'integer',
             'expires_at' => 'datetime',
+            'payment_reminder_sent_at' => 'datetime',
             'refunded_at' => 'datetime',
         ];
     }
