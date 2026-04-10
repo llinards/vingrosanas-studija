@@ -13,9 +13,12 @@ complete admin dashboard.
 - **Membership Purchases** — Select a membership tier, build a session schedule, and pay in a single checkout flow
 - **Dynamic Pricing** — Price tiers based on participant count per service
 - **Capacity Management** — Real-time availability checks with support for exclusive (private) and shared sessions
+- **Unavailable Dates** — Studio-wide closures and per-coach availability overrides
+- **Rich Text Service Descriptions** — Detailed service info displayed in a modal
 - **Check-In** — Self-service attendance registration by email on the day of class
+- **Booking Rescheduling** — Customers receive notifications with original and new date/time details
 - **Booking Cancellation** — Customers can self-cancel and receive automatic Stripe refunds (24h+ before class)
-- **Email Notifications** — Booking confirmations, refund notices, and coach notifications
+- **Email Notifications** — Booking confirmations, rescheduling notices, refund notices, payment reminders, and coach notifications
 - **Contact Form** — With honeypot spam protection
 - **Cookie Consent** — GDPR-compliant cookie banner
 
@@ -41,31 +44,32 @@ complete admin dashboard.
 
 | Layer           | Technology                                    |
 |-----------------|-----------------------------------------------|
-| Framework       | Laravel 12                                    |
+| Framework       | Laravel 13                                    |
 | Frontend        | Livewire 4, Flux UI Pro v2                    |
 | Styling         | Tailwind CSS v4                               |
 | Payments        | Laravel Cashier (Stripe) v16                  |
 | Auth            | Laravel Fortify (login, 2FA, password reset)  |
 | Testing         | Pest 4                                        |
-| Build           | Vite 7                                        |
+| Build           | Vite 8                                        |
 | Database        | SQLite (default), MySQL/PostgreSQL compatible |
 | Carousel        | Fancyapps UI                                  |
 | Spam Protection | Spatie Laravel Honeypot                       |
+| Monitoring      | Laravel Nightwatch                            |
 | Code Style      | Laravel Pint, Prettier (Blade + Tailwind)     |
 
 ## Architecture
 
-The application follows Laravel 12's streamlined structure:
+The application follows Laravel 13's streamlined structure:
 
 ```
 app/
-├── Actions/           # Stripe checkout sessions, refunds
+├── Actions/           # Stripe checkout sessions, refunds, Fortify auth actions
 ├── Console/Commands/  # Expire pending bookings/memberships
 ├── Enums/             # PaymentStatus, AttendanceStatus, DayOfWeek
 ├── Exceptions/        # RefundNotAllowedException
 ├── Http/Controllers/  # Stripe webhook handler
 ├── Livewire/          # Settings components, shared form concerns
-├── Mail/              # Booking/membership confirmation & refund emails
+├── Mail/              # Booking/membership confirmations, refunds, rescheduling & payment reminders
 ├── Models/            # Eloquent models
 ├── Providers/         # App, Fortify, Cookie providers
 ├── Services/          # Schedule availability logic
@@ -95,6 +99,7 @@ Livewire components use the **inline component pattern** — PHP logic and Blade
 
 | Command                      | Interval    | Purpose                                                      |
 |------------------------------|-------------|--------------------------------------------------------------|
+| `payments:send-reminders`    | Every 1 min | Sends payment reminder emails for pending bookings/memberships nearing expiry |
 | `bookings:expire-pending`    | Every 5 min | Deletes pending bookings past their 30-min payment window    |
 | `memberships:expire-pending` | Every 5 min | Deletes pending memberships past their 30-min payment window |
 
