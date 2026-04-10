@@ -5,31 +5,30 @@
         <ul>
             <li class="list-heading">{{ __('Tālrunis') }}</li>
             <li>
-                <flux:link href="tel:+37126620757">+371 26620757</flux:link>
+                <flux:link href="tel:{{ site('contact', 'phone', '+37126620757') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone', '+37126620757')) }}</flux:link>
             </li>
         </ul>
         <ul>
             <li class="list-heading">{{ __('E-pasts') }}</li>
             <li>
-                <flux:link href="mailto:vingrosanas@studija.lv">vingrosanas@studija.lv</flux:link>
+                <flux:link href="mailto:{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}">{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}</flux:link>
             </li>
         </ul>
         <ul>
             <li class="list-heading">{{ __('Adrese') }}</li>
             <li>
-                <flux:link href="https://maps.app.goo.gl/UdGP64Acxz2RVPJe7" target="_blank">Strēlnieku iela 20
-                    A, Sigulda
+                <flux:link href="{{ site('contact', 'google_maps_url', 'https://maps.app.goo.gl/UdGP64Acxz2RVPJe7') }}" target="_blank">{{ site('contact', 'address', __('Strēlnieku iela 20 A, Sigulda')) }}
                 </flux:link>
             </li>
         </ul>
         <ul>
             <li class="list-heading">{{ __('Pieseko') }}</li>
             <li class="mt-1 lg:mt-2 flex justify-center lg:justify-start gap-x-4">
-                <flux:link href="https://www.instagram.com/vingrosanas.studija" target="_blank"
+                <flux:link href="{{ site('contact', 'instagram_url', 'https://www.instagram.com/vingrosanas.studija') }}" target="_blank"
                     rel="noopener noreferrer">
                     <flux:icon.instagram />
                 </flux:link>
-                <flux:link href="https://www.facebook.com/vs.sigulda" target="_blank" rel="noopener noreferrer">
+                <flux:link href="{{ site('contact', 'facebook_url', 'https://www.facebook.com/vs.sigulda') }}" target="_blank" rel="noopener noreferrer">
                     <flux:icon.facebook />
                 </flux:link>
             </li>
