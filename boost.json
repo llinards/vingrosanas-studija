@@ -6,17 +6,15 @@
     "herd_mcp": true,
     "mcp": true,
     "nightwatch_mcp": false,
-    "packages": [
-        "laravel/fortify"
-    ],
     "sail": false,
     "skills": [
         "cashier-stripe-development",
+        "fortify-development",
         "laravel-best-practices",
+        "configure-nightwatch",
         "fluxui-development",
         "livewire-development",
         "pest-testing",
-        "tailwindcss-development",
-        "fortify-development"
+        "tailwindcss-development"
     ]
 }
