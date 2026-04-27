@@ -3,8 +3,10 @@
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Membership;
+use App\Models\MembershipAuditLog;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -26,6 +28,8 @@ new class extends Component
     public string $period_end = '';
 
     public string $payment_status = '';
+
+    public string $bookingToAttach = '';
 
     /**
      * Initialize the component with existing membership data.
@@ -58,6 +62,24 @@ new class extends Component
     {
         return $this->membership->bookings()
             ->with(['schedule.service.coach'])
+            ->orderBy('booking_date')
+            ->get();
+    }
+
+    /**
+     * Standalone bookings with the same email that can be attached to this membership.
+     */
+    #[Computed]
+    public function eligibleBookings(): Collection
+    {
+        if ($this->email === '') {
+            return new Collection;
+        }
+
+        return Booking::query()
+            ->where('email', $this->email)
+            ->whereNull('membership_id')
+            ->with(['schedule.service'])
             ->orderBy('booking_date')
             ->get();
     }
@@ -123,6 +145,67 @@ new class extends Component
 
             Flux::toast(
                 text: __('Neizdevās atjaunināt abonementu. Lūdzu, mēģini vēlreiz.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+        }
+    }
+
+    /**
+     * Attach an existing standalone booking to this membership.
+     */
+    public function attachBooking(): void
+    {
+        $bookingId = (int) $this->bookingToAttach;
+
+        if ($bookingId <= 0) {
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($bookingId) {
+                $membership = Membership::query()
+                    ->whereKey($this->membershipId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $booking = Booking::query()
+                    ->whereKey($bookingId)
+                    ->whereNull('membership_id')
+                    ->where('email', $membership->email)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($booking === null) {
+                    throw new \RuntimeException('Booking is no longer eligible for attachment.');
+                }
+
+                $booking->update(['membership_id' => $membership->id]);
+
+                MembershipAuditLog::create([
+                    'membership_id' => $membership->id,
+                    'booking_id' => $booking->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'booking_attached',
+                    'metadata' => [
+                        'booking_date' => $booking->booking_date->toDateString(),
+                        'payment_status' => $booking->payment_status->value,
+                    ],
+                ]);
+            });
+
+            unset($this->bookings, $this->eligibleBookings, $this->membership);
+            $this->bookingToAttach = '';
+
+            Flux::toast(
+                text: __('Rezervācija pievienota abonementam!'),
+                variant: 'success',
+            );
+        } catch (\Throwable $e) {
+            Log::error($e);
+
+            Flux::toast(
+                text: __('Neizdevās pievienot rezervāciju. Lūdzu, mēģini vēlreiz.'),
                 heading: __('Kļūda!'),
                 variant: 'danger',
             );
@@ -221,6 +304,32 @@ new class extends Component
                 </flux:button>
             </div>
         </form>
+
+        <flux:separator class="my-6"/>
+
+        <flux:heading level="2" size="lg" class="mb-4">{{ __('Pievienot esošu rezervāciju') }}</flux:heading>
+
+        @if($this->eligibleBookings->isNotEmpty())
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div class="sm:flex-1">
+                    <flux:select wire:model.live="bookingToAttach" :label="__('Pieejamās rezervācijas')" :placeholder="__('Izvēlies rezervāciju…')">
+                        @foreach($this->eligibleBookings as $candidate)
+                            <flux:select.option :value="(string) $candidate->id">{{ $candidate->booking_date->format('d.m.Y') }} {{ substr($candidate->schedule->start_time, 0, 5) }} — {{ $candidate->schedule->service->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </div>
+                <div>
+                    <flux:button wire:click="attachBooking"
+                                 wire:confirm="{{ __('Vai tiešām vēlies pievienot šo rezervāciju abonementam?') }}"
+                                 variant="primary"
+                                 :disabled="$bookingToAttach === ''">
+                        {{ __('Pievienot') }}
+                    </flux:button>
+                </div>
+            </div>
+        @else
+            <flux:text variant="subtle">{{ __('Nav pieejamu atsevišķu rezervāciju ar šo e-pastu.') }}</flux:text>
+        @endif
 
         @if($this->bookings->isNotEmpty())
             <flux:separator class="my-6"/>

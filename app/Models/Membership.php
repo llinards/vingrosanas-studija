@@ -32,6 +32,14 @@ class Membership extends Model
     }
 
     /**
+     * @return HasMany<MembershipAuditLog, $this>
+     */
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(MembershipAuditLog::class);
+    }
+
+    /**
      * Get the number of sessions that have been booked (active bookings).
      */
     public function sessionsUsed(): int
