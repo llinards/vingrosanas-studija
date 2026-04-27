@@ -8,6 +8,7 @@ use App\Mail\BookingRescheduled;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Coach;
+use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
@@ -189,4 +190,42 @@ test('admin deletion does not send email when booking is already refunded', func
 
     Mail::assertNotSent(BookingDeleted::class);
     $this->assertDatabaseMissing('bookings', ['id' => $booking->id]);
+});
+
+test('coach notification includes ics attachment for exclusive service bookings', function () {
+    $service = Service::factory()->exclusive()->create();
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->create(['schedule_id' => $schedule->id]);
+    $booking->load('schedule.service.coach');
+
+    $attachments = (new NewBookingNotification($booking))->attachments();
+
+    expect($attachments)->toHaveCount(1);
+    expect($attachments[0]->as)->toBe('booking.ics');
+    expect($attachments[0]->mime)->toContain('text/calendar');
+});
+
+test('coach notification omits ics attachment for non-exclusive service bookings', function () {
+    $service = Service::factory()->create(['is_exclusive' => false]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->create(['schedule_id' => $schedule->id]);
+    $booking->load('schedule.service.coach');
+
+    $attachments = (new NewBookingNotification($booking))->attachments();
+
+    expect($attachments)->toBeEmpty();
+});
+
+test('coach notification omits ics attachment for membership bookings', function () {
+    $membership = Membership::factory()->create();
+    $service = Service::factory()->exclusive()->create();
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->forMembership($membership)->create([
+        'schedule_id' => $schedule->id,
+    ]);
+    $booking->load('schedule.service.coach');
+
+    $attachments = (new NewBookingNotification($booking))->attachments();
+
+    expect($attachments)->toBeEmpty();
 });

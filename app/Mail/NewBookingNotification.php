@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Booking;
+use App\Services\BookingIcsGenerator;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -47,6 +48,19 @@ class NewBookingNotification extends Mailable implements ShouldQueue
      */
     public function attachments(): array
     {
-        return [];
+        if ($this->booking->isMembershipBooking()) {
+            return [];
+        }
+
+        if (! $this->booking->schedule->service->is_exclusive) {
+            return [];
+        }
+
+        $ics = app(BookingIcsGenerator::class)->generate($this->booking);
+
+        return [
+            Attachment::fromData(fn () => $ics, 'booking.ics')
+                ->withMime('text/calendar; charset=UTF-8; method=PUBLISH'),
+        ];
     }
 }
