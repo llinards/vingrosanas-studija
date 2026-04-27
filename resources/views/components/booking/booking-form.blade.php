@@ -37,7 +37,7 @@
 
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <flux:date-picker placeholder="Rezervācijas datums" :label="__('Rezervācijas datums')"
+                    <flux:date-picker placeholder="Datums" :label="__('Datums')"
                                       wire:model.live="booking_date"/>
                 </div>
                 <div class="flex-1">
