@@ -1,7 +1,9 @@
 <?php
 
 use App\Actions\CreateStripeCheckoutSession;
+use App\Enums\PaymentStatus;
 use App\Mail\BookingConfirmation;
+use App\Mail\BookingDeleted;
 use App\Mail\BookingRescheduled;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
@@ -9,6 +11,7 @@ use App\Models\Coach;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 
@@ -140,4 +143,50 @@ test('booking rescheduled email contains new schedule data', function () {
     $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
     $mailable->assertSeeInHtml($booking->booking_date->format('d.m.Y'), escape: false);
     $mailable->assertSeeInHtml(substr($booking->schedule->start_time, 0, 5), escape: false);
+});
+
+test('admin deletion sends booking deleted email to the customer', function () {
+    Mail::fake();
+    $this->actingAs(User::factory()->create());
+
+    $booking = Booking::factory()->paid()->create(['email' => 'customer@example.com']);
+
+    Livewire::test('booking.booking-list')
+        ->call('destroy', $booking->id)
+        ->assertHasNoErrors();
+
+    Mail::assertSent(BookingDeleted::class, fn ($mail) => $mail->hasTo('customer@example.com')
+        && $mail->booking->is($booking));
+
+    $this->assertDatabaseMissing('bookings', ['id' => $booking->id]);
+});
+
+test('booking deleted email contains booking details and refund contact line', function () {
+    $booking = Booking::factory()->create();
+    $booking->load('schedule.service.coach');
+
+    $mailable = new BookingDeleted($booking);
+
+    $mailable->assertSeeInHtml($booking->schedule->service->name, escape: false);
+    $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
+    $mailable->assertSeeInHtml($booking->booking_date->format('d.m.Y'), escape: false);
+    $mailable->assertSeeInHtml(substr($booking->schedule->start_time, 0, 5), escape: false);
+    $mailable->assertSeeInHtml('sazinieties ar mums', escape: false);
+});
+
+test('admin deletion does not send email when booking is already refunded', function () {
+    Mail::fake();
+    $this->actingAs(User::factory()->create());
+
+    $booking = Booking::factory()->create([
+        'email' => 'customer@example.com',
+        'payment_status' => PaymentStatus::Refunded,
+    ]);
+
+    Livewire::test('booking.booking-list')
+        ->call('destroy', $booking->id)
+        ->assertHasNoErrors();
+
+    Mail::assertNotSent(BookingDeleted::class);
+    $this->assertDatabaseMissing('bookings', ['id' => $booking->id]);
 });

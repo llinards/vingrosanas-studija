@@ -2,6 +2,7 @@
 
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
+use App\Mail\BookingDeleted;
 use App\Models\Booking;
 use App\Models\Coach;
 use App\Models\Schedule;
@@ -10,6 +11,7 @@ use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -107,6 +109,11 @@ new class extends Component {
     public function destroy(Booking $booking): void
     {
         try {
+            if ($booking->payment_status !== PaymentStatus::Refunded && filled($booking->email)) {
+                $booking->loadMissing('schedule.service.coach');
+                Mail::to($booking->email)->send(new BookingDeleted($booking));
+            }
+
             $booking->delete();
 
             unset($this->bookings);
