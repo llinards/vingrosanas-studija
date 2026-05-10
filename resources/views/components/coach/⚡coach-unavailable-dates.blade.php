@@ -34,6 +34,7 @@ new class extends Component
     public function unavailableDates(): Collection
     {
         return UnavailableDate::forCoach($this->coachId)
+            ->whereDate('end_date', '>=', today())
             ->orderBy('start_date')
             ->get();
     }

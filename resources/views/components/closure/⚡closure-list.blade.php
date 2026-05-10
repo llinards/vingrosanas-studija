@@ -22,6 +22,7 @@ new class extends Component
     public function closures(): Collection
     {
         return UnavailableDate::studioWide()
+            ->whereDate('end_date', '>=', today())
             ->orderBy('start_date')
             ->get();
     }

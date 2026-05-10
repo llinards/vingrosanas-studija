@@ -91,3 +91,24 @@ test('closures page shows existing closures', function () {
     Livewire::test('closure.closure-list')
         ->assertSee('15.06.2026');
 });
+
+test('closures page hides past closures', function () {
+    $past = UnavailableDate::factory()->create([
+        'start_date' => now()->subDays(10)->toDateString(),
+        'end_date' => now()->subDay()->toDateString(),
+    ]);
+
+    Livewire::test('closure.closure-list')
+        ->assertDontSee($past->start_date->format('d.m.Y'))
+        ->assertDontSee($past->end_date->format('d.m.Y'));
+});
+
+test('closures page shows ongoing closure spanning today', function () {
+    UnavailableDate::factory()->create([
+        'start_date' => now()->subDays(2)->toDateString(),
+        'end_date' => now()->addDays(2)->toDateString(),
+    ]);
+
+    Livewire::test('closure.closure-list')
+        ->assertSee(now()->addDays(2)->format('d.m.Y'));
+});

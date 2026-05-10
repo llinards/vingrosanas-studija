@@ -98,6 +98,27 @@ test('validation: start_date is required', function () {
         ->assertHasErrors(['start_date' => 'required']);
 });
 
+test('unavailable dates list hides past entries', function () {
+    $past = UnavailableDate::factory()->forCoach($this->coach)->create([
+        'start_date' => now()->subDays(10)->toDateString(),
+        'end_date' => now()->subDay()->toDateString(),
+    ]);
+
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->assertDontSee($past->start_date->format('d.m.Y'))
+        ->assertDontSee($past->end_date->format('d.m.Y'));
+});
+
+test('unavailable dates list shows ongoing entry spanning today', function () {
+    UnavailableDate::factory()->forCoach($this->coach)->create([
+        'start_date' => now()->subDays(2)->toDateString(),
+        'end_date' => now()->addDays(2)->toDateString(),
+    ]);
+
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->assertSee(now()->addDays(2)->format('d.m.Y'));
+});
+
 test('deleting a coach cascades to their unavailable dates', function () {
     UnavailableDate::factory()->forCoach($this->coach)->create();
     UnavailableDate::factory()->forCoach($this->coach)->create();
