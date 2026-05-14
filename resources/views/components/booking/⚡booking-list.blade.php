@@ -89,6 +89,7 @@ new class extends Component {
                       })
                       ->orderBy('booking_date', 'asc')
                       ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
+                      ->orderBy('bookings.id', 'asc')
                       ->paginate(10);
     }
 

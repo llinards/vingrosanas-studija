@@ -112,6 +112,27 @@ test('booking list can navigate to second page', function () {
         ->assertSet('paginators.page', 2);
 });
 
+test('booking list pagination is stable when many bookings share date and time', function () {
+    $schedule = Schedule::factory()->create();
+
+    $created = Booking::factory()
+        ->count(15)
+        ->create([
+            'schedule_id' => $schedule->id,
+            'booking_date' => today(),
+        ]);
+
+    $page1 = Livewire::test('booking.booking-list')
+        ->instance()->bookings->pluck('id')->all();
+
+    $page2 = Livewire::test('booking.booking-list')
+        ->call('gotoPage', 2)
+        ->instance()->bookings->pluck('id')->all();
+
+    expect(array_intersect($page1, $page2))->toBeEmpty();
+    expect(array_merge($page1, $page2))->toEqualCanonicalizing($created->pluck('id')->all());
+});
+
 test('booking list shows all bookings regardless of payment status by default', function () {
     Booking::factory()->create(['payment_status' => PaymentStatus::Paid, 'booking_date' => today()]);
     Booking::factory()->create(['payment_status' => PaymentStatus::Pending, 'booking_date' => today()]);
