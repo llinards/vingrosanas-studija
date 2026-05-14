@@ -43,16 +43,30 @@ class Booking extends Model
     /**
      * Scope to filter bookings by a search term across name, surname, phone, and email.
      *
+     * The term is split on whitespace; every token must match at least one of the
+     * searchable columns. This lets a "name surname" query match bookings whose
+     * name and surname are stored in separate columns, regardless of order.
+     *
      * @param  Builder<Booking>  $query
      * @return Builder<Booking>
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        return $query->where(function (Builder $subQuery) use ($term) {
-            $subQuery->where('name', 'like', '%'.$term.'%')
-                ->orWhere('surname', 'like', '%'.$term.'%')
-                ->orWhere('phone', 'like', '%'.$term.'%')
-                ->orWhere('email', 'like', '%'.$term.'%');
+        $tokens = preg_split('/\s+/', trim($term), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($tokens === []) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $subQuery) use ($tokens) {
+            foreach ($tokens as $token) {
+                $subQuery->where(function (Builder $tokenQuery) use ($token) {
+                    $tokenQuery->where('name', 'like', '%'.$token.'%')
+                        ->orWhere('surname', 'like', '%'.$token.'%')
+                        ->orWhere('phone', 'like', '%'.$token.'%')
+                        ->orWhere('email', 'like', '%'.$token.'%');
+                });
+            }
         });
     }
 
