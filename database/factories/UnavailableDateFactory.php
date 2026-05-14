@@ -48,4 +48,15 @@ class UnavailableDateFactory extends Factory
             'end_date' => $end->toDateString(),
         ]);
     }
+
+    /**
+     * Restrict the block to a specific time range (HH:MM).
+     */
+    public function withTimeRange(string $startTime = '15:00', string $endTime = '20:00'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+        ]);
+    }
 }

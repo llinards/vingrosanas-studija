@@ -57,11 +57,37 @@ class UnavailableDate extends Model
         return $query->where('coach_id', $coachId);
     }
 
+    /**
+     * Whether this record blocks the entire day (no time range set).
+     */
+    public function isFullDay(): bool
+    {
+        return $this->start_time === null || $this->end_time === null;
+    }
+
+    /**
+     * Whether this record covers the given $time (HH:MM:SS).
+     *
+     * Full-day blocks cover any time. Time-range blocks use a half-open
+     * interval [start_time, end_time): a slot exactly at start_time is
+     * blocked, a slot exactly at end_time is not.
+     */
+    public function coversTime(string $time): bool
+    {
+        if ($this->isFullDay()) {
+            return true;
+        }
+
+        return $time >= $this->start_time && $time < $this->end_time;
+    }
+
     protected function casts(): array
     {
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'start_time' => 'string',
+            'end_time' => 'string',
         ];
     }
 }

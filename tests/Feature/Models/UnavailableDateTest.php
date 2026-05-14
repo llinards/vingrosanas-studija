@@ -98,3 +98,24 @@ it('is deleted when coach is deleted', function () {
 
     expect(UnavailableDate::count())->toBe(0);
 });
+
+it('treats a record without start_time or end_time as full-day', function () {
+    $unavailableDate = UnavailableDate::factory()->create();
+
+    expect($unavailableDate->isFullDay())->toBeTrue()
+        ->and($unavailableDate->coversTime('00:00:00'))->toBeTrue()
+        ->and($unavailableDate->coversTime('23:59:59'))->toBeTrue();
+});
+
+it('covers times inside a half-open time-range', function () {
+    $unavailableDate = UnavailableDate::factory()
+        ->withTimeRange('15:00', '20:00')
+        ->create();
+
+    expect($unavailableDate->isFullDay())->toBeFalse()
+        ->and($unavailableDate->coversTime('15:00:00'))->toBeTrue()
+        ->and($unavailableDate->coversTime('17:30:00'))->toBeTrue()
+        ->and($unavailableDate->coversTime('19:59:59'))->toBeTrue()
+        ->and($unavailableDate->coversTime('20:00:00'))->toBeFalse()
+        ->and($unavailableDate->coversTime('14:59:59'))->toBeFalse();
+});

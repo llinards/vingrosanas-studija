@@ -13,6 +13,10 @@ new class extends Component
 
     public ?string $end_date = null;
 
+    public ?string $start_time = null;
+
+    public ?string $end_time = null;
+
     /**
      * Get all studio-wide closures, ordered by start date.
      *
@@ -37,6 +41,8 @@ new class extends Component
         return [
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'start_time' => ['nullable', 'date_format:H:i', 'required_with:end_time'],
+            'end_time' => ['nullable', 'date_format:H:i', 'required_with:start_time', 'after:start_time'],
         ];
     }
 
@@ -54,6 +60,11 @@ new class extends Component
             'end_date.required' => __('Beigu datums ir obligāts.'),
             'end_date.date' => __('Beigu datumam jābūt derīgam datumam.'),
             'end_date.after_or_equal' => __('Beigu datumam jābūt vienādam vai vēlākam par sākuma datumu.'),
+            'start_time.date_format' => __('Sākuma laikam jābūt formātā HH:MM.'),
+            'start_time.required_with' => __('Sākuma laiks ir obligāts, ja norādīts beigu laiks.'),
+            'end_time.date_format' => __('Beigu laikam jābūt formātā HH:MM.'),
+            'end_time.required_with' => __('Beigu laiks ir obligāts, ja norādīts sākuma laiks.'),
+            'end_time.after' => __('Beigu laikam jābūt vēlākam par sākuma laiku.'),
         ];
     }
 
@@ -69,9 +80,11 @@ new class extends Component
                 'coach_id' => null,
                 'start_date' => $this->start_date,
                 'end_date' => $this->end_date,
+                'start_time' => $this->start_time,
+                'end_time' => $this->end_time,
             ]);
 
-            $this->reset('start_date', 'end_date');
+            $this->reset('start_date', 'end_date', 'start_time', 'end_time');
             unset($this->closures);
 
             Flux::toast(
@@ -127,6 +140,7 @@ new class extends Component
             <flux:table.columns>
                 <flux:table.column>{{ __('Sākuma datums') }}</flux:table.column>
                 <flux:table.column>{{ __('Beigu datums') }}</flux:table.column>
+                <flux:table.column>{{ __('Laiks') }}</flux:table.column>
                 <flux:table.column>{{ __('Darbības') }}</flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
@@ -134,6 +148,13 @@ new class extends Component
                     <flux:table.row wire:key="closure-{{ $closure->id }}">
                         <flux:table.cell>{{ $closure->start_date->format('d.m.Y') }}</flux:table.cell>
                         <flux:table.cell>{{ $closure->end_date->format('d.m.Y') }}</flux:table.cell>
+                        <flux:table.cell>
+                            @if($closure->isFullDay())
+                                {{ __('Visa diena') }}
+                            @else
+                                {{ substr($closure->start_time, 0, 5) }} – {{ substr($closure->end_time, 0, 5) }}
+                            @endif
+                        </flux:table.cell>
                         <flux:table.cell>
                             <flux:button
                                 wire:confirm="{{ __('Vai tiešām vēlies dzēst šo brīvdienu?') }}"
@@ -166,6 +187,29 @@ new class extends Component
                     min="today"
                     :label="__('Beigu datums')"
                     :placeholder="__('Izvēlies datumu')"
+                />
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-4 sm:flex-row">
+            <div class="flex-1">
+                <flux:time-picker
+                    wire:model="start_time"
+                    min="06:00"
+                    max="22:00"
+                    interval="15"
+                    :label="__('Sākuma laiks (neobligāts)')"
+                    :placeholder="__('Visa diena')"
+                />
+            </div>
+            <div class="flex-1">
+                <flux:time-picker
+                    wire:model="end_time"
+                    min="06:00"
+                    max="22:00"
+                    interval="15"
+                    :label="__('Beigu laiks (neobligāts)')"
+                    :placeholder="__('Visa diena')"
                 />
             </div>
         </div>

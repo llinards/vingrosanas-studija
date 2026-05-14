@@ -34,41 +34,26 @@ class ScheduleAvailabilityService
             ->whereDate('end_date', '>=', $startDate->toDateString())
             ->get();
 
-        $studioWideBlocks = $blocks->whereNull('coach_id');
-        $coachBlocks = $blocks->whereNotNull('coach_id');
-
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
             $dateString = $date->toDateString();
 
-            $isStudioClosed = $studioWideBlocks->contains(
+            $blocksForDate = $blocks->filter(
                 fn (UnavailableDate $block) => $block->start_date->toDateString() <= $dateString && $block->end_date->toDateString() >= $dateString,
             );
-
-            if ($isStudioClosed) {
-                $unavailable[] = $dateString;
-
-                continue;
-            }
-
-            $blockedCoachIds = $coachBlocks
-                ->filter(fn (UnavailableDate $block) => $block->start_date->toDateString() <= $dateString && $block->end_date->toDateString() >= $dateString)
-                ->pluck('coach_id')
-                ->unique()
-                ->all();
 
             $hasAvailableSlot = false;
             $isToday = $date->isToday();
 
             foreach ($schedules as $schedule) {
-                if (in_array($schedule->service->coach_id, $blockedCoachIds, true)) {
-                    continue;
-                }
-
                 if (! $this->matchesDay($schedule, $date)) {
                     continue;
                 }
 
                 if ($isToday && ! $this->isAfterNow($schedule, $now)) {
+                    continue;
+                }
+
+                if ($this->isSlotBlocked($schedule, $blocksForDate)) {
                     continue;
                 }
 
@@ -103,27 +88,21 @@ class ScheduleAvailabilityService
     ): array {
         $blocks = UnavailableDate::forDate($date)->get();
 
-        if ($blocks->contains(fn (UnavailableDate $block) => $block->coach_id === null)) {
-            return [];
-        }
-
-        $blockedCoachIds = $blocks->pluck('coach_id')->filter()->unique()->all();
-
         $slots = [];
         $isToday = $date->isToday();
         $now = now();
         $dateString = $date->toDateString();
 
         foreach ($schedules as $schedule) {
-            if (in_array($schedule->service->coach_id, $blockedCoachIds, true)) {
-                continue;
-            }
-
             if (! $this->matchesDay($schedule, $date)) {
                 continue;
             }
 
             if ($isToday && ! $this->isAfterNow($schedule, $now)) {
+                continue;
+            }
+
+            if ($this->isSlotBlocked($schedule, $blocks)) {
                 continue;
             }
 
@@ -143,6 +122,29 @@ class ScheduleAvailabilityService
         usort($slots, static fn ($a, $b) => strcmp($a['start_time'], $b['start_time']));
 
         return $slots;
+    }
+
+    /**
+     * Whether any block applicable to this schedule's coach covers its start time.
+     *
+     * @param  iterable<UnavailableDate>  $blocksForDate
+     */
+    private function isSlotBlocked(Schedule $schedule, iterable $blocksForDate): bool
+    {
+        $time = (string) $schedule->start_time;
+        $coachId = $schedule->service->coach_id;
+
+        foreach ($blocksForDate as $block) {
+            if ($block->coach_id !== null && $block->coach_id !== $coachId) {
+                continue;
+            }
+
+            if ($block->coversTime($time)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

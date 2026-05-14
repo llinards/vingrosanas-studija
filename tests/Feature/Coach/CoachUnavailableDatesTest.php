@@ -119,6 +119,59 @@ test('unavailable dates list shows ongoing entry spanning today', function () {
         ->assertSee(now()->addDays(2)->format('d.m.Y'));
 });
 
+test('can add an unavailable date with a time range', function () {
+    $date = now()->addDays(3)->toDateString();
+
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->set('start_date', $date)
+        ->set('end_date', $date)
+        ->set('start_time', '15:00')
+        ->set('end_time', '20:00')
+        ->call('add')
+        ->assertHasNoErrors();
+
+    $record = UnavailableDate::where('coach_id', $this->coach->id)->latest('id')->first();
+
+    expect($record->start_time)->toStartWith('15:00')
+        ->and($record->end_time)->toStartWith('20:00')
+        ->and($record->isFullDay())->toBeFalse();
+});
+
+test('full-day block is preserved when both time fields are left blank', function () {
+    $date = now()->addDays(3)->toDateString();
+
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->set('start_date', $date)
+        ->set('end_date', $date)
+        ->call('add')
+        ->assertHasNoErrors();
+
+    $record = UnavailableDate::where('coach_id', $this->coach->id)->latest('id')->first();
+
+    expect($record->start_time)->toBeNull()
+        ->and($record->end_time)->toBeNull()
+        ->and($record->isFullDay())->toBeTrue();
+});
+
+test('validation: end_time must be after start_time', function () {
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->set('start_date', now()->addDay()->toDateString())
+        ->set('end_date', now()->addDay()->toDateString())
+        ->set('start_time', '20:00')
+        ->set('end_time', '15:00')
+        ->call('add')
+        ->assertHasErrors(['end_time' => 'after']);
+});
+
+test('validation: start_time is required when end_time is set', function () {
+    Livewire::test('coach.coach-unavailable-dates', ['coachId' => $this->coach->id])
+        ->set('start_date', now()->addDay()->toDateString())
+        ->set('end_date', now()->addDay()->toDateString())
+        ->set('end_time', '20:00')
+        ->call('add')
+        ->assertHasErrors(['start_time' => 'required_with']);
+});
+
 test('deleting a coach cascades to their unavailable dates', function () {
     UnavailableDate::factory()->forCoach($this->coach)->create();
     UnavailableDate::factory()->forCoach($this->coach)->create();
