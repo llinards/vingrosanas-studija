@@ -52,7 +52,7 @@
                     @endif
                 </div>
                 <div class="flex-1">
-                    <flux:time-picker min="06:00" max="22:00" wire:model="start_time" interval="30"
+                    <flux:time-picker min="06:00" max="22:00" wire:model="start_time" interval="15"
                                       placeholder="Izvēlies laiku"
                                       :label="__('Sākuma laiks')"/>
                 </div>
