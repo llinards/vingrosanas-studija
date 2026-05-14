@@ -168,7 +168,7 @@ new class extends Component {
         return app(ScheduleAvailabilityService::class)->unavailableDates(
             schedules: $this->activeSchedules,
             startDate: Carbon::today(),
-            endDate: Carbon::today()->addWeeks(4),
+            endDate: Carbon::today()->addWeeks(12),
             isExclusive: $this->isExclusiveService,
         );
     }
@@ -907,7 +907,7 @@ new class extends Component {
 
                             <div class="flex justify-center">
                                 <flux:calendar wire:model.live="selectedDate" min="today"
-                                               :max="now()->addWeeks(4)->toDateString()"
+                                               :max="now()->addWeeks(12)->toDateString()"
                                                :unavailable="$this->unavailableDates" locale="lv" start-day="1"/>
                             </div>
 
