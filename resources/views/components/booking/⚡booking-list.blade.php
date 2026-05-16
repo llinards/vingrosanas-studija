@@ -64,7 +64,9 @@ new class extends Component {
     #[Computed]
     public function services(): Collection
     {
-        return Service::where('is_membership', false)->orderBy('name')->get(['id', 'name']);
+        return Service::where('is_membership', false)
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     /**
@@ -74,23 +76,26 @@ new class extends Component {
     public function bookings(): LengthAwarePaginator
     {
         return Booking::with(['schedule.service.coach'])
-                      ->when($this->search, fn($query) => $query->search($this->search))
-                      ->when($this->paymentStatus, fn($query) => $query->where('payment_status', $this->paymentStatus))
-                      ->when($this->attendanceStatus, fn($query) => $query->where('attendance_status', $this->attendanceStatus))
-                      ->when($this->coachId, fn($query) => $query->whereHas('schedule.service', fn($sq) => $sq->where('coach_id', $this->coachId)))
-                      ->when($this->serviceId, fn($query) => $query->whereHas('schedule', fn($sq) => $sq->where('service_id', $this->serviceId)))
-                      ->when($this->bookingType === 'membership', fn($query) => $query->whereNotNull('membership_id'))
-                      ->when($this->bookingType === 'regular', fn($query) => $query->whereNull('membership_id'))
-                      ->when(true, fn($query) => match ($this->period) {
-                          'today' => $query->whereDate('booking_date', today()),
-                          'past' => $query->whereDate('booking_date', '<', today()),
-                          'all' => $query,
-                          default => $query->whereDate('booking_date', '>=', today()),
-                      })
-                      ->orderBy('booking_date', 'asc')
-                      ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
-                      ->orderBy('bookings.id', 'asc')
-                      ->paginate(10);
+            ->when($this->search, fn($query) => $query->search($this->search))
+            ->when($this->paymentStatus, fn($query) => $query->where('payment_status', $this->paymentStatus))
+            ->when($this->attendanceStatus, fn($query) => $query->where('attendance_status', $this->attendanceStatus))
+            ->when($this->coachId, fn($query) => $query->whereHas('schedule.service', fn($sq) => $sq->where('coach_id', $this->coachId)))
+            ->when($this->serviceId, fn($query) => $query->whereHas('schedule', fn($sq) => $sq->where('service_id', $this->serviceId)))
+            ->when($this->bookingType === 'membership', fn($query) => $query->whereNotNull('membership_id'))
+            ->when($this->bookingType === 'regular', fn($query) => $query->whereNull('membership_id'))
+            ->when(
+                true,
+                fn($query) => match ($this->period) {
+                    'today' => $query->whereDate('booking_date', today()),
+                    'past' => $query->whereDate('booking_date', '<', today()),
+                    'all' => $query,
+                    default => $query->whereDate('booking_date', '>=', today()),
+                },
+            )
+            ->orderBy('booking_date', 'asc')
+            ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
+            ->orderBy('bookings.id', 'asc')
+            ->paginate(10);
     }
 
     /**
@@ -119,35 +124,28 @@ new class extends Component {
 
             unset($this->bookings);
 
-            Flux::toast(
-                text: __('Rezervācija veiksmīgi dzēsta!'),
-                variant: 'success',
-            );
+            Flux::toast(text: __('Rezervācija veiksmīgi dzēsta!'), variant: 'success');
         } catch (\Exception $e) {
             Log::error($e);
 
-            Flux::toast(
-                text: __('Neizdevās dzēst rezervāciju. Lūdzu, mēģini vēlreiz.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
+            Flux::toast(text: __('Neizdevās dzēst rezervāciju. Lūdzu, mēģini vēlreiz.'), heading: __('Kļūda!'), variant: 'danger');
         }
     }
 };
 ?>
 
 <div>
-    @if(!$this->hasAnyBookings)
+    @if (!$this->hasAnyBookings)
         <div class="flex flex-col items-center">
             <flux:text class="text-center py-8">{{ __('Šobrīd nav nevienas rezervācijas!') }}</flux:text>
-            <flux:button href="{{ route('admin.bookings.create') }}" wire:navigate
-                         class="mb-4">{{ __('Pievienot jaunu rezervāciju') }}
+            <flux:button href="{{ route('admin.bookings.create') }}" wire:navigate class="mb-4">
+                {{ __('Pievienot jaunu rezervāciju') }}
             </flux:button>
         </div>
     @else
         <div class="mb-6 flex flex-col gap-4">
-            <flux:input prefix-icon="magnifying-glass" type="search"
-                        wire:model.live.debounce.300ms="search" placeholder="{{ __('Meklēt rezervācijas') }}"/>
+            <flux:input prefix-icon="magnifying-glass" type="search" wire:model.live.debounce.300ms="search"
+                placeholder="{{ __('Meklēt rezervācijas') }}" />
 
             <div class="flex flex-wrap items-end gap-4">
                 <flux:select wire:model.live="period" :label="__('Periods')">
@@ -159,28 +157,28 @@ new class extends Component {
 
                 <flux:select wire:model.live="paymentStatus" :label="__('Maksājuma statuss')">
                     <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
-                    @foreach(PaymentStatus::cases() as $status)
+                    @foreach (PaymentStatus::cases() as $status)
                         <flux:select.option :value="$status->value">{{ $status->label() }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
                 <flux:select wire:model.live="attendanceStatus" :label="__('Apmeklējuma statuss')">
                     <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
-                    @foreach(AttendanceStatus::cases() as $status)
+                    @foreach (AttendanceStatus::cases() as $status)
                         <flux:select.option :value="$status->value">{{ $status->label() }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
                 <flux:select wire:model.live="coachId" :label="__('Treneris')">
                     <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
-                    @foreach($this->coaches as $coach)
+                    @foreach ($this->coaches as $coach)
                         <flux:select.option :value="$coach->id">{{ $coach->name }}</flux:select.option>
                     @endforeach
                 </flux:select>
 
                 <flux:select wire:model.live="serviceId" :label="__('Pakalpojums')">
                     <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
-                    @foreach($this->services as $service)
+                    @foreach ($this->services as $service)
                         <flux:select.option :value="$service->id">{{ $service->name }}</flux:select.option>
                     @endforeach
                 </flux:select>
@@ -193,7 +191,7 @@ new class extends Component {
             </div>
         </div>
 
-        @if($this->bookings->isEmpty())
+        @if ($this->bookings->isEmpty())
             <flux:text class="text-center py-8">{{ __('Nav nevienas rezervācijas.') }}</flux:text>
         @else
             <flux:table>
@@ -207,13 +205,13 @@ new class extends Component {
                     <flux:table.column colspan="2">{{ __('Apmeklējums') }}</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
-                    @foreach($this->bookings as $booking)
+                    @foreach ($this->bookings as $booking)
                         <flux:table.row wire:key="booking-{{ $booking->id }}">
                             <flux:table.cell>{{ $booking->name }} {{ $booking->surname }}</flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex items-center gap-2">
                                     {{ $booking->schedule->service->name }}
-                                    @if($booking->isMembershipBooking())
+                                    @if ($booking->isMembershipBooking())
                                         <flux:badge size="sm" color="purple">{{ __('Abonements') }}</flux:badge>
                                     @endif
                                 </div>
@@ -223,31 +221,32 @@ new class extends Component {
                                 / {{ substr($booking->schedule->start_time, 0, 5) }}</flux:table.cell>
                             <flux:table.cell>{{ $booking->participant_count }}</flux:table.cell>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="match($booking->payment_status->value) {
-                                'paid' => 'green',
-                                'pending' => 'yellow',
-                                'failed' => 'red',
-                                'refunded' => 'zinc',
-                            }">{{ $booking->payment_status->label() }}</flux:badge>
+                                <flux:badge size="sm"
+                                    :color="match($booking->payment_status->value) {
+                                                                                                                                                                                                                                                        'paid' => 'green',
+                                                                                                                                                                                                                                                        'pending' => 'yellow',
+                                                                                                                                                                                                                                                        'failed' => 'red',
+                                                                                                                                                                                                                                                        'refunded' => 'zinc',
+                                                                                                                                                                                                                                                    }">
+                                    {{ $booking->payment_status->label() }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:badge size="sm" :color="match($booking->attendance_status->value) {
-                                'attended' => 'green',
-                                'missed' => 'red',
-                                'pending' => 'zinc',
-                            }">{{ $booking->attendance_status->label() }}</flux:badge>
+                                <flux:badge size="sm"
+                                    :color="match($booking->attendance_status->value) {
+                                                                                                                                                                                                                                                        'attended' => 'green',
+                                                                                                                                                                                                                                                        'missed' => 'red',
+                                                                                                                                                                                                                                                        'pending' => 'zinc',
+                                                                                                                                                                                                                                                    }">
+                                    {{ $booking->attendance_status->label() }}</flux:badge>
                             </flux:table.cell>
                             <flux:table.cell>
                                 <div class="flex gap-2">
                                     <flux:button href="{{ route('admin.bookings.edit', $booking) }}" variant="primary"
-                                                 size="sm"
-                                                 icon="pencil">
+                                        size="sm" icon="pencil">
                                     </flux:button>
                                     <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst rezervāciju?') }}"
-                                                 variant="danger"
-                                                 size="sm"
-                                                 icon="trash"
-                                                 wire:click="destroy({{ $booking->id }})">
+                                        variant="danger" size="sm" icon="trash"
+                                        wire:click="destroy({{ $booking->id }})">
                                     </flux:button>
                                 </div>
                             </flux:table.cell>
@@ -256,9 +255,7 @@ new class extends Component {
                 </flux:table.rows>
             </flux:table>
 
-            <div class="mt-4">
-                {{ $this->bookings->links() }}
-            </div>
+            <flux:pagination :paginator="$this->bookings" />
         @endif
     @endif
 </div>
