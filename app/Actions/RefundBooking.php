@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Exceptions\RefundNotAllowedException;
 use App\Mail\BookingRefunded;
+use App\Mail\BookingRefundedCoach;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -19,7 +20,7 @@ class RefundBooking
      * @throws RefundNotAllowedException
      * @throws ApiErrorException
      */
-    public function execute(Booking $booking): void
+    public function execute(Booking $booking, bool $notifyCoach = false): void
     {
         $booking->loadMissing('schedule.service.coach');
 
@@ -46,6 +47,15 @@ class RefundBooking
         $booking->markAsRefunded($refund->id);
 
         Mail::to($booking->email)->send(new BookingRefunded($booking));
+
+        if ($notifyCoach) {
+            $service = $booking->schedule->service;
+            $coachEmail = $service->coach->email ?? null;
+
+            if ($service->notify_coach_on_cancellation && $coachEmail) {
+                Mail::to($coachEmail)->send(new BookingRefundedCoach($booking));
+            }
+        }
 
         Log::info('Booking refunded', [
             'booking_id' => $booking->id,

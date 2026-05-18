@@ -72,6 +72,7 @@ class Service extends Model
             'is_exclusive' => 'boolean',
             'is_membership_eligible' => 'boolean',
             'is_membership' => 'boolean',
+            'notify_coach_on_cancellation' => 'boolean',
             'sessions_count' => 'integer',
             'price' => 'integer',
             'position' => 'integer',

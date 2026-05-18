@@ -28,6 +28,8 @@ trait HasServiceForm
 
     public bool $is_membership = false;
 
+    public bool $notify_coach_on_cancellation = false;
+
     public string $sessions_count = '';
 
     public string $serviceTypeSearch = '';

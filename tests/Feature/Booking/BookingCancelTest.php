@@ -80,7 +80,7 @@ test('customer can cancel a refundable booking via livewire component', function
     $mockRefundBooking = Mockery::mock(RefundBooking::class);
     $mockRefundBooking->shouldReceive('execute')
         ->once()
-        ->with(Mockery::on(fn ($b) => $b->id === $booking->id));
+        ->with(Mockery::on(fn ($b) => $b->id === $booking->id), true);
 
     app()->instance(RefundBooking::class, $mockRefundBooking);
 
@@ -104,7 +104,9 @@ test('cancel redirect preserves session_id query parameter', function () {
     ]);
 
     $mockRefundBooking = Mockery::mock(RefundBooking::class);
-    $mockRefundBooking->shouldReceive('execute')->once();
+    $mockRefundBooking->shouldReceive('execute')
+        ->once()
+        ->with(Mockery::any(), true);
 
     app()->instance(RefundBooking::class, $mockRefundBooking);
 
@@ -169,7 +171,7 @@ test('cancel action handles generic exception gracefully', function () {
     $mockRefundBooking = Mockery::mock(RefundBooking::class);
     $mockRefundBooking->shouldReceive('execute')
         ->once()
-        ->andThrow(new \RuntimeException('Stripe API error'));
+        ->andThrow(new RuntimeException('Stripe API error'));
 
     app()->instance(RefundBooking::class, $mockRefundBooking);
 

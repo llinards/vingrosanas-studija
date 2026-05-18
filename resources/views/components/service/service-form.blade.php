@@ -141,6 +141,9 @@
 
                 <flux:switch wire:model="is_membership_eligible" :label="__('Pieejams abonementam')"
                              :description="__('Ja ieslēgts, šis pakalpojums var tikt iekļauts abonementā.')"/>
+
+                <flux:switch wire:model="notify_coach_on_cancellation" :label="__('Paziņot trenerim par atcelšanu')"
+                             :description="__('Ja ieslēgts, treneris saņem e-pastu, kad klients atceļ rezervāciju un saņem atmaksu.')"/>
             @endif
 
             <flux:separator/>

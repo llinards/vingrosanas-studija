@@ -38,7 +38,7 @@ new class extends Component
         $booking = Booking::findOrFail($this->bookingId);
 
         try {
-            app(RefundBooking::class)->execute($booking);
+            app(RefundBooking::class)->execute($booking, notifyCoach: true);
 
             $url = $this->sessionId
                 ? route('booking.success', ['booking' => $booking, 'session_id' => $this->sessionId])

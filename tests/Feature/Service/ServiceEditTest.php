@@ -70,6 +70,39 @@ test('can update a service', function () {
     ]);
 });
 
+test('notify_coach_on_cancellation toggle round-trips through the edit form', function () {
+    $service = Service::factory()->create([
+        'notify_coach_on_cancellation' => true,
+    ]);
+
+    Livewire::test('service.service-edit', ['service' => $service])
+        ->assertSet('notify_coach_on_cancellation', true)
+        ->set('notify_coach_on_cancellation', false)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', [
+        'id' => $service->id,
+        'notify_coach_on_cancellation' => false,
+    ]);
+});
+
+test('membership services force notify_coach_on_cancellation off', function () {
+    $service = Service::factory()->membership()->create([
+        'notify_coach_on_cancellation' => true,
+    ]);
+
+    Livewire::test('service.service-edit', ['service' => $service])
+        ->set('notify_coach_on_cancellation', true)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', [
+        'id' => $service->id,
+        'notify_coach_on_cancellation' => false,
+    ]);
+});
+
 test('name is required', function () {
     $service = Service::factory()->create();
 

@@ -32,6 +32,7 @@ new class extends Component
         $this->is_exclusive = $service->is_exclusive;
         $this->is_membership_eligible = $service->is_membership_eligible;
         $this->is_membership = $service->is_membership;
+        $this->notify_coach_on_cancellation = $service->notify_coach_on_cancellation;
         $this->sessions_count = $service->sessions_count ? (string) $service->sessions_count : '';
 
         // Load existing price tiers (excluding the base 1-participant tier)
@@ -68,6 +69,7 @@ new class extends Component
                     'is_exclusive' => $this->is_membership ? false : $this->is_exclusive,
                     'is_membership_eligible' => $this->is_membership ? false : $this->is_membership_eligible,
                     'is_membership' => $this->is_membership,
+                    'notify_coach_on_cancellation' => $this->is_membership ? false : $this->notify_coach_on_cancellation,
                     'sessions_count' => $this->is_membership ? (int) $this->sessions_count : null,
                 ]);
 

@@ -28,6 +28,7 @@ class ServiceFactory extends Factory
             'is_exclusive' => false,
             'is_membership_eligible' => false,
             'is_membership' => false,
+            'notify_coach_on_cancellation' => false,
             'sessions_count' => null,
             'position' => 0,
         ];
