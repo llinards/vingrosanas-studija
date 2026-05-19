@@ -16,6 +16,8 @@ use Stripe\HttpClient\CurlClient;
 beforeEach(function () {
     Mail::fake();
 
+    config(['cashier.secret' => 'sk_test_fake']);
+
     $fakeClient = new class implements ClientInterface
     {
         public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1', $maxNetworkRetries = null)
