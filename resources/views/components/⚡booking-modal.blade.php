@@ -298,7 +298,7 @@ new class extends Component {
         return app(ScheduleAvailabilityService::class)->unavailableDates(
             schedules: $this->sessionActiveSchedules,
             startDate: Carbon::today(),
-            endDate: Carbon::today()->addWeeks(12),
+            endDate: Carbon::today()->addDays(30),
             extraBookings: $this->sessions,
         );
     }
@@ -638,9 +638,9 @@ new class extends Component {
             return;
         }
 
-        // Period: 12 weeks from purchase date
+        // Period: 30 days from purchase date
         $periodStart = today();
-        $periodEnd   = today()->addWeeks(12);
+        $periodEnd   = today()->addDays(30);
 
         $result = DB::transaction(function () use ($membershipService, $price, $periodStart, $periodEnd) {
             // Verify capacity for all sessions
@@ -1001,7 +1001,7 @@ new class extends Component {
                                 @if($this->session_service_id)
                                     <div class="flex justify-center">
                                         <flux:calendar wire:model.live="session_date" min="today"
-                                                       :max="now()->addWeeks(12)->toDateString()"
+                                                       :max="now()->addDays(30)->toDateString()"
                                                        :unavailable="$this->sessionUnavailableDates" locale="lv"
                                                        start-day="1"/>
                                     </div>
