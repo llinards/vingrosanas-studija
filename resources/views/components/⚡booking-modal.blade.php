@@ -290,6 +290,39 @@ new class extends Component {
     }
 
     /**
+     * The first selected session date anchors the membership period; null until one is added.
+     */
+    #[Computed]
+    public function membershipAnchorDate(): ?Carbon
+    {
+        if (count($this->sessions) === 0) {
+            return null;
+        }
+
+        return collect($this->sessions)
+            ->map(fn (array $session) => Carbon::parse($session['date']))
+            ->min();
+    }
+
+    /**
+     * Earliest date selectable in the session calendar: today until the first session anchors it.
+     */
+    #[Computed]
+    public function sessionWindowStart(): Carbon
+    {
+        return $this->membershipAnchorDate() ?? Carbon::today();
+    }
+
+    /**
+     * Latest date selectable: three months ahead for the first session, then one month from the anchor.
+     */
+    #[Computed]
+    public function sessionWindowEnd(): Carbon
+    {
+        return $this->membershipAnchorDate()?->copy()->addMonth() ?? Carbon::today()->addMonths(3);
+    }
+
+    /**
      * Get unavailable dates for the membership session builder calendar.
      */
     #[Computed]
@@ -297,8 +330,8 @@ new class extends Component {
     {
         return app(ScheduleAvailabilityService::class)->unavailableDates(
             schedules: $this->sessionActiveSchedules,
-            startDate: Carbon::today(),
-            endDate: Carbon::today()->addDays(30),
+            startDate: $this->sessionWindowStart(),
+            endDate: $this->sessionWindowEnd(),
             extraBookings: $this->sessions,
         );
     }
@@ -483,12 +516,17 @@ new class extends Component {
     {
         $this->validate([
             'session_service_id'  => ['required', 'exists:services,id'],
-            'session_date'        => ['required', 'date', 'after_or_equal:today'],
+            'session_date'        => [
+                'required', 'date',
+                'after_or_equal:'.$this->sessionWindowStart()->toDateString(),
+                'before_or_equal:'.$this->sessionWindowEnd()->toDateString(),
+            ],
             'session_schedule_id' => ['required', 'exists:schedules,id'],
         ], [
             'session_service_id.required'  => __('Jums ir jāizvēlās pakalpojums.'),
             'session_date.required'        => __('Datums ir obligāts.'),
-            'session_date.after_or_equal'  => __('Datumam jābūt šodienai vai nākotnē.'),
+            'session_date.after_or_equal'  => __('Datumam jābūt abonementa periodā.'),
+            'session_date.before_or_equal' => __('Datumam jābūt abonementa periodā.'),
             'session_schedule_id.required' => __('Laika slots ir obligāts.'),
         ]);
 
@@ -515,6 +553,9 @@ new class extends Component {
             'time'         => substr((string) $schedule->start_time, 0, 5),
         ];
 
+        // The first session anchors the one-month window, so recompute it.
+        unset($this->membershipAnchorDate, $this->sessionWindowStart, $this->sessionWindowEnd);
+
         // Auto-advance to customer info when all sessions are selected
         if (count($this->sessions) === $this->membershipService?->sessions_count) {
             $this->step = 3;
@@ -537,6 +578,9 @@ new class extends Component {
     {
         unset($this->sessions[$index]);
         $this->sessions = array_values($this->sessions);
+
+        // Removing a session may move the anchor, so recompute the window.
+        unset($this->membershipAnchorDate, $this->sessionWindowStart, $this->sessionWindowEnd, $this->sessionUnavailableDates);
     }
 
     // ========================================
@@ -638,9 +682,23 @@ new class extends Component {
             return;
         }
 
-        // Period: 30 days from purchase date
-        $periodStart = today();
-        $periodEnd   = today()->addDays(30);
+        // Period: one month from the earliest selected session (sessions are bookable up to 3 months ahead).
+        $periodStart = $this->membershipAnchorDate()?->copy()->startOfDay() ?? today();
+        $periodEnd   = $periodStart->copy()->addMonth();
+
+        $latestSession = collect($this->sessions)
+            ->map(fn (array $session) => Carbon::parse($session['date']))
+            ->max();
+
+        if ($periodStart->lt(today())
+            || $periodStart->gt(today()->addMonths(3))
+            || ($latestSession && $latestSession->gt($periodEnd))) {
+            $this->isProcessing = false;
+            $this->addError('sessions', __('Abonementa nodarbības nav derīgā periodā.'));
+            $this->step = 2;
+
+            return;
+        }
 
         $result = DB::transaction(function () use ($membershipService, $price, $periodStart, $periodEnd) {
             // Verify capacity for all sessions
@@ -1000,8 +1058,11 @@ new class extends Component {
 
                                 @if($this->session_service_id)
                                     <div class="flex justify-center">
-                                        <flux:calendar wire:model.live="session_date" min="today"
-                                                       :max="now()->addDays(30)->toDateString()"
+                                        <flux:calendar wire:model.live="session_date"
+                                                       wire:key="session-cal-{{ $this->sessionWindowStart()->toDateString() }}"
+                                                       :min="$this->sessionWindowStart()->toDateString()"
+                                                       :max="$this->sessionWindowEnd()->toDateString()"
+                                                       :open-to="$this->sessionWindowStart()->toDateString()"
                                                        :unavailable="$this->sessionUnavailableDates" locale="lv"
                                                        start-day="1"/>
                                     </div>
