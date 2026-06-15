@@ -12,7 +12,6 @@
         "@tailwindcss/vite": "^4.1.11",
         "autoprefixer": "^10.4.20",
         "axios": "^1.7.4",
-        "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.0.0",
         "odometer": "^0.4.8",
         "tailwindcss": "^4.0.7",
@@ -24,6 +23,7 @@
         "lightningcss-linux-x64-gnu": "^1.29.1"
     },
     "devDependencies": {
+        "concurrently": "^10.0.3",
         "prettier": "^3.7.4",
         "prettier-plugin-blade": "^3.0.0",
         "prettier-plugin-tailwindcss": "^0.7.2"
