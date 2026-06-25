@@ -83,13 +83,15 @@ test('validation: start_date cannot be in the past', function () {
 });
 
 test('closures page shows existing closures', function () {
+    $date = now()->addDays(5);
+
     UnavailableDate::factory()->create([
-        'start_date' => '2026-06-15',
-        'end_date' => '2026-06-15',
+        'start_date' => $date->toDateString(),
+        'end_date' => $date->toDateString(),
     ]);
 
     Livewire::test('closure.closure-list')
-        ->assertSee('15.06.2026');
+        ->assertSee($date->format('d.m.Y'));
 });
 
 test('closures page hides past closures', function () {
