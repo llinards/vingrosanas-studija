@@ -26,6 +26,6 @@
         "concurrently": "^10.0.3",
         "prettier": "^3.7.4",
         "prettier-plugin-blade": "^3.0.0",
-        "prettier-plugin-tailwindcss": "^0.7.2"
+        "prettier-plugin-tailwindcss": "^0.8.0"
     }
 }
