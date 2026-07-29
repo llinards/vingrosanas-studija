@@ -48,7 +48,9 @@
         "name": "{{ config('app.name') }}",
     "description": "{{ site('seo', 'meta_description', 'Vingrošanas studija Siguldā — grupu un individuālās nodarbības veselīgam dzīvesveidam.') }}",
     "url": "{{ config('app.url') }}",
-    "telephone": "{{ site('contact', 'phone', '+37126620757') }}",
+    @if (filled(site('contact', 'phone')))
+    "telephone": "{{ site('contact', 'phone') }}",
+    @endif
     "email": "{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}",
     "address": {
         "type": "PostalAddress",

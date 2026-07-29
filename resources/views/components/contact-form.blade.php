@@ -2,12 +2,14 @@
 
     {{-- LEFT PANEL: CONTACT DETAILS --}}
     <div id="contactDetails" class="flex flex-col text-center lg:text-start space-y-6 lg:space-y-9">
-        <ul>
-            <li class="list-heading">{{ __('Tālrunis') }}</li>
-            <li>
-                <flux:link href="tel:{{ site('contact', 'phone', '+37126620757') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone', '+37126620757')) }}</flux:link>
-            </li>
-        </ul>
+        @if (filled(site('contact', 'phone')))
+            <ul>
+                <li class="list-heading">{{ __('Tālrunis') }}</li>
+                <li>
+                    <flux:link href="tel:{{ site('contact', 'phone') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone')) }}</flux:link>
+                </li>
+            </ul>
+        @endif
         <ul>
             <li class="list-heading">{{ __('E-pasts') }}</li>
             <li>

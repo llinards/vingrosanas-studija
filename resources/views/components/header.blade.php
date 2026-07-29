@@ -17,9 +17,11 @@
 
         {{-- CONTACT/SOCIAL MEDIA ICONS --}}
         <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col space-y-6">
-            <a href="tel:{{ site('contact', 'phone', '+37126620757') }}">
-                <flux:icon.phone/>
-            </a>
+            @if (filled(site('contact', 'phone')))
+                <a href="tel:{{ site('contact', 'phone') }}">
+                    <flux:icon.phone/>
+                </a>
+            @endif
             <a href="mailto:{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}">
                 <flux:icon.envelope/>
             </a>

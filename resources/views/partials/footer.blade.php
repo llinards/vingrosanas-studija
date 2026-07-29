@@ -34,10 +34,12 @@
             </ul>
             <ul>
                 <li class="list-heading">{{ __('Kontakti') }}</li>
-                <li>
-                    <flux:link
-                        href="tel:{{ site('contact', 'phone', '+37126620757') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone', '+37126620757')) }}</flux:link>
-                </li>
+                @if (filled(site('contact', 'phone')))
+                    <li>
+                        <flux:link
+                            href="tel:{{ site('contact', 'phone') }}">{{ str_replace('+371', '+371 ', site('contact', 'phone')) }}</flux:link>
+                    </li>
+                @endif
                 <li>
                     <flux:link
                         href="mailto:{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}">{{ site('contact', 'email', 'info@vingrosanasstudija.lv') }}</flux:link>

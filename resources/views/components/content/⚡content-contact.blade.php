@@ -4,8 +4,7 @@ use App\Models\SiteSetting;
 use Flux\Flux;
 use Livewire\Component;
 
-new class extends Component
-{
+new class extends Component {
     public string $phone = '';
 
     public string $email = '';
@@ -36,7 +35,7 @@ new class extends Component
     protected function rules(): array
     {
         return [
-            'phone' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
             'google_maps_url' => ['required', 'url', 'max:500'],
@@ -51,7 +50,6 @@ new class extends Component
     protected function messages(): array
     {
         return [
-            'phone.required' => __('Telefona numurs ir obligāts.'),
             'email.required' => __('E-pasts ir obligāts.'),
             'email.email' => __('Lūdzu, ievadi derīgu e-pasta adresi.'),
             'address.required' => __('Adrese ir obligāta.'),
@@ -77,16 +75,12 @@ new class extends Component
             'facebook_url' => ['value' => $this->facebook_url, 'type' => 'string'],
         ]);
 
-        Flux::toast(
-            text: __('Kontaktinformācija saglabāta!'),
-            variant: 'success',
-        );
+        Flux::toast(text: __('Kontaktinformācija saglabāta!'), variant: 'success');
     }
 
     public function render(): \Illuminate\View\View
     {
-        return $this->view()
-            ->title(__('Kontaktinformācija'));
+        return $this->view()->title(__('Kontaktinformācija'));
     }
 };
 ?>

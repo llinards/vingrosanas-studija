@@ -32,13 +32,20 @@ test('contact information can be saved', function () {
     expect(SiteSetting::getValue('contact', 'address'))->toBe('Test iela 1, Rīga');
 });
 
-test('phone is required', function () {
+test('phone is optional', function () {
     $this->actingAs(User::factory()->create());
 
     Livewire::test('content.content-contact')
         ->set('phone', '')
+        ->set('email', 'test@example.com')
+        ->set('address', 'Test iela 1, Rīga')
+        ->set('google_maps_url', 'https://maps.google.com/test')
+        ->set('instagram_url', 'https://www.instagram.com/test')
+        ->set('facebook_url', 'https://www.facebook.com/test')
         ->call('save')
-        ->assertHasErrors(['phone' => 'required']);
+        ->assertHasNoErrors();
+
+    expect(SiteSetting::getValue('contact', 'phone'))->toBe('');
 });
 
 test('email must be valid', function () {
