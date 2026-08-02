@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Enums\DayOfWeek;
+use App\Models\Schedule;
 use App\Models\Service;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Schedule>
+ * @extends Factory<Schedule>
  */
 class ScheduleFactory extends Factory
 {

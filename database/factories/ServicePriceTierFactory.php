@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Service;
+use App\Models\ServicePriceTier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ServicePriceTier>
+ * @extends Factory<ServicePriceTier>
  */
 class ServicePriceTierFactory extends Factory
 {

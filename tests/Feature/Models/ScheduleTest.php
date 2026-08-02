@@ -3,6 +3,7 @@
 use App\Enums\DayOfWeek;
 use App\Models\Schedule;
 use App\Models\Service;
+use Illuminate\Support\Carbon;
 
 it('belongs to a service', function () {
     $schedule = Schedule::factory()->create();
@@ -28,7 +29,7 @@ it('casts day_of_week to DayOfWeek enum', function () {
 it('casts date to carbon instance', function () {
     $schedule = Schedule::factory()->specificDate()->create();
 
-    expect($schedule->date)->toBeInstanceOf(\Illuminate\Support\Carbon::class);
+    expect($schedule->date)->toBeInstanceOf(Carbon::class);
 });
 
 it('casts is_active to boolean', function () {
