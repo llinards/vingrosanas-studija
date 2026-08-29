@@ -8,6 +8,7 @@ use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -289,7 +290,7 @@ test('booking list custom period with only an end date shows that day and earlie
         ->toEqualCanonicalizing([$earlierBooking->id, $endDayBooking->id]);
 });
 
-test('booking list custom period without any dates shows all bookings', function () {
+test('booking list custom period without any dates shows nothing', function () {
     Booking::factory()->past()->create();
     Booking::factory()->create(['booking_date' => today()]);
     Booking::factory()->create(['booking_date' => today()->addDay()]);
@@ -297,7 +298,34 @@ test('booking list custom period without any dates shows all bookings', function
     $component = Livewire::test('booking.booking-list')
         ->set('period', 'custom');
 
-    expect($component->instance()->bookings)->toHaveCount(3);
+    expect($component->instance()->bookings)->toBeEmpty();
+    $component->assertSee('Izvēlies datumu vai periodu, lai redzētu rezervācijas.');
+});
+
+test('booking list custom period without any dates does not query bookings', function () {
+    Booking::factory()->create(['booking_date' => today()]);
+
+    $component = Livewire::test('booking.booking-list');
+
+    DB::enableQueryLog();
+
+    $component->set('period', 'custom');
+
+    $bookingSelects = collect(DB::getQueryLog())
+        ->filter(fn (array $query) => str_contains($query['query'], 'from "bookings"'))
+        ->filter(fn (array $query) => ! str_contains($query['query'], 'exists'));
+
+    expect($bookingSelects)->toBeEmpty();
+});
+
+test('booking list custom period queries again once a date is picked', function () {
+    $booking = Booking::factory()->create(['booking_date' => today()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', ['start' => today()->toDateString(), 'end' => null]);
+
+    expect($component->instance()->bookings->pluck('id')->all())->toBe([$booking->id]);
 });
 
 test('booking list clears the date range when the period changes away from custom', function () {

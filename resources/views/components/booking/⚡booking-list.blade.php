@@ -11,6 +11,7 @@ use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
@@ -90,10 +91,16 @@ new class extends Component {
 
     /**
      * Get paginated bookings filtered by all active filters.
+     *
+     * Returns nothing without querying while the custom period has no dates picked.
      */
     #[Computed]
     public function bookings(): LengthAwarePaginator
     {
+        if ($this->awaitingDateRange) {
+            return new Paginator(items: [], total: 0, perPage: 10);
+        }
+
         return Booking::with(['schedule.service.coach'])
             ->when($this->search, fn($query) => $query->search($this->search))
             ->when($this->paymentStatus, fn($query) => $query->where('payment_status', $this->paymentStatus))
@@ -116,6 +123,17 @@ new class extends Component {
             ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
             ->orderBy('bookings.id', 'asc')
             ->paginate(10);
+    }
+
+    /**
+     * Check if the custom period is selected but no date has been picked yet.
+     */
+    #[Computed]
+    public function awaitingDateRange(): bool
+    {
+        return $this->period === 'custom'
+            && blank($this->dateRange['start'] ?? null)
+            && blank($this->dateRange['end'] ?? null);
     }
 
     /**
@@ -235,7 +253,9 @@ new class extends Component {
             </div>
         </div>
 
-        @if ($this->bookings->isEmpty())
+        @if ($this->awaitingDateRange)
+            <flux:text class="text-center py-8">{{ __('Izvēlies datumu vai periodu, lai redzētu rezervācijas.') }}</flux:text>
+        @elseif ($this->bookings->isEmpty())
             <flux:text class="text-center py-8">{{ __('Nav nevienas rezervācijas.') }}</flux:text>
         @else
             <flux:table>
