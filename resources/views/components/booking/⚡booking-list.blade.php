@@ -203,8 +203,8 @@ new class extends Component {
                     <flux:select.option value="past">{{ __('Pagātnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="today">{{ __('Šodienas rezervācijas') }}</flux:select.option>
                     <flux:select.option value="future">{{ __('Nākotnes rezervācijas') }}</flux:select.option>
-                    <flux:select.option value="all">{{ __('Visi') }}</flux:select.option>
                     <flux:select.option value="custom">{{ __('Izvēlēties datumus') }}</flux:select.option>
+                    <flux:select.option value="all">{{ __('Visas rezervācijas') }}</flux:select.option>
                 </flux:select>
 
                 @if ($period === 'custom')
