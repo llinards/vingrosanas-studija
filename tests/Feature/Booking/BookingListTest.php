@@ -87,7 +87,8 @@ test('booking list displays bookings with soonest booking date first by default'
     $earlierBooking = Booking::factory()->create(['booking_date' => now()->addDays(1)]);
     $laterBooking = Booking::factory()->create(['booking_date' => now()->addDays(3)]);
 
-    $component = Livewire::test('booking.booking-list');
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'all');
 
     $bookings = $component->instance()->bookings;
     expect($bookings->first()->id)->toBe($earlierBooking->id);
@@ -154,29 +155,16 @@ test('booking list displays participant count', function () {
 
 // --- Period filter ---
 
-test('booking list period defaults to upcoming', function () {
+test('booking list period defaults to today', function () {
     $component = Livewire::test('booking.booking-list');
 
-    expect($component->instance()->period)->toBe('upcoming');
-});
-
-test('booking list upcoming period shows today and future bookings', function () {
-    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
-    $pastBooking = Booking::factory()->past()->create();
-
-    $component = Livewire::test('booking.booking-list');
-
-    $bookings = $component->instance()->bookings;
-    expect($bookings)->toHaveCount(2);
-    expect($bookings->pluck('id')->toArray())->toContain($todayBooking->id);
-    expect($bookings->pluck('id')->toArray())->toContain($futureBooking->id);
+    expect($component->instance()->period)->toBe('today');
 });
 
 test('booking list today period shows only today bookings', function () {
     $todayBooking = Booking::factory()->create(['booking_date' => today()]);
-    $tomorrowBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
-    $pastBooking = Booking::factory()->past()->create();
+    Booking::factory()->create(['booking_date' => now()->addDay()]);
+    Booking::factory()->past()->create();
 
     $component = Livewire::test('booking.booking-list')
         ->set('period', 'today');
@@ -184,6 +172,19 @@ test('booking list today period shows only today bookings', function () {
     $bookings = $component->instance()->bookings;
     expect($bookings)->toHaveCount(1);
     expect($bookings->first()->id)->toBe($todayBooking->id);
+});
+
+test('booking list future period excludes today bookings', function () {
+    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
+    Booking::factory()->create(['booking_date' => today()]);
+    Booking::factory()->past()->create();
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'future');
+
+    $bookings = $component->instance()->bookings;
+    expect($bookings)->toHaveCount(1);
+    expect($bookings->first()->id)->toBe($futureBooking->id);
 });
 
 test('booking list past period shows only past bookings', function () {
@@ -225,6 +226,107 @@ test('booking list period filter is reflected in url query string', function () 
     Livewire::withQueryParams(['period' => 'past'])
         ->test('booking.booking-list')
         ->assertSet('period', 'past');
+});
+
+// --- Custom date range filter ---
+
+test('booking list custom period shows bookings within the range including both boundaries', function () {
+    $beforeRange = Booking::factory()->create(['booking_date' => today()->addDays(4)]);
+    $rangeStart = Booking::factory()->create(['booking_date' => today()->addDays(5)]);
+    $insideRange = Booking::factory()->create(['booking_date' => today()->addDays(7)]);
+    $rangeEnd = Booking::factory()->create(['booking_date' => today()->addDays(10)]);
+    $afterRange = Booking::factory()->create(['booking_date' => today()->addDays(11)]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', [
+            'start' => today()->addDays(5)->toDateString(),
+            'end' => today()->addDays(10)->toDateString(),
+        ]);
+
+    expect($component->instance()->bookings->pluck('id')->all())
+        ->toEqualCanonicalizing([$rangeStart->id, $insideRange->id, $rangeEnd->id]);
+});
+
+test('booking list custom period shows a single day when start and end are the same', function () {
+    $targetBooking = Booking::factory()->create(['booking_date' => today()->addDays(3)]);
+    Booking::factory()->create(['booking_date' => today()->addDays(2)]);
+    Booking::factory()->create(['booking_date' => today()->addDays(4)]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', [
+            'start' => today()->addDays(3)->toDateString(),
+            'end' => today()->addDays(3)->toDateString(),
+        ]);
+
+    expect($component->instance()->bookings->pluck('id')->all())->toBe([$targetBooking->id]);
+});
+
+test('booking list custom period with only a start date shows that day and later', function () {
+    Booking::factory()->create(['booking_date' => today()->addDays(2)]);
+    $startDayBooking = Booking::factory()->create(['booking_date' => today()->addDays(3)]);
+    $laterBooking = Booking::factory()->create(['booking_date' => today()->addDays(9)]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', ['start' => today()->addDays(3)->toDateString(), 'end' => null]);
+
+    expect($component->instance()->bookings->pluck('id')->all())
+        ->toEqualCanonicalizing([$startDayBooking->id, $laterBooking->id]);
+});
+
+test('booking list custom period with only an end date shows that day and earlier', function () {
+    $earlierBooking = Booking::factory()->past()->create();
+    $endDayBooking = Booking::factory()->create(['booking_date' => today()->addDays(3)]);
+    Booking::factory()->create(['booking_date' => today()->addDays(4)]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', ['start' => null, 'end' => today()->addDays(3)->toDateString()]);
+
+    expect($component->instance()->bookings->pluck('id')->all())
+        ->toEqualCanonicalizing([$earlierBooking->id, $endDayBooking->id]);
+});
+
+test('booking list custom period without any dates shows all bookings', function () {
+    Booking::factory()->past()->create();
+    Booking::factory()->create(['booking_date' => today()]);
+    Booking::factory()->create(['booking_date' => today()->addDay()]);
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'custom');
+
+    expect($component->instance()->bookings)->toHaveCount(3);
+});
+
+test('booking list clears the date range when the period changes away from custom', function () {
+    Livewire::test('booking.booking-list')
+        ->set('period', 'custom')
+        ->set('dateRange', [
+            'start' => today()->toDateString(),
+            'end' => today()->addDay()->toDateString(),
+        ])
+        ->set('period', 'future')
+        ->assertSet('dateRange', ['start' => null, 'end' => null]);
+});
+
+test('booking list date range is reflected in url query string', function () {
+    Livewire::withQueryParams([
+        'period' => 'custom',
+        'dateRange' => ['start' => '2026-03-01', 'end' => '2026-03-31'],
+    ])
+        ->test('booking.booking-list')
+        ->assertSet('dateRange', ['start' => '2026-03-01', 'end' => '2026-03-31']);
+});
+
+test('booking list shows the date picker only for the custom period', function () {
+    Booking::factory()->create(['booking_date' => today()]);
+
+    Livewire::test('booking.booking-list')
+        ->assertDontSee('Datumu diapazons')
+        ->set('period', 'custom')
+        ->assertSee('Datumu diapazons');
 });
 
 // --- Payment status filter ---

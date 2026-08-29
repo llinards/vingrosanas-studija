@@ -9,6 +9,7 @@ use App\Models\Schedule;
 use App\Models\Service;
 use Flux\Flux;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -21,7 +22,15 @@ new class extends Component {
     use WithPagination;
 
     #[Url]
-    public string $period = 'upcoming';
+    public string $period = 'today';
+
+    /**
+     * Start and end dates (Y-m-d) applied when the period is 'custom'.
+     *
+     * @var array{start: ?string, end: ?string}
+     */
+    #[Url]
+    public array $dateRange = ['start' => null, 'end' => null];
 
     #[Url]
     public string $paymentStatus = '';
@@ -47,6 +56,16 @@ new class extends Component {
     public function updated(): void
     {
         $this->resetPage();
+    }
+
+    /**
+     * Discard the picked dates when leaving the custom period.
+     */
+    public function updatedPeriod(string $value): void
+    {
+        if ($value !== 'custom') {
+            $this->reset('dateRange');
+        }
     }
 
     /**
@@ -86,16 +105,30 @@ new class extends Component {
             ->when(
                 true,
                 fn($query) => match ($this->period) {
-                    'today' => $query->whereDate('booking_date', today()),
                     'past' => $query->whereDate('booking_date', '<', today()),
+                    'future' => $query->whereDate('booking_date', '>', today()),
+                    'custom' => $this->applyCustomDateRange($query),
                     'all' => $query,
-                    default => $query->whereDate('booking_date', '>=', today()),
+                    default => $query->whereDate('booking_date', today()),
                 },
             )
             ->orderBy('booking_date', 'asc')
             ->orderBy(Schedule::select('start_time')->whereColumn('schedules.id', 'bookings.schedule_id'), 'asc')
             ->orderBy('bookings.id', 'asc')
             ->paginate(10);
+    }
+
+    /**
+     * Constrain the query to the picked date range, skipping either end when unset.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    private function applyCustomDateRange(Builder $query): Builder
+    {
+        return $query
+            ->when($this->dateRange['start'] ?? null, fn($subQuery, $start) => $subQuery->whereDate('booking_date', '>=', $start))
+            ->when($this->dateRange['end'] ?? null, fn($subQuery, $end) => $subQuery->whereDate('booking_date', '<=', $end));
     }
 
     /**
@@ -149,11 +182,22 @@ new class extends Component {
 
             <div class="flex flex-wrap items-end gap-4">
                 <flux:select wire:model.live="period" :label="__('Periods')">
-                    <flux:select.option value="upcoming">{{ __('Šodiena + nākotne') }}</flux:select.option>
-                    <flux:select.option value="today">{{ __('Tikai šodiena') }}</flux:select.option>
-                    <flux:select.option value="past">{{ __('Pagātne') }}</flux:select.option>
+                    <flux:select.option value="past">{{ __('Pagātnes rezervācijas') }}</flux:select.option>
+                    <flux:select.option value="today">{{ __('Šodienas rezervācijas') }}</flux:select.option>
+                    <flux:select.option value="future">{{ __('Nākotnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="all">{{ __('Visi') }}</flux:select.option>
+                    <flux:select.option value="custom">{{ __('Izvēlēties datumus') }}</flux:select.option>
                 </flux:select>
+
+                @if ($period === 'custom')
+                    <flux:date-picker
+                        mode="range"
+                        wire:model.live="dateRange"
+                        clearable
+                        :label="__('Datumu diapazons')"
+                        :placeholder="__('Izvēlies datumu vai periodu')"
+                    />
+                @endif
 
                 <flux:select wire:model.live="paymentStatus" :label="__('Maksājuma statuss')">
                     <flux:select.option value="">{{ __('Visi') }}</flux:select.option>
