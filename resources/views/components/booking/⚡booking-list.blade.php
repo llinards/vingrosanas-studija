@@ -23,7 +23,7 @@ new class extends Component {
     use WithPagination;
 
     #[Url]
-    public string $period = 'today';
+    public string $period = 'upcoming';
 
     /**
      * Start and end dates (Y-m-d) applied when the period is 'custom'.
@@ -113,10 +113,11 @@ new class extends Component {
                 true,
                 fn($query) => match ($this->period) {
                     'past' => $query->whereDate('booking_date', '<', today()),
+                    'today' => $query->whereDate('booking_date', today()),
                     'future' => $query->whereDate('booking_date', '>', today()),
                     'custom' => $this->applyCustomDateRange($query),
                     'all' => $query,
-                    default => $query->whereDate('booking_date', today()),
+                    default => $query->whereDate('booking_date', '>=', today()),
                 },
             )
             ->orderBy('booking_date', 'asc')
@@ -203,6 +204,7 @@ new class extends Component {
                     <flux:select.option value="past">{{ __('Pagātnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="today">{{ __('Šodienas rezervācijas') }}</flux:select.option>
                     <flux:select.option value="future">{{ __('Nākotnes rezervācijas') }}</flux:select.option>
+                    <flux:select.option value="upcoming">{{ __('Šodienas un nākotnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="custom">{{ __('Izvēlēties datumus') }}</flux:select.option>
                     <flux:select.option value="all">{{ __('Visas rezervācijas') }}</flux:select.option>
                 </flux:select>

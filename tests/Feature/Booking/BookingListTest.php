@@ -156,10 +156,22 @@ test('booking list displays participant count', function () {
 
 // --- Period filter ---
 
-test('booking list period defaults to today', function () {
+test('booking list period defaults to upcoming', function () {
     $component = Livewire::test('booking.booking-list');
 
-    expect($component->instance()->period)->toBe('today');
+    expect($component->instance()->period)->toBe('upcoming');
+});
+
+test('booking list upcoming period shows today and future bookings', function () {
+    $todayBooking = Booking::factory()->create(['booking_date' => today()]);
+    $futureBooking = Booking::factory()->create(['booking_date' => now()->addDay()]);
+    Booking::factory()->past()->create();
+
+    $component = Livewire::test('booking.booking-list')
+        ->set('period', 'upcoming');
+
+    expect($component->instance()->bookings->pluck('id')->all())
+        ->toEqualCanonicalizing([$todayBooking->id, $futureBooking->id]);
 });
 
 test('booking list today period shows only today bookings', function () {
