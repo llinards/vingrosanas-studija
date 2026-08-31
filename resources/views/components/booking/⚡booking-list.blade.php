@@ -203,8 +203,8 @@ new class extends Component {
                 <flux:select wire:model.live="period" :label="__('Periods')">
                     <flux:select.option value="past">{{ __('Pagātnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="today">{{ __('Šodienas rezervācijas') }}</flux:select.option>
-                    <flux:select.option value="future">{{ __('Nākotnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="upcoming">{{ __('Šodienas un nākotnes rezervācijas') }}</flux:select.option>
+                    <flux:select.option value="future">{{ __('Nākotnes rezervācijas') }}</flux:select.option>
                     <flux:select.option value="custom">{{ __('Izvēlēties datumus') }}</flux:select.option>
                     <flux:select.option value="all">{{ __('Visas rezervācijas') }}</flux:select.option>
                 </flux:select>
