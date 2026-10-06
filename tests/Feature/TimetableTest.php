@@ -226,10 +226,17 @@ test('home page sends visitors who want to book to the timetable', function () {
         ->assertSee('href="'.route('timetable').'"', escape: false);
 });
 
-test('timetable page offers the membership purchase', function () {
+test('timetable page keeps the membership purchase reachable from the menu', function () {
     $this->get(route('timetable'))
         ->assertSee('Abonementi')
         ->assertSeeLivewire('booking-modal');
+});
+
+test('timetable itself does not show a memberships button', function () {
+    createClassForTimetablePage();
+
+    Livewire::test('timetable')
+        ->assertDontSee('Abonementi');
 });
 
 test('filters by the service type taken from the address bar', function () {

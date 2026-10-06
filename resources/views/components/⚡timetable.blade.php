@@ -185,12 +185,7 @@ new class extends Component
 ?>
 
 <div class="container mx-auto pt-36 pb-12 px-4 space-y-8">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-        <flux:heading level="1">{{ __('Nodarbību saraksts') }}</flux:heading>
-        <flux:modal.trigger name="booking-modal">
-            <flux:button class="btn btn-sm btn-tertiary">{{ __('Abonementi') }}</flux:button>
-        </flux:modal.trigger>
-    </div>
+    <flux:heading level="1">{{ __('Nodarbību saraksts') }}</flux:heading>
 
     @if($paymentCancelled)
         <flux:callout icon="information-circle">
