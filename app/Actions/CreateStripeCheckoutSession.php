@@ -40,6 +40,7 @@ class CreateStripeCheckoutSession
         try {
             $session = Session::create([
                 'mode' => 'payment',
+                'locale' => 'lv',
                 'line_items' => [[
                     'price_data' => [
                         'currency' => config('cashier.currency', 'eur'),
