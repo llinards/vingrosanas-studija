@@ -2,9 +2,7 @@
 
 use App\Enums\DayOfWeek;
 use App\Enums\SlotStatus;
-use App\Models\ServiceType;
 use App\Services\ScheduleAvailabilityService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -20,9 +18,6 @@ new class extends Component
     #[Url]
     public int $week = 0;
 
-    #[Url(as: 'type')]
-    public ?int $serviceTypeId = null;
-
     /**
      * Whether the customer has just come back from an unfinished Stripe payment.
      */
@@ -35,20 +30,6 @@ new class extends Component
     {
         $this->paymentCancelled = request()->boolean('booking_cancelled');
         $this->week = $this->clampWeek($this->week);
-        $this->serviceTypeId = $this->knownServiceTypeId($this->serviceTypeId);
-    }
-
-    /**
-     * Service types that have at least one class customers can book.
-     */
-    #[Computed]
-    public function serviceTypes(): Collection
-    {
-        return ServiceType::whereHas('services', function ($query) {
-            $query->where('is_active', true)
-                ->where('is_membership', false)
-                ->whereHas('schedules', fn ($query) => $query->where('is_active', true));
-        })->orderBy('position')->get();
     }
 
     /**
@@ -68,7 +49,7 @@ new class extends Component
     #[Computed]
     public function days(): array
     {
-        $timetable = app(ScheduleAvailabilityService::class)->weekTimetable($this->weekStart, $this->serviceTypeId);
+        $timetable = app(ScheduleAvailabilityService::class)->weekTimetable($this->weekStart);
 
         $days = [];
 
@@ -123,14 +104,6 @@ new class extends Component
     }
 
     /**
-     * Filter the timetable by service type; null shows every type.
-     */
-    public function showServiceType(?int $serviceTypeId): void
-    {
-        $this->serviceTypeId = $this->knownServiceTypeId($serviceTypeId);
-    }
-
-    /**
      * Re-render with fresh availability after a booking attempt.
      */
     #[On('timetable-refresh')]
@@ -167,11 +140,6 @@ new class extends Component
         return max(0, min(ScheduleAvailabilityService::BOOKING_HORIZON_WEEKS, $week));
     }
 
-    private function knownServiceTypeId(?int $serviceTypeId): ?int
-    {
-        return $this->serviceTypes->contains('id', $serviceTypeId) ? $serviceTypeId : null;
-    }
-
     /**
      * Render the component view with the page title.
      */
@@ -194,19 +162,6 @@ new class extends Component
         </flux:callout>
     @endif
 
-    {{-- SERVICE TYPE FILTER --}}
-    @if($this->serviceTypes->count() > 1)
-        <div class="flex flex-wrap gap-2">
-            <flux:button size="sm" :variant="$serviceTypeId === null ? 'primary' : 'filled'"
-                         wire:click="showServiceType(null)">{{ __('Visi') }}</flux:button>
-            @foreach($this->serviceTypes as $serviceType)
-                <flux:button wire:key="type-{{ $serviceType->id }}" size="sm"
-                             :variant="$serviceTypeId === $serviceType->id ? 'primary' : 'filled'"
-                             wire:click="showServiceType({{ $serviceType->id }})">{{ $serviceType->name }}</flux:button>
-            @endforeach
-        </div>
-    @endif
-
     {{-- WEEK NAVIGATION --}}
     <div class="flex items-center justify-between gap-4 border-y border-black py-3">
         <flux:button variant="ghost" icon="chevron-left" wire:click="previousWeek" :disabled="$week === 0"
@@ -220,7 +175,7 @@ new class extends Component
     </div>
 
     @if($this->hasClasses)
-        <div wire:key="week-{{ $week }}-{{ $serviceTypeId }}" x-data="{ day: '{{ $this->initialDay }}' }" class="space-y-4">
+        <div wire:key="week-{{ $week }}" x-data="{ day: '{{ $this->initialDay }}' }" class="space-y-4">
             {{-- DAY PICKER (SMALL SCREENS) --}}
             <div class="grid grid-cols-7 gap-1 lg:hidden">
                 @foreach($this->days as $day)

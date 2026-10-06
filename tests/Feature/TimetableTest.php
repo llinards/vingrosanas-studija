@@ -106,50 +106,9 @@ test('clamps a week taken from the address bar to the bookable range', function 
 test('falls back to the current week when the week in the address bar is not a number', function () {
     createClassForTimetablePage(['name' => 'Fusion Pilates']);
 
-    $this->get(route('timetable', ['week' => 'abc', 'type' => 'xyz']))
+    $this->get(route('timetable', ['week' => 'abc']))
         ->assertSee('05.10. – 11.10.2026')
         ->assertSee('Fusion Pilates');
-});
-
-test('shows only the classes of the chosen service type', function () {
-    $physio = ServiceType::factory()->create(['name' => 'Fizioterapija']);
-    createClassForTimetablePage(['name' => 'Ārstnieciskā vingrošana', 'service_type_id' => $physio->id]);
-    createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
-
-    Livewire::test('timetable')
-        ->assertSee('Ārstnieciskā vingrošana')
-        ->assertSee('Funkcionālais treniņš')
-        ->call('showServiceType', $physio->id)
-        ->assertSet('serviceTypeId', $physio->id)
-        ->assertSee('Ārstnieciskā vingrošana')
-        ->assertDontSee('Funkcionālais treniņš')
-        ->call('showServiceType', null)
-        ->assertSee('Funkcionālais treniņš');
-});
-
-test('shows every class when the chosen service type has nothing to book', function () {
-    $empty = ServiceType::factory()->create();
-    createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
-
-    Livewire::withQueryParams(['type' => $empty->id])
-        ->test('timetable')
-        ->assertSet('serviceTypeId', null)
-        ->assertSee('Funkcionālais treniņš');
-});
-
-test('offers a filter only for service types that have bookable classes, in their set order', function () {
-    $second = ServiceType::factory()->create(['name' => 'Fizioterapija', 'position' => 2]);
-    $first = ServiceType::factory()->create(['name' => 'Grupu nodarbības', 'position' => 1]);
-    ServiceType::factory()->create(['name' => 'Masāža', 'position' => 0]);
-    $membershipOnly = ServiceType::factory()->create(['name' => 'Tikai abonementiem', 'position' => 3]);
-    createClassForTimetablePage(['service_type_id' => $second->id]);
-    createClassForTimetablePage(['service_type_id' => $first->id]);
-    createClassForTimetablePage(['service_type_id' => $membershipOnly->id, 'is_membership' => true]);
-
-    Livewire::test('timetable')
-        ->assertSeeInOrder(['Visi', 'Grupu nodarbības', 'Fizioterapija'])
-        ->assertDontSee('Masāža')
-        ->assertDontSee('Tikai abonementiem');
 });
 
 test('shows a full class without a way to book it', function () {
@@ -240,14 +199,14 @@ test('timetable itself does not show a memberships button', function () {
         ->assertDontSee('Abonementi');
 });
 
-test('filters by the service type taken from the address bar', function () {
-    $physio = ServiceType::factory()->create();
+test('shows the classes of every service type together without a filter', function () {
+    $physio = ServiceType::factory()->create(['name' => 'Fizioterapija']);
     createClassForTimetablePage(['name' => 'Ārstnieciskā vingrošana', 'service_type_id' => $physio->id]);
     createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
 
-    Livewire::withQueryParams(['type' => $physio->id])
-        ->test('timetable')
-        ->assertSet('serviceTypeId', $physio->id)
+    Livewire::test('timetable')
         ->assertSee('Ārstnieciskā vingrošana')
-        ->assertDontSee('Funkcionālais treniņš');
+        ->assertSee('Funkcionālais treniņš')
+        ->assertDontSee('Visi')
+        ->assertDontSee('Fizioterapija');
 });

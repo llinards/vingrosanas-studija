@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Coach;
 use App\Models\Schedule;
 use App\Models\Service;
-use App\Models\ServiceType;
 use App\Models\UnavailableDate;
 use App\Services\ScheduleAvailabilityService;
 use Illuminate\Support\Carbon;
@@ -36,9 +35,9 @@ function createTimetableClass(array $service = [], array $schedule = []): Schedu
     ], $schedule));
 }
 
-function weekTimetable(?int $serviceTypeId = null): array
+function weekTimetable(): array
 {
-    return app(ScheduleAvailabilityService::class)->weekTimetable(Carbon::parse('2026-10-05'), $serviceTypeId);
+    return app(ScheduleAvailabilityService::class)->weekTimetable(Carbon::parse('2026-10-05'));
 }
 
 test('lists a weekly class on its weekday with start time, coach, price and free places', function () {
@@ -101,17 +100,6 @@ test('does not list classes that customers cannot book', function (array $servic
     'inactive service' => [['is_active' => false], []],
     'membership product' => [['is_membership' => true], []],
 ]);
-
-test('lists only the classes of the requested service type', function () {
-    travelToTimetableMonday();
-    $physio = ServiceType::factory()->create();
-    createTimetableClass(['name' => 'Fizioterapija', 'service_type_id' => $physio->id]);
-    createTimetableClass(['name' => 'Pilates']);
-
-    $week = weekTimetable($physio->id);
-
-    expect(array_column($week['2026-10-07'], 'service_name'))->toBe(['Fizioterapija']);
-});
 
 test('reduces free places by the booked participants and marks a class full at capacity', function () {
     travelToTimetableMonday();

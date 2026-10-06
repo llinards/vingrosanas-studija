@@ -22,7 +22,7 @@ class ScheduleAvailabilityService
      *
      * @return array<string, list<array{schedule_id: int, date: string, start_time: string, service_name: string, coach_name: string, is_exclusive: bool, price_from: int, has_price_range: bool, remaining: int, status: SlotStatus}>>
      */
-    public function weekTimetable(Carbon $weekStart, ?int $serviceTypeId = null): array
+    public function weekTimetable(Carbon $weekStart): array
     {
         $weekStart = $weekStart->copy()->startOfDay();
         $weekEnd = $weekStart->copy()->addDays(6);
@@ -33,8 +33,7 @@ class ScheduleAvailabilityService
             ->where('is_active', true)
             ->whereHas('service', fn (Builder $query) => $query
                 ->where('is_active', true)
-                ->where('is_membership', false)
-                ->when($serviceTypeId, fn (Builder $query) => $query->where('service_type_id', $serviceTypeId)))
+                ->where('is_membership', false))
             ->where(fn (Builder $query) => $query
                 ->whereNotNull('day_of_week')
                 ->orWhereBetween('date', $this->dateRangeBounds($weekStart, $weekEnd)))
