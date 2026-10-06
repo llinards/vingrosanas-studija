@@ -57,6 +57,16 @@ class Service extends Model
     }
 
     /**
+     * Get the total price in cents for a booking of the given group size.
+     *
+     * Falls back to the base price when no tier is defined for that size.
+     */
+    public function priceFor(int $participantCount): int
+    {
+        return $this->priceTiers->firstWhere('participant_count', $participantCount)?->price ?? $this->price;
+    }
+
+    /**
      * Scope to only include membership services.
      *
      * @param  Builder<Service>  $query
