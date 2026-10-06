@@ -44,3 +44,13 @@ test('asks Stripe to show the payment page in Latvian', function () {
     expect($stripe->requests)->toHaveCount(1);
     expect($stripe->requests[0]['locale'] ?? null)->toBe('lv');
 });
+
+test('gives the customer 30 minutes to pay on the Stripe page', function () {
+    $this->travelTo('2026-10-05 09:00:00');
+    $stripe = recordStripeCheckoutRequests();
+    $booking = Booking::factory()->create();
+
+    app(CreateStripeCheckoutSession::class)->execute($booking, 1500);
+
+    expect($stripe->requests[0]['expires_at'])->toBe(now()->setTime(9, 30)->timestamp);
+});

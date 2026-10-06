@@ -13,7 +13,16 @@ use Illuminate\Support\Facades\DB;
 
 class CreatePendingBooking
 {
-    public const PAYMENT_HOLD_MINUTES = 30;
+    /**
+     * How long the customer has to pay on the Stripe page.
+     */
+    public const PAYMENT_WINDOW_MINUTES = 30;
+
+    /**
+     * Extra time the place stays held after the Stripe page closes, so that a
+     * payment made in its last moments still finds its booking.
+     */
+    public const HOLD_GRACE_MINUTES = 5;
 
     public function __construct(private ScheduleAvailabilityService $availability) {}
 
@@ -59,7 +68,7 @@ class CreatePendingBooking
                 'email' => $customer['email'],
                 'participant_count' => $participantCount,
                 'payment_status' => PaymentStatus::Pending,
-                'expires_at' => now()->addMinutes(self::PAYMENT_HOLD_MINUTES),
+                'expires_at' => now()->addMinutes(self::PAYMENT_WINDOW_MINUTES + self::HOLD_GRACE_MINUTES),
             ]);
         });
     }
