@@ -169,3 +169,24 @@ test('rejects an individual session that already has a booking', function () {
     expect(fn () => createPendingBooking($class->id))->toThrow(SlotUnavailableException::class);
     expect(Booking::count())->toBe(1);
 });
+
+test('rejects a booking when an unpaid booking without an expiry holds the last place', function () {
+    $class = createBookableClass(schedule: ['max_capacity' => 1]);
+    Booking::factory()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07', 'expires_at' => null]);
+
+    expect(fn () => createPendingBooking($class->id))->toThrow(SlotUnavailableException::class);
+    expect(Booking::count())->toBe(1);
+});
+
+test('takes several bookings for a group class that has price tiers', function () {
+    $class = createBookableClass(['price' => 1500], ['max_capacity' => 10]);
+    $class->service->priceTiers()->createMany([
+        ['participant_count' => 1, 'price' => 1500],
+        ['participant_count' => 2, 'price' => 2500],
+    ]);
+
+    createPendingBooking($class->id);
+    createPendingBooking($class->id);
+
+    expect(Booking::count())->toBe(2);
+});

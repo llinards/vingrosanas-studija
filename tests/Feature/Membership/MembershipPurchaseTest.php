@@ -48,7 +48,6 @@ function addMembershipSession(Testable $modal, Schedule $class, string $date): T
 function membershipReadyToPay(Service $membershipService, Schedule $class): Testable
 {
     $modal = Livewire::test('booking-modal')
-        ->set('mode', 'membership')
         ->set('selectedMembershipServiceId', $membershipService->id)
         ->set('step', 2);
 
@@ -68,7 +67,6 @@ test('offers the active membership products first', function () {
     Service::factory()->membership(9)->create(['name' => 'Vecais abonements', 'is_active' => false]);
 
     Livewire::test('booking-modal')
-        ->set('mode', 'membership')
         ->assertSet('step', 1)
         ->assertSee('Mēneša abonements (4x)')
         ->assertSee('€45.00')
@@ -79,7 +77,6 @@ test('requires a membership product before the sessions can be picked', function
     createMembershipEligibleClass();
 
     Livewire::test('booking-modal')
-        ->set('mode', 'membership')
         ->call('nextStep')
         ->assertHasErrors('selectedMembershipServiceId')
         ->assertSet('step', 1);
@@ -90,7 +87,6 @@ test('walks from the membership product through the sessions and customer detail
     $membershipService = Service::factory()->membership(2)->create(['name' => 'Mēneša abonements (2x)']);
 
     $modal = Livewire::test('booking-modal')
-        ->set('mode', 'membership')
         ->set('selectedMembershipServiceId', $membershipService->id)
         ->call('nextStep')
         ->assertSet('step', 2);

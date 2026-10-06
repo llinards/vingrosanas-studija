@@ -140,7 +140,7 @@ test('offers a filter only for service types that have bookable classes, in thei
     $second = ServiceType::factory()->create(['name' => 'Fizioterapija', 'position' => 2]);
     $first = ServiceType::factory()->create(['name' => 'Grupu nodarbības', 'position' => 1]);
     ServiceType::factory()->create(['name' => 'Masāža', 'position' => 0]);
-    $membershipOnly = ServiceType::factory()->create(['name' => 'Abonementi', 'position' => 3]);
+    $membershipOnly = ServiceType::factory()->create(['name' => 'Tikai abonementiem', 'position' => 3]);
     createClassForTimetablePage(['service_type_id' => $second->id]);
     createClassForTimetablePage(['service_type_id' => $first->id]);
     createClassForTimetablePage(['service_type_id' => $membershipOnly->id, 'is_membership' => true]);
@@ -148,7 +148,7 @@ test('offers a filter only for service types that have bookable classes, in thei
     Livewire::test('timetable')
         ->assertSeeInOrder(['Visi', 'Grupu nodarbības', 'Fizioterapija'])
         ->assertDontSee('Masāža')
-        ->assertDontSee('Abonementi');
+        ->assertDontSee('Tikai abonementiem');
 });
 
 test('shows a full class without a way to book it', function () {
@@ -219,4 +219,15 @@ test('does not show the cancelled payment notice on a normal visit', function ()
 
     Livewire::test('timetable')
         ->assertDontSee('Maksājums netika pabeigts.');
+});
+
+test('home page sends visitors who want to book to the timetable', function () {
+    $this->get(route('home'))
+        ->assertSee('href="'.route('timetable').'"', escape: false);
+});
+
+test('timetable page offers the membership purchase', function () {
+    $this->get(route('timetable'))
+        ->assertSee('Abonementi')
+        ->assertSeeLivewire('booking-modal');
 });

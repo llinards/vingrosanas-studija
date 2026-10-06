@@ -258,3 +258,18 @@ test('does not create a booking when no class was opened', function () {
 
     expect(Booking::count())->toBe(0);
 });
+
+test('starts again with the smallest group size when another class is opened', function () {
+    $class = createClassForCheckout(['is_exclusive' => true, 'price' => 3500], ['max_capacity' => 2]);
+    $class->service->priceTiers()->createMany([
+        ['participant_count' => 1, 'price' => 3500],
+        ['participant_count' => 2, 'price' => 5000],
+    ]);
+
+    Livewire::test('booking.booking-checkout')
+        ->call('open', $class->id, '2026-10-07')
+        ->set('participantCount', 2)
+        ->call('open', $class->id, '2026-10-14')
+        ->assertSet('participantCount', 1)
+        ->assertSet('date', '2026-10-14');
+});
