@@ -105,7 +105,7 @@ test('creates an unpaid booking and sends the customer to Stripe for the class p
         ->participant_count->toBe(1)
         ->payment_status->toBe(PaymentStatus::Pending);
     expect($booking->booking_date->toDateString())->toBe('2026-10-07');
-    expect($booking->expires_at->toDateTimeString())->toBe('2026-10-05 09:35:00');
+    expect($booking->expires_at->toDateTimeString())->toBe('2026-10-05 09:30:00');
     Mail::assertNothingOutgoing();
 });
 

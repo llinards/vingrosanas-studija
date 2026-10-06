@@ -123,25 +123,3 @@ test('booking payment reminder email contains correct data', function () {
     $mailable->assertSeeInHtml(substr($booking->schedule->start_time, 0, 5), escape: false);
     $mailable->assertSeeInHtml('https://checkout.stripe.com/test');
 });
-
-test('reminder is sent ten minutes before the Stripe page closes, which is five minutes before the hold ends', function (int $minutesUntilHoldEnds, bool $reminderExpected) {
-    Mail::fake();
-    $this->mock(RetrieveStripeCheckoutUrl::class)
-        ->shouldReceive('execute')
-        ->andReturn('https://checkout.stripe.com/test');
-    Booking::factory()->create([
-        'stripe_checkout_session_id' => 'cs_test_window',
-        'expires_at' => now()->addMinutes($minutesUntilHoldEnds),
-    ]);
-
-    $this->artisan('payments:send-reminders')->assertSuccessful();
-
-    $reminderExpected
-        ? Mail::assertQueued(BookingPaymentReminder::class)
-        : Mail::assertNotQueued(BookingPaymentReminder::class);
-})->with([
-    'sixteen minutes of hold left, eleven to pay' => [16, false],
-    'fifteen minutes of hold left, ten to pay' => [15, true],
-    'six minutes of hold left, one to pay' => [6, true],
-    'four minutes of hold left, Stripe page already closed' => [4, false],
-]);

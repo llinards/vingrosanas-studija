@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\CreatePendingBooking;
 use App\Actions\RetrieveStripeCheckoutUrl;
 use App\Enums\PaymentStatus;
 use App\Mail\BookingPaymentReminder;
@@ -55,8 +54,8 @@ class SendPaymentReminders extends Command
             ->whereNotNull('expires_at')
             ->whereNull('payment_reminder_sent_at')
             ->whereNull('membership_id')
-            ->where('expires_at', '>', now()->addMinutes(CreatePendingBooking::HOLD_GRACE_MINUTES))
-            ->where('expires_at', '<=', now()->addMinutes(10 + CreatePendingBooking::HOLD_GRACE_MINUTES))
+            ->where('expires_at', '>', now())
+            ->where('expires_at', '<=', now()->addMinutes(10))
             ->get();
 
         $sent = 0;

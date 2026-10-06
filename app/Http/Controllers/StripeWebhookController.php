@@ -5,25 +5,18 @@ namespace App\Http\Controllers;
 use App\Enums\PaymentStatus;
 use App\Mail\BookingConfirmation;
 use App\Mail\BookingRefunded;
-use App\Mail\ExpiredBookingPaymentRefunded;
-use App\Mail\ExpiredBookingPaymentRefundedNotification;
 use App\Mail\MembershipConfirmation;
 use App\Mail\MembershipRefunded;
 use App\Mail\NewBookingNotification;
 use App\Mail\NewMembershipNotification;
 use App\Models\Booking;
 use App\Models\Membership;
-use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;
-use Stripe\Refund;
-use Stripe\Stripe;
 use Stripe\Webhook;
 
 class StripeWebhookController extends Controller
@@ -81,7 +74,7 @@ class StripeWebhookController extends Controller
                 'session_id' => $session->id,
             ]);
 
-            return $this->refundPaymentForMissingBooking($session);
+            return response('Booking not found', 404);
         }
 
         // Skip if already processed (idempotency guard for webhook retries)
@@ -185,88 +178,14 @@ class StripeWebhookController extends Controller
 
         $booking = Booking::find($bookingId);
 
-        // The payment page can no longer be paid, so the place is free again.
-        if ($booking
-            && $booking->payment_status === PaymentStatus::Pending
-            && $booking->stripe_checkout_session_id === $session->id) {
-            $booking->delete();
-
-            Log::info('Unpaid booking released after checkout session expired', [
-                'booking_id' => $bookingId,
+        if ($booking && $booking->isPendingPayment()) {
+            Log::info('Checkout session expired', [
+                'booking_id' => $booking->id,
                 'session_id' => $session->id,
             ]);
         }
 
         return response('Session expiry noted', 200);
-    }
-
-    /**
-     * Refund a payment whose booking no longer exists and tell the customer and the studio.
-     *
-     * Without the booking the place cannot be confirmed. A failed refund is
-     * answered with an error so that Stripe delivers the event again.
-     */
-    private function refundPaymentForMissingBooking(object $session): Response
-    {
-        $paymentIntent = $session->payment_intent ?? null;
-
-        if (! $paymentIntent) {
-            return response('Booking not found', 404);
-        }
-
-        $refundMarker = $this->expiredBookingRefundMarker($paymentIntent);
-
-        if (Cache::has($refundMarker)) {
-            return response('Already refunded', 200);
-        }
-
-        Stripe::setApiKey(config('cashier.secret'));
-
-        try {
-            Refund::create(
-                ['payment_intent' => $paymentIntent],
-                ['idempotency_key' => 'expired-booking-refund-'.$session->id],
-            );
-        } catch (ApiErrorException $e) {
-            Log::error('Refund failed for a payment without a booking', [
-                'session_id' => $session->id,
-                'payment_intent' => $paymentIntent,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response('Refund failed', 500);
-        }
-
-        if (! Cache::add($refundMarker, true, now()->addDays(7))) {
-            return response('Already refunded', 200);
-        }
-
-        $customerEmail = $session->customer_details->email ?? $session->customer_email ?? null;
-        $amountInCents = (int) ($session->amount_total ?? 0);
-
-        if ($customerEmail) {
-            Mail::to($customerEmail)->send(new ExpiredBookingPaymentRefunded($amountInCents));
-        }
-
-        Mail::to(SiteSetting::getValue('contact', 'email') ?? config('mail.contact_email'))->send(
-            new ExpiredBookingPaymentRefundedNotification($customerEmail, $amountInCents, $paymentIntent),
-        );
-
-        Log::warning('Payment refunded because its booking no longer exists', [
-            'session_id' => $session->id,
-            'payment_intent' => $paymentIntent,
-            'customer_email' => $customerEmail,
-        ]);
-
-        return response('Payment refunded: booking no longer exists', 200);
-    }
-
-    /**
-     * Cache key remembering that a payment without a booking was refunded automatically.
-     */
-    private function expiredBookingRefundMarker(string $paymentIntent): string
-    {
-        return 'expired-booking-refund:'.$paymentIntent;
     }
 
     /**
@@ -295,10 +214,6 @@ class StripeWebhookController extends Controller
         $booking = Booking::where('payment_reference', $paymentIntent)->first();
 
         if (! $booking) {
-            if (Cache::has($this->expiredBookingRefundMarker($paymentIntent))) {
-                return response('Refund of a payment without a booking noted', 200);
-            }
-
             Log::warning('Booking or membership not found for refunded charge', [
                 'payment_intent' => $paymentIntent,
             ]);
