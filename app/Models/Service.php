@@ -14,6 +14,8 @@ class Service extends Model
     /** @use HasFactory<ServiceFactory> */
     use HasFactory;
 
+    public const DEFAULT_DURATION_MINUTES = 60;
+
     /**
      * @return BelongsTo<ServiceType, $this>
      */
@@ -75,6 +77,7 @@ class Service extends Model
             'notify_coach_on_cancellation' => 'boolean',
             'sessions_count' => 'integer',
             'price' => 'integer',
+            'duration_minutes' => 'integer',
             'position' => 'integer',
         ];
     }

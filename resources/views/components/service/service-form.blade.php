@@ -136,6 +136,18 @@
 
                 <flux:separator/>
 
+                <div class="sm:w-1/2">
+                    <flux:input
+                        wire:model="duration_minutes"
+                        :label="__('Ilgums (minūtes)')"
+                        :description="__('Nodarbības garums — tiek rādīts nodarbību sarakstā.')"
+                        type="number"
+                        step="5"
+                        min="5"
+                        max="480"
+                    />
+                </div>
+
                 <flux:switch wire:model="is_exclusive" :label="__('Individuāls (viena rezervācija aizņem visu laiku)')"
                              :description="__('Ja ieslēgts, pēc vienas rezervācijas laiks vairs nav pieejams citiem.')"/>
 

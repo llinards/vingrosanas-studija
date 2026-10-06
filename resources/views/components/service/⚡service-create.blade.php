@@ -28,6 +28,7 @@ new class extends Component
                     'service_type_id' => $this->service_type_id,
                     'coach_id' => $this->is_membership ? null : $this->coach_id,
                     'price' => (int) round($this->price * 100),
+                    'duration_minutes' => $this->durationMinutesToStore(),
                     'is_active' => $this->is_active,
                     'is_exclusive' => $this->is_membership ? false : $this->is_exclusive,
                     'is_membership_eligible' => $this->is_membership ? false : $this->is_membership_eligible,

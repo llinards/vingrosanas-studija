@@ -3,6 +3,7 @@
 namespace App\Livewire\Concerns;
 
 use App\Models\Coach;
+use App\Models\Service;
 use App\Models\ServiceType;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,6 +20,8 @@ trait HasServiceForm
     public ?int $coach_id = null;
 
     public string $price = '';
+
+    public string $duration_minutes = (string) Service::DEFAULT_DURATION_MINUTES;
 
     public bool $is_active = false;
 
@@ -74,6 +77,7 @@ trait HasServiceForm
         if ($this->is_membership) {
             $rules['sessions_count'] = ['required', 'integer', 'min:1'];
         } else {
+            $rules['duration_minutes'] = ['required', 'integer', 'min:5', 'max:480'];
             $rules['priceTiers'] = ['array'];
             $rules['priceTiers.*.participant_count'] = ['required', 'integer', 'min:1'];
             $rules['priceTiers.*.price'] = ['required', 'numeric', 'min:0'];
@@ -99,6 +103,10 @@ trait HasServiceForm
             'price.required' => __('Cena ir obligāta.'),
             'price.numeric' => __('Cenai jābūt skaitlim.'),
             'price.min' => __('Cena nedrīkst būt negatīva.'),
+            'duration_minutes.required' => __('Ilgums ir obligāts.'),
+            'duration_minutes.integer' => __('Ilgumam jābūt veselam skaitlim.'),
+            'duration_minutes.min' => __('Ilgumam jābūt vismaz 5 minūtēm.'),
+            'duration_minutes.max' => __('Ilgums nedrīkst pārsniegt 480 minūtes.'),
             'priceTiers.*.participant_count.required' => __('Dalībnieku skaits ir obligāts.'),
             'priceTiers.*.participant_count.integer' => __('Dalībnieku skaitam jābūt veselam skaitlim.'),
             'priceTiers.*.participant_count.min' => __('Dalībnieku skaitam jābūt vismaz 1.'),
@@ -109,6 +117,18 @@ trait HasServiceForm
             'sessions_count.integer' => __('Nodarbību skaitam jābūt veselam skaitlim.'),
             'sessions_count.min' => __('Nodarbību skaitam jābūt vismaz 1.'),
         ];
+    }
+
+    /**
+     * Get the class duration to store for the service.
+     *
+     * Membership products are not scheduled, so they keep the default.
+     */
+    protected function durationMinutesToStore(): int
+    {
+        return $this->is_membership
+            ? Service::DEFAULT_DURATION_MINUTES
+            : (int) $this->duration_minutes;
     }
 
     /**
