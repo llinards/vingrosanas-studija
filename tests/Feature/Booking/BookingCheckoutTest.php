@@ -67,7 +67,8 @@ test('opens with the details of the chosen class', function () {
         ->assertSee('Fusion Pilates')
         ->assertSee('Elīna Nagle')
         ->assertSee('07.10.2026')
-        ->assertSee('18:00–18:45')
+        ->assertSee('18:00')
+        ->assertDontSee('18:45')
         ->assertSee('€15.00')
         ->assertSee('Apmaksāt ar karti');
 });

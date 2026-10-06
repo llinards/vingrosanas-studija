@@ -140,7 +140,7 @@
                     <flux:input
                         wire:model="duration_minutes"
                         :label="__('Ilgums (minūtes)')"
-                        :description="__('Nodarbības garums — tiek rādīts nodarbību sarakstā.')"
+                        :description="__('Nodarbības garums — tiek izmantots trenera kalendāra ielūgumā.')"
                         type="number"
                         step="5"
                         min="5"

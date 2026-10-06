@@ -33,7 +33,7 @@ test('timetable page renders the timetable for guests', function () {
         ->assertSeeLivewire('timetable');
 });
 
-test('shows a class of the current week with its time, coach, price and free places', function () {
+test('shows a class of the current week with its start time, coach, price and free places', function () {
     $coach = Coach::factory()->create(['name' => 'Anete Platkēviča']);
     createClassForTimetablePage(
         ['name' => 'Fusion Pilates', 'coach_id' => $coach->id, 'price' => 1500, 'duration_minutes' => 45],
@@ -42,7 +42,8 @@ test('shows a class of the current week with its time, coach, price and free pla
 
     Livewire::test('timetable')
         ->assertSee('05.10. – 11.10.2026')
-        ->assertSee('18:00–18:45')
+        ->assertSee('18:00')
+        ->assertDontSee('18:45')
         ->assertSee('Fusion Pilates')
         ->assertSee('Anete Platkēviča')
         ->assertSee('€15.00')

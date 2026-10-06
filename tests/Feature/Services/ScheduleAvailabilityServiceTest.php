@@ -41,7 +41,7 @@ function weekTimetable(?int $serviceTypeId = null): array
     return app(ScheduleAvailabilityService::class)->weekTimetable(Carbon::parse('2026-10-05'), $serviceTypeId);
 }
 
-test('lists a weekly class on its weekday with time range, coach, price and free places', function () {
+test('lists a weekly class on its weekday with start time, coach, price and free places', function () {
     travelToTimetableMonday();
     $coach = Coach::factory()->create(['name' => 'Anete']);
     $schedule = createTimetableClass(
@@ -58,7 +58,6 @@ test('lists a weekly class on its weekday with time range, coach, price and free
         'schedule_id' => $schedule->id,
         'date' => '2026-10-07',
         'start_time' => '18:00',
-        'end_time' => '18:45',
         'service_name' => 'Pilates',
         'coach_name' => 'Anete',
         'is_exclusive' => false,

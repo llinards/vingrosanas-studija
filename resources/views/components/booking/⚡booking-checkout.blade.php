@@ -196,7 +196,7 @@ new class extends Component
                     </div>
                     <div class="flex justify-between gap-2 text-sm">
                         <flux:text class="text-zinc-500 shrink-0">{{ __('Laiks') }}</flux:text>
-                        <flux:text class="font-medium">{{ substr($this->schedule->start_time, 0, 5) }}–{{ Carbon::parse($this->schedule->start_time)->addMinutes($this->schedule->service->duration_minutes)->format('H:i') }}</flux:text>
+                        <flux:text class="font-medium">{{ substr($this->schedule->start_time, 0, 5) }}</flux:text>
                     </div>
                     <div class="flex justify-between gap-2 text-sm">
                         <flux:text class="text-zinc-500 shrink-0">{{ __('Cena') }}</flux:text>

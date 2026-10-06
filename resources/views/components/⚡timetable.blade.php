@@ -251,7 +251,7 @@ new class extends Component
                                          'border-zinc-200 bg-surface' => $isBookable,
                                          'border-zinc-100 bg-zinc-50 text-zinc-400' => ! $isBookable,
                                      ])>
-                                <div class="font-heading text-lg font-medium">{{ $entry['start_time'] }}–{{ $entry['end_time'] }}</div>
+                                <div class="font-heading text-lg font-medium">{{ $entry['start_time'] }}</div>
                                 <div class="font-medium leading-snug">{{ $entry['service_name'] }}</div>
                                 @if($entry['coach_name'] !== '')
                                     <div class="text-sm">{{ $entry['coach_name'] }}</div>

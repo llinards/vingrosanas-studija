@@ -20,7 +20,7 @@ class ScheduleAvailabilityService
      * Group classes are always listed together with their status. Individual
      * sessions are listed only while they can still be booked.
      *
-     * @return array<string, list<array{schedule_id: int, date: string, start_time: string, end_time: string, service_name: string, coach_name: string, is_exclusive: bool, price_from: int, has_price_range: bool, remaining: int, status: SlotStatus}>>
+     * @return array<string, list<array{schedule_id: int, date: string, start_time: string, service_name: string, coach_name: string, is_exclusive: bool, price_from: int, has_price_range: bool, remaining: int, status: SlotStatus}>>
      */
     public function weekTimetable(Carbon $weekStart, ?int $serviceTypeId = null): array
     {
@@ -85,7 +85,6 @@ class ScheduleAvailabilityService
                     'schedule_id' => $schedule->id,
                     'date' => $dateString,
                     'start_time' => substr((string) $schedule->start_time, 0, 5),
-                    'end_time' => Carbon::parse($schedule->start_time)->addMinutes($service->duration_minutes)->format('H:i'),
                     'service_name' => $service->name,
                     'coach_name' => $service->coach?->name ?? '',
                     'is_exclusive' => $service->is_exclusive,
