@@ -51,6 +51,8 @@ Route::get('membership/{membership}/success', static function (Membership $membe
 Route::livewire('membership/{membership}/manage', 'membership.membership-manage')
     ->name('membership.manage');
 
+Route::livewire('nodarbibu-saraksts', 'timetable')->name('timetable');
+
 Route::view('check-in', 'check-in')->name('check-in')->middleware('throttle:10,1');
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
