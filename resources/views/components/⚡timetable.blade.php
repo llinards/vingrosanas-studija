@@ -24,10 +24,16 @@ new class extends Component
     public ?int $serviceTypeId = null;
 
     /**
+     * Whether the customer has just come back from an unfinished Stripe payment.
+     */
+    public bool $paymentCancelled = false;
+
+    /**
      * Bring values taken from the address bar into the bookable range.
      */
     public function mount(): void
     {
+        $this->paymentCancelled = request()->boolean('booking_cancelled');
         $this->week = $this->clampWeek($this->week);
         $this->serviceTypeId = $this->knownServiceTypeId($this->serviceTypeId);
     }
@@ -181,6 +187,13 @@ new class extends Component
 <div class="container mx-auto pt-36 pb-12 px-4 space-y-8">
     <flux:heading level="1">{{ __('Nodarbību saraksts') }}</flux:heading>
 
+    @if($paymentCancelled)
+        <flux:callout icon="information-circle">
+            <flux:callout.heading>{{ __('Maksājums netika pabeigts.') }}</flux:callout.heading>
+            <flux:callout.text>{{ __('Jūsu vieta tiek turēta 30 minūtes — atgādinājumu ar apmaksas saiti nosūtīsim uz e-pastu.') }}</flux:callout.text>
+        </flux:callout>
+    @endif
+
     {{-- SERVICE TYPE FILTER --}}
     @if($this->serviceTypes->count() > 1)
         <div class="flex flex-wrap gap-2">
@@ -272,4 +285,6 @@ new class extends Component
     @else
         <flux:text>{{ __('Šajā nedēļā nodarbību nav.') }}</flux:text>
     @endif
+
+    <livewire:booking.booking-checkout wire:key="booking-checkout" />
 </div>

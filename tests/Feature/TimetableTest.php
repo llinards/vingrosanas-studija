@@ -47,7 +47,7 @@ test('shows a class of the current week with its time, coach, price and free pla
         ->assertSee('Anete Platkēviča')
         ->assertSee('€15.00')
         ->assertSee('12 vietas')
-        ->assertSeeHtml('open-booking-checkout');
+        ->assertSee('Pieteikties');
 });
 
 test('uses the singular for a single free place', function () {
@@ -157,7 +157,7 @@ test('shows a full class without a way to book it', function () {
 
     Livewire::test('timetable')
         ->assertSee('Pilns')
-        ->assertDontSeeHtml('open-booking-checkout');
+        ->assertDontSee('Pieteikties');
 });
 
 test('shows a class that has already started without a way to book it', function () {
@@ -166,7 +166,7 @@ test('shows a class that has already started without a way to book it', function
     Livewire::test('timetable')
         ->assertSee('Rīta vingrošana')
         ->assertSee('Notikusi')
-        ->assertDontSeeHtml('open-booking-checkout');
+        ->assertDontSee('Pieteikties');
 });
 
 test('shows a class cancelled by a closure without a way to book it', function () {
@@ -176,7 +176,7 @@ test('shows a class cancelled by a closure without a way to book it', function (
     Livewire::test('timetable')
         ->assertSee('Fusion Pilates')
         ->assertSee('Nenotiek')
-        ->assertDontSeeHtml('open-booking-checkout');
+        ->assertDontSee('Pieteikties');
 });
 
 test('labels an individual session instead of showing free places', function () {
@@ -191,7 +191,7 @@ test('labels an individual session instead of showing free places', function () 
         ->assertSee('Individuāli')
         ->assertSee('no €35.00')
         ->assertDontSee('vietas')
-        ->assertSeeHtml('open-booking-checkout');
+        ->assertSee('Pieteikties');
 });
 
 test('tells the visitor when a week has no classes', function () {
@@ -199,4 +199,24 @@ test('tells the visitor when a week has no classes', function () {
 
     Livewire::test('timetable')
         ->assertSee('Šajā nedēļā nodarbību nav.');
+});
+
+test('timetable page includes the booking checkout', function () {
+    $this->get(route('timetable'))
+        ->assertSeeLivewire('booking.booking-checkout');
+});
+
+test('tells a customer returning from a cancelled payment that the place is still held', function () {
+    createClassForTimetablePage();
+
+    Livewire::withQueryParams(['booking_cancelled' => 1])
+        ->test('timetable')
+        ->assertSee('Maksājums netika pabeigts.');
+});
+
+test('does not show the cancelled payment notice on a normal visit', function () {
+    createClassForTimetablePage();
+
+    Livewire::test('timetable')
+        ->assertDontSee('Maksājums netika pabeigts.');
 });

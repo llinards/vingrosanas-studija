@@ -53,7 +53,7 @@ class CreateStripeCheckoutSession
                 ]],
                 'customer_email' => $booking->email,
                 'success_url' => route('booking.success', ['booking' => $booking->id]).'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('home').'?booking_cancelled=1',
+                'cancel_url' => route('timetable', ['booking_cancelled' => 1]),
                 'metadata' => [
                     'booking_id' => $booking->id,
                 ],
