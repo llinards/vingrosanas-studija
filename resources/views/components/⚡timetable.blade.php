@@ -17,10 +17,10 @@ new class extends Component
     /**
      * Weeks ahead of the current week (0 = this week).
      */
-    #[Url(as: 'nedela')]
+    #[Url]
     public int $week = 0;
 
-    #[Url(as: 'veids')]
+    #[Url(as: 'type')]
     public ?int $serviceTypeId = null;
 
     /**

@@ -94,7 +94,7 @@ test('does not move past the last bookable week', function () {
 test('clamps a week taken from the address bar to the bookable range', function (int $requested, int $shown) {
     createClassForTimetablePage();
 
-    Livewire::withQueryParams(['nedela' => $requested])
+    Livewire::withQueryParams(['week' => $requested])
         ->test('timetable')
         ->assertSet('week', $shown);
 })->with([
@@ -105,7 +105,7 @@ test('clamps a week taken from the address bar to the bookable range', function 
 test('falls back to the current week when the week in the address bar is not a number', function () {
     createClassForTimetablePage(['name' => 'Fusion Pilates']);
 
-    $this->get(route('timetable', ['nedela' => 'abc', 'veids' => 'xyz']))
+    $this->get(route('timetable', ['week' => 'abc', 'type' => 'xyz']))
         ->assertSee('05.10. – 11.10.2026')
         ->assertSee('Fusion Pilates');
 });
@@ -130,7 +130,7 @@ test('shows every class when the chosen service type has nothing to book', funct
     $empty = ServiceType::factory()->create();
     createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
 
-    Livewire::withQueryParams(['veids' => $empty->id])
+    Livewire::withQueryParams(['type' => $empty->id])
         ->test('timetable')
         ->assertSet('serviceTypeId', null)
         ->assertSee('Funkcionālais treniņš');
@@ -230,4 +230,16 @@ test('timetable page offers the membership purchase', function () {
     $this->get(route('timetable'))
         ->assertSee('Abonementi')
         ->assertSeeLivewire('booking-modal');
+});
+
+test('filters by the service type taken from the address bar', function () {
+    $physio = ServiceType::factory()->create();
+    createClassForTimetablePage(['name' => 'Ārstnieciskā vingrošana', 'service_type_id' => $physio->id]);
+    createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
+
+    Livewire::withQueryParams(['type' => $physio->id])
+        ->test('timetable')
+        ->assertSet('serviceTypeId', $physio->id)
+        ->assertSee('Ārstnieciskā vingrošana')
+        ->assertDontSee('Funkcionālais treniņš');
 });
