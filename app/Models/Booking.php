@@ -158,6 +158,17 @@ class Booking extends Model
     }
 
     /**
+     * Get the price in cents the customer was charged for this booking.
+     *
+     * Bookings made before prices were recorded, and bookings created in the
+     * admin panel, have no recorded price and show the price of the service.
+     */
+    public function chargedPriceInCents(): int
+    {
+        return $this->price ?? $this->schedule->service->price;
+    }
+
+    /**
      * Get the full service date and time as a Carbon instance.
      */
     public function getServiceDateTime(): Carbon
@@ -172,6 +183,7 @@ class Booking extends Model
             'attendance_status' => AttendanceStatus::class,
             'booking_date' => 'date',
             'participant_count' => 'integer',
+            'price' => 'integer',
             'expires_at' => 'datetime',
             'payment_reminder_sent_at' => 'datetime',
             'refunded_at' => 'datetime',

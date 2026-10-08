@@ -58,6 +58,7 @@ class CreatePendingBooking
                 'phone' => $customer['phone'],
                 'email' => $customer['email'],
                 'participant_count' => $participantCount,
+                'price' => $schedule->service->priceFor($participantCount),
                 'payment_status' => PaymentStatus::Pending,
                 'expires_at' => now()->addMinutes(self::PAYMENT_HOLD_MINUTES),
             ]);

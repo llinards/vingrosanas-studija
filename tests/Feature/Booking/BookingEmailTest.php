@@ -3,6 +3,7 @@
 use App\Enums\PaymentStatus;
 use App\Mail\BookingConfirmation;
 use App\Mail\BookingDeleted;
+use App\Mail\BookingRefunded;
 use App\Mail\BookingRescheduled;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
@@ -181,3 +182,32 @@ test('coach notification omits ics attachment for membership bookings', function
 
     expect($attachments)->toBeEmpty();
 });
+
+test('booking emails state the price that was charged, not the current price of the service', function (string $mailable) {
+    $service = Service::factory()->create(['price' => 3500]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'price' => 5000]);
+    $booking->load('schedule.service.coach');
+
+    $mail = new $mailable($booking);
+
+    $mail->assertSeeInHtml('50.00 EUR');
+    $mail->assertDontSeeInHtml('35.00 EUR');
+})->with([
+    'confirmation' => [BookingConfirmation::class],
+    'refund' => [BookingRefunded::class],
+]);
+
+test('booking emails fall back to the price of the service for a booking without a recorded price', function (string $mailable) {
+    $service = Service::factory()->create(['price' => 3500]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'price' => null]);
+    $booking->load('schedule.service.coach');
+
+    $mail = new $mailable($booking);
+
+    $mail->assertSeeInHtml('35.00 EUR');
+})->with([
+    'confirmation' => [BookingConfirmation::class],
+    'refund' => [BookingRefunded::class],
+]);

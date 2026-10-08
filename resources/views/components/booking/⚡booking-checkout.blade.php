@@ -141,7 +141,7 @@ new class extends Component
         }
 
         try {
-            $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $this->price);
+            $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $booking->price);
         } catch (ApiErrorException) {
             // No checkout session exists, so this booking could never be paid: release the place.
             $booking->delete();

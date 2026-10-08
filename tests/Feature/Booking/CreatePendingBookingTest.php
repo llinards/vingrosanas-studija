@@ -190,3 +190,23 @@ test('takes several bookings for a group class that has price tiers', function (
 
     expect(Booking::count())->toBe(2);
 });
+
+test('records the price of the class on the booking', function () {
+    $class = createBookableClass(['price' => 1500]);
+
+    $booking = createPendingBooking($class->id);
+
+    expect($booking->fresh()->price)->toBe(1500);
+});
+
+test('records the price of the chosen group size on an individual session booking', function () {
+    $class = createBookableClass(['is_exclusive' => true, 'price' => 3500], ['max_capacity' => 2]);
+    $class->service->priceTiers()->createMany([
+        ['participant_count' => 1, 'price' => 3500],
+        ['participant_count' => 2, 'price' => 5000],
+    ]);
+
+    $booking = createPendingBooking($class->id, participantCount: 2);
+
+    expect($booking->fresh()->price)->toBe(5000);
+});

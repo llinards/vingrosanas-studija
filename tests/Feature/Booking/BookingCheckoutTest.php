@@ -274,3 +274,21 @@ test('starts again with the smallest group size when another class is opened', f
         ->assertSet('participantCount', 1)
         ->assertSet('date', '2026-10-14');
 });
+
+test('charges exactly the price recorded on the booking', function () {
+    $class = createClassForCheckout(['is_exclusive' => true, 'price' => 3500], ['max_capacity' => 2]);
+    $class->service->priceTiers()->createMany([
+        ['participant_count' => 1, 'price' => 3500],
+        ['participant_count' => 2, 'price' => 5000],
+    ]);
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldReceive('execute')
+        ->once()
+        ->withArgs(fn (Booking $booking, int $price) => $booking->price === 5000 && $price === 5000)
+        ->andReturn(['url' => 'https://checkout.stripe.com/test', 'session_id' => 'cs_test_123']);
+
+    openCheckoutWithCustomer($class)
+        ->set('participantCount', 2)
+        ->call('pay')
+        ->assertRedirect('https://checkout.stripe.com/test');
+});
