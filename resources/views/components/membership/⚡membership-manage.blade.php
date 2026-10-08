@@ -218,6 +218,21 @@ new class extends Component {
             'rebook_schedule_id.required' => __('Laika slots ir obligāts.'),
         ]);
 
+        // The browser can submit a schedule that was never shown for this date.
+        $isOffered = collect($this->rebookTimeSlots)->contains('schedule_id', $this->rebook_schedule_id);
+
+        if ( ! $isOffered) {
+            $this->rebook_schedule_id = null;
+
+            Flux::toast(
+                text: __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+
+            return;
+        }
+
         try {
             DB::transaction(function () {
                 $booking  = Booking::findOrFail($this->rebookingBookingId);
@@ -377,7 +392,8 @@ new class extends Component {
                                     <flux:radio.group wire:model.live="rebook_schedule_id"
                                                       :label="__('Pieejamie laiki')" variant="cards">
                                         @foreach($this->rebookTimeSlots as $slot)
-                                            <flux:radio :value="$slot['schedule_id']"
+                                            <flux:radio wire:key="rebook-slot-{{ $slot['schedule_id'] }}"
+                                                        :value="$slot['schedule_id']"
                                                         :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
                                                         :description="$slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
                                         @endforeach

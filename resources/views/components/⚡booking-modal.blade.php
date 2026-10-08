@@ -475,6 +475,12 @@ new class extends Component {
                 }
 
                 $this->validate($rules, $messages);
+
+                if ( ! $this->isSelectedSlotOffered()) {
+                    $this->rejectSelectedSlot();
+
+                    return;
+                }
             }
         }
 
@@ -542,6 +548,16 @@ new class extends Component {
             return;
         }
 
+        // The browser can submit a schedule that was never shown for this date.
+        $isOffered = collect($this->sessionAvailableTimeSlots)->contains('schedule_id', $this->session_schedule_id);
+
+        if ( ! $isOffered) {
+            $this->addError('session_schedule_id', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
+            $this->session_schedule_id = null;
+
+            return;
+        }
+
         $schedule = Schedule::with('service.coach')->findOrFail($this->session_schedule_id);
 
         $this->sessions[] = [
@@ -587,12 +603,40 @@ new class extends Component {
     // SUBMIT ACTIONS
     // ========================================
 
+    /**
+     * Whether the chosen schedule is one of the slots offered for the selected service and date.
+     *
+     * The browser can submit a schedule that was never shown for this date, so the pair is re-checked on the server.
+     */
+    private function isSelectedSlotOffered(): bool
+    {
+        return collect($this->availableTimeSlots)->contains('schedule_id', $this->schedule_id);
+    }
+
+    /**
+     * Clear the chosen schedule and tell the customer to pick a time again.
+     */
+    private function rejectSelectedSlot(): void
+    {
+        $this->addError('schedule_id', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
+        $this->schedule_id = null;
+        unset($this->selectedSchedule, $this->availablePriceTiers);
+    }
+
     public function submitBooking(): void
     {
         if ($this->isProcessing) {
             return;
         }
         $this->isProcessing = true;
+
+        if ( ! $this->isSelectedSlotOffered()) {
+            $this->isProcessing = false;
+            $this->rejectSelectedSlot();
+            $this->step = 2;
+
+            return;
+        }
 
         $isExclusive = $this->isExclusiveService;
         $price       = $this->selectedPrice;
@@ -973,7 +1017,8 @@ new class extends Component {
                                 <flux:radio.group wire:model.live="schedule_id" :label="__('Pieejamie laiki')"
                                                   variant="cards">
                                     @foreach($this->availableTimeSlots as $slot)
-                                        <flux:radio :value="$slot['schedule_id']"
+                                        <flux:radio wire:key="slot-{{ $slot['schedule_id'] }}"
+                                                    :value="$slot['schedule_id']"
                                                     :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
                                                     :description="$this->isExclusiveService ? null : $slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
                                     @endforeach
@@ -1072,7 +1117,8 @@ new class extends Component {
                                     <flux:radio.group wire:model.live="session_schedule_id"
                                                       :label="__('Pieejamie laiki')" variant="cards">
                                         @foreach($this->sessionAvailableTimeSlots as $slot)
-                                            <flux:radio :value="$slot['schedule_id']"
+                                            <flux:radio wire:key="session-slot-{{ $slot['schedule_id'] }}"
+                                                        :value="$slot['schedule_id']"
                                                         :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
                                                         :description="$slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
                                         @endforeach

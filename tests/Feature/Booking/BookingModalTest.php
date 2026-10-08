@@ -768,3 +768,155 @@ test('submission is rejected when sessions fall outside the allowed window', fun
 
     Carbon::setTestNow();
 });
+
+// ========================================
+// SLOT MUST BE OFFERED FOR THE SELECTED DATE
+// ========================================
+
+test('step 2 rejects a time slot that does not run on the selected date', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $selectedDate = today()->addDay();
+    $otherDate = today()->addDays(2);
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $selectedDate->dayOfWeekIso,
+        'start_time' => '18:00',
+        'is_active' => true,
+    ]);
+    $otherDaySchedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $otherDate->dayOfWeekIso,
+        'start_time' => '15:00',
+        'is_active' => true,
+    ]);
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('step', 2)
+        ->set('selectedDate', $selectedDate->toDateString())
+        ->set('schedule_id', $otherDaySchedule->id)
+        ->call('nextStep')
+        ->assertHasErrors('schedule_id')
+        ->assertSet('step', 2);
+
+    Carbon::setTestNow();
+});
+
+test('step 2 rejects a time slot that belongs to another service', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $selectedDate = today()->addDay();
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $selectedDate->dayOfWeekIso,
+        'start_time' => '18:00',
+        'is_active' => true,
+    ]);
+    $otherServiceSchedule = Schedule::factory()->create([
+        'day_of_week' => $selectedDate->dayOfWeekIso,
+        'start_time' => '15:00',
+        'is_active' => true,
+    ]);
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('step', 2)
+        ->set('selectedDate', $selectedDate->toDateString())
+        ->set('schedule_id', $otherServiceSchedule->id)
+        ->call('nextStep')
+        ->assertHasErrors('schedule_id')
+        ->assertSet('step', 2);
+
+    Carbon::setTestNow();
+});
+
+test('booking is not created for a time slot that does not run on the selected date', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $selectedDate = today()->addDay();
+    $otherDate = today()->addDays(2);
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+    $otherDaySchedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => $otherDate->dayOfWeekIso,
+        'start_time' => '15:00',
+        'is_active' => true,
+    ]);
+
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldNotReceive('execute');
+
+    Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', $selectedDate->toDateString())
+        ->set('schedule_id', $otherDaySchedule->id)
+        ->set('step', 4)
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('phone', '+37120000000')
+        ->set('email', 'test@example.com')
+        ->call('submitBooking')
+        ->assertHasErrors('schedule_id')
+        ->assertSet('step', 2)
+        ->assertSet('schedule_id', null);
+
+    expect(Booking::count())->toBe(0);
+
+    Carbon::setTestNow();
+});
+
+test('membership session is rejected when the time slot does not run on the selected date', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+
+    $selectedDate = today()->addDay();
+    $otherDate = today()->addDays(2);
+
+    $serviceType = ServiceType::factory()->create();
+    $membershipService = Service::factory()->membership(2)->create();
+    $eligibleService = Service::factory()->membershipEligible()->create([
+        'service_type_id' => $serviceType->id,
+        'is_active' => true,
+    ]);
+    $otherDaySchedule = Schedule::factory()->create([
+        'service_id' => $eligibleService->id,
+        'day_of_week' => $otherDate->dayOfWeekIso,
+        'start_time' => '15:00',
+        'is_active' => true,
+    ]);
+
+    $component = Livewire::test('booking-modal')
+        ->set('mode', 'membership')
+        ->set('selectedMembershipServiceId', $membershipService->id)
+        ->set('step', 2)
+        ->set('session_service_type_id', $serviceType->id)
+        ->set('session_service_id', $eligibleService->id)
+        ->set('session_date', $selectedDate->toDateString())
+        ->set('session_schedule_id', $otherDaySchedule->id)
+        ->call('addSession')
+        ->assertHasErrors('session_schedule_id');
+
+    expect($component->get('sessions'))->toBeEmpty();
+
+    Carbon::setTestNow();
+});
