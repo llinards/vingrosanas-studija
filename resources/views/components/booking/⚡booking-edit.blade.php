@@ -79,7 +79,7 @@ new class extends Component
     public function updatedScheduleId(): void
     {
         $this->participant_count = 1;
-        unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
+        unset($this->selectedSchedule, $this->availablePriceTiers, $this->signedUpParticipants, $this->isSlotAlreadyBooked);
     }
 
     /**
@@ -87,46 +87,7 @@ new class extends Component
      */
     public function updatedBookingDate(): void
     {
-        unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
-    }
-
-    /**
-     * Override isSlotAlreadyBooked to exclude the current booking.
-     */
-    public function getIsSlotAlreadyBookedProperty(): bool
-    {
-        if (! $this->schedule_id || ! $this->booking_date) {
-            return false;
-        }
-
-        return Booking::active()
-            ->where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->exists();
-    }
-
-    /**
-     * Override remainingCapacity to exclude the current booking's participants.
-     */
-    public function getRemainingCapacityProperty(): int
-    {
-        if (! $this->schedule_id || ! $this->booking_date) {
-            return 0;
-        }
-
-        $schedule = $this->selectedSchedule;
-        if (! $schedule) {
-            return 0;
-        }
-
-        $bookedParticipants = Booking::active()
-            ->where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->sum('participant_count');
-
-        return max(0, $schedule->max_capacity - $bookedParticipants);
+        unset($this->signedUpParticipants, $this->isSlotAlreadyBooked);
     }
 
     /**

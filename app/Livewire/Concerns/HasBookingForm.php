@@ -9,7 +9,6 @@ use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
-use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 
@@ -153,22 +152,21 @@ trait HasBookingForm
     }
 
     /**
-     * Get the remaining capacity for the selected slot.
+     * Count the people currently signed up for the selected class and date.
+     *
+     * When a booking is being edited, its own participants are part of the count.
      */
     #[Computed]
-    public function remainingCapacity(): int
+    public function signedUpParticipants(): int
     {
         if (! $this->schedule_id || ! $this->booking_date) {
             return 0;
         }
 
-        $schedule = $this->selectedSchedule;
-        if (! $schedule) {
-            return 0;
-        }
-
-        return app(ScheduleAvailabilityService::class)
-            ->remainingCapacity($schedule, $this->booking_date, $this->isExclusiveService);
+        return (int) Booking::active()
+            ->where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->sum('participant_count');
     }
 
     /**

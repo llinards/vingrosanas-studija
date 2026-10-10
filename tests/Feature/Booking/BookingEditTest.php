@@ -4,6 +4,7 @@ use App\Enums\PaymentStatus;
 use App\Mail\BookingRescheduled;
 use App\Models\Booking;
 use App\Models\Schedule;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
@@ -169,4 +170,63 @@ test('rescheduled email is not sent when schedule and date remain unchanged', fu
         ->assertRedirect(route('admin.bookings.index'));
 
     Mail::assertNotQueued(BookingRescheduled::class);
+});
+
+test('shows how many people are signed up and how many places are free, counting the edited booking', function () {
+    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Pieteikušies: 1 no 12 · Brīvas vietas: 11')
+        ->assertDontSee('Atlikušās vietas');
+});
+
+test('counts the participants of every booking of that class and date as signed up', function () {
+    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+    Booking::factory()->paid()->withParticipants(2)->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+    Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-09']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Pieteikušies: 3 no 12 · Brīvas vietas: 9');
+});
+
+test('does not count a booking that no longer holds a place as signed up', function (array $otherBooking) {
+    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+    Booking::factory()->create(array_merge(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02'], $otherBooking));
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Pieteikušies: 1 no 12 · Brīvas vietas: 11');
+})->with([
+    'refunded' => [['payment_status' => PaymentStatus::Refunded]],
+    'failed' => [['payment_status' => PaymentStatus::Failed]],
+    'unpaid and expired' => [['payment_status' => PaymentStatus::Pending, 'expires_at' => '2020-01-01 00:00:00']],
+]);
+
+test('shows the sign-ups of the newly chosen date when the date is changed', function () {
+    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('booking_date', '2026-12-09')
+        ->assertSee('Pieteikušies: 0 no 12 · Brīvas vietas: 12');
+});
+
+test('does not show free places as a negative number when the class is overbooked', function () {
+    $schedule = Schedule::factory()->create(['max_capacity' => 2]);
+    $booking = Booking::factory()->paid()->withParticipants(3)->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Pieteikušies: 3 no 2 · Brīvas vietas: 0');
+});
+
+test('does not show sign-ups for an individual session', function () {
+    $service = Service::factory()->exclusive()->create();
+    $schedule = Schedule::factory()->create(['service_id' => $service->id, 'max_capacity' => 3]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertDontSee('Pieteikušies')
+        ->assertDontSee('Brīvas vietas');
 });

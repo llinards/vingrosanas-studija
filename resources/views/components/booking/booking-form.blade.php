@@ -43,9 +43,9 @@
                 <div class="flex-1">
                     <flux:input type="number" wire:model="participant_count" :label="__('Dalībnieku skaits')"
                                 min="1"/>
-                    @if($this->schedule_id && $this->booking_date && !$this->isExclusiveService)
+                    @if($this->schedule_id && $this->booking_date && $this->selectedSchedule && !$this->isExclusiveService)
                         <flux:text class="mt-2 text-sm text-zinc-500">
-                            {{ __('Atlikušās vietas') }}: {{ $this->remainingCapacity }}
+                            {{ __('Pieteikušies') }}: {{ $this->signedUpParticipants }} {{ __('no') }} {{ $this->selectedSchedule->max_capacity }} · {{ __('Brīvas vietas') }}: {{ max(0, $this->selectedSchedule->max_capacity - $this->signedUpParticipants) }}
                         </flux:text>
                     @endif
                 </div>

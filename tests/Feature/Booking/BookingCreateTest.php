@@ -116,3 +116,16 @@ test('validation messages are in latvian', function () {
         ->call('save')
         ->assertSee('Vārds ir obligāts.');
 });
+
+test('shows how many people are signed up and how many places are free for the chosen class and date', function () {
+    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    Booking::factory()->paid()->withParticipants(2)->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-create')
+        ->set('service_type_id', $schedule->service->service_type_id)
+        ->set('service_id', $schedule->service_id)
+        ->set('schedule_id', $schedule->id)
+        ->set('booking_date', '2026-12-02')
+        ->assertSee('Pieteikušies: 2 no 12 · Brīvas vietas: 10')
+        ->assertDontSee('Atlikušās vietas');
+});

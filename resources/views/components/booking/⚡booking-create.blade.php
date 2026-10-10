@@ -49,7 +49,7 @@ new class extends Component
     public function updatedScheduleId(): void
     {
         $this->participant_count = 1;
-        unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
+        unset($this->selectedSchedule, $this->availablePriceTiers, $this->signedUpParticipants, $this->isSlotAlreadyBooked);
     }
 
     /**
@@ -57,7 +57,7 @@ new class extends Component
      */
     public function updatedBookingDate(): void
     {
-        unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
+        unset($this->signedUpParticipants, $this->isSlotAlreadyBooked);
     }
 
     /**
