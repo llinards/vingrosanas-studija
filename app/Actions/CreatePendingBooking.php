@@ -36,7 +36,7 @@ class CreatePendingBooking
         $bookingDate = Carbon::createFromFormat('Y-m-d', $date)->startOfDay();
 
         return DB::transaction(function () use ($scheduleId, $bookingDate, $participantCount, $customer) {
-            $schedule = Schedule::with('service.priceTiers')->lockForUpdate()->find($scheduleId);
+            $schedule = Schedule::with(['service.priceTiers', 'service.coach'])->lockForUpdate()->find($scheduleId);
 
             if ($schedule === null) {
                 throw new SlotUnavailableException;

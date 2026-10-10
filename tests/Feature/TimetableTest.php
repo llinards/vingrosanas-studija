@@ -210,3 +210,20 @@ test('shows the classes of every service type together without a filter', functi
         ->assertDontSee('Visi')
         ->assertDontSee('Fizioterapija');
 });
+
+test('hides the classes of a coach who is switched to inactive and shows them again when active', function () {
+    $coach = Coach::factory()->create();
+    createClassForTimetablePage(['name' => 'Fusion Pilates', 'coach_id' => $coach->id]);
+    createClassForTimetablePage(['name' => 'Funkcionālais treniņš']);
+
+    $coach->update(['is_active' => false]);
+
+    Livewire::test('timetable')
+        ->assertDontSee('Fusion Pilates')
+        ->assertSee('Funkcionālais treniņš');
+
+    $coach->update(['is_active' => true]);
+
+    Livewire::test('timetable')
+        ->assertSee('Fusion Pilates');
+});

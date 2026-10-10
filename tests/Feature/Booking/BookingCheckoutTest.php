@@ -386,3 +386,28 @@ test('does not hold the booking starts of another visitor against this one', fun
         ->assertHasNoErrors()
         ->assertRedirect('https://checkout.stripe.com/test');
 });
+
+test('refuses payment for a class whose coach was switched to inactive while the checkout was open', function () {
+    $coach = Coach::factory()->create();
+    $class = createClassForCheckout(['coach_id' => $coach->id]);
+    $this->mock(CreateStripeCheckoutSession::class)->shouldNotReceive('execute');
+    $checkout = openCheckoutWithCustomer($class);
+    $coach->update(['is_active' => false]);
+
+    $checkout->call('pay')
+        ->assertHasErrors('booking')
+        ->assertSee('Šis laiks vairs nav pieejams.')
+        ->assertNoRedirect();
+
+    expect(Booking::count())->toBe(0);
+});
+
+test('does not open the checkout for a class of an inactive coach', function () {
+    $class = createClassForCheckout(['coach_id' => Coach::factory()->create(['is_active' => false])->id]);
+
+    Livewire::test('booking.booking-checkout')
+        ->call('open', $class->id, '2026-10-07')
+        ->assertSet('scheduleId', null)
+        ->assertSee('Šis laiks vairs nav pieejams.')
+        ->assertDontSee('Apmaksāt ar karti');
+});

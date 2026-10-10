@@ -377,3 +377,24 @@ test('marks a date unavailable in the calendar when its classes are full or over
 
     expect(explode(',', $unavailable))->toBe(['2026-10-05', '2026-10-06', '2026-10-07']);
 });
+
+test('does not list the classes of an inactive coach', function () {
+    travelToTimetableMonday();
+    $inactiveCoach = Coach::factory()->create(['is_active' => false]);
+    createTimetableClass(['name' => 'Neaktīva trenera nodarbība', 'coach_id' => $inactiveCoach->id]);
+    createTimetableClass(['name' => 'Aktīva trenera nodarbība']);
+
+    $week = weekTimetable();
+
+    expect(collect($week)->flatten(1)->pluck('service_name')->all())->toBe(['Aktīva trenera nodarbība']);
+});
+
+test('reports a class of an inactive coach as unavailable', function () {
+    travelToTimetableMonday();
+    $inactiveCoach = Coach::factory()->create(['is_active' => false]);
+    $class = createTimetableClass(['coach_id' => $inactiveCoach->id]);
+
+    $status = app(ScheduleAvailabilityService::class)->slotStatus($class->load('service'), Carbon::parse('2026-10-07'));
+
+    expect($status)->toBe(SlotStatus::Unavailable);
+});

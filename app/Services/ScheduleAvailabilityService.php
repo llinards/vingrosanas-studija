@@ -18,7 +18,8 @@ class ScheduleAvailabilityService
      * Build the public class timetable for the seven days starting on $weekStart.
      *
      * Group classes are always listed together with their status. Individual
-     * sessions are listed only while they can still be booked.
+     * sessions are listed only while they can still be booked. Classes of an
+     * inactive coach are left out.
      *
      * @return array<string, list<array{schedule_id: int, date: string, start_time: string, service_name: string, coach_name: string, is_exclusive: bool, price_from: int, has_price_range: bool, remaining: int, status: SlotStatus}>>
      */
@@ -33,7 +34,8 @@ class ScheduleAvailabilityService
             ->where('is_active', true)
             ->whereHas('service', fn (Builder $query) => $query
                 ->where('is_active', true)
-                ->where('is_membership', false))
+                ->where('is_membership', false)
+                ->whereDoesntHave('coach', fn (Builder $query) => $query->where('is_active', false)))
             ->where(fn (Builder $query) => $query
                 ->whereNotNull('day_of_week')
                 ->orWhereBetween('date', $this->dateRangeBounds($weekStart, $weekEnd)))
@@ -256,6 +258,10 @@ class ScheduleAvailabilityService
         $service = $schedule->service;
 
         if (! $schedule->is_active || ! $service->is_active || $service->is_membership) {
+            return SlotStatus::Unavailable;
+        }
+
+        if ($service->coach?->is_active === false) {
             return SlotStatus::Unavailable;
         }
 

@@ -4,6 +4,7 @@ use App\Actions\CreatePendingBooking;
 use App\Enums\PaymentStatus;
 use App\Exceptions\SlotUnavailableException;
 use App\Models\Booking;
+use App\Models\Coach;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\UnavailableDate;
@@ -209,4 +210,11 @@ test('records the price of the chosen group size on an individual session bookin
     $booking = createPendingBooking($class->id, participantCount: 2);
 
     expect($booking->fresh()->price)->toBe(5000);
+});
+
+test('rejects a booking for a class of an inactive coach', function () {
+    $class = createBookableClass(['coach_id' => Coach::factory()->create(['is_active' => false])->id]);
+
+    expect(fn () => createPendingBooking($class->id))->toThrow(SlotUnavailableException::class);
+    expect(Booking::count())->toBe(0);
 });

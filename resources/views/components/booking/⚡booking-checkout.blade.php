@@ -195,7 +195,7 @@ new class extends Component
             return false;
         }
 
-        $schedule = Schedule::with('service')->find($scheduleId);
+        $schedule = Schedule::with('service.coach')->find($scheduleId);
 
         if ($schedule === null) {
             return false;
