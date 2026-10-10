@@ -8,6 +8,7 @@ use App\Models\Schedule;
 use App\Models\Service;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Stripe\Exception\UnknownApiErrorException;
@@ -290,5 +291,98 @@ test('charges exactly the price recorded on the booking', function () {
     openCheckoutWithCustomer($class)
         ->set('participantCount', 2)
         ->call('pay')
+        ->assertRedirect('https://checkout.stripe.com/test');
+});
+
+/**
+ * Let Stripe open a payment page for every booking start in the test.
+ */
+function letStripeOpenEveryCheckout(): void
+{
+    test()->mock(CreateStripeCheckoutSession::class)
+        ->shouldReceive('execute')
+        ->andReturn(['url' => 'https://checkout.stripe.com/test', 'session_id' => 'cs_test_123']);
+}
+
+test('refuses a sixth booking start by the same visitor within ten minutes', function () {
+    $class = createClassForCheckout();
+    letStripeOpenEveryCheckout();
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay')->assertRedirect('https://checkout.stripe.com/test');
+    }
+    $this->travel(4)->minutes();
+
+    openCheckoutWithCustomer($class)
+        ->call('pay')
+        ->assertHasErrors('booking')
+        ->assertSee('Pārāk daudz mēģinājumu. Lūdzu, mēģiniet vēlreiz pēc 6 minūtēm.')
+        ->assertNoRedirect();
+
+    expect(Booking::count())->toBe(5);
+});
+
+test('lets the visitor start bookings again once ten minutes have passed', function () {
+    $class = createClassForCheckout();
+    letStripeOpenEveryCheckout();
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay');
+    }
+    $this->travel(10)->minutes();
+    $this->travel(1)->seconds();
+
+    openCheckoutWithCustomer($class)
+        ->call('pay')
+        ->assertHasNoErrors()
+        ->assertRedirect('https://checkout.stripe.com/test');
+});
+
+test('does not count an attempt with invalid customer details towards the limit', function () {
+    $class = createClassForCheckout();
+    letStripeOpenEveryCheckout();
+    foreach (range(1, 6) as $attempt) {
+        openCheckoutWithCustomer($class)->set('name', '')->call('pay')->assertHasErrors('name');
+    }
+
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay')->assertRedirect('https://checkout.stripe.com/test');
+    }
+});
+
+test('does not count an attempt for a class that filled up towards the limit', function () {
+    $full = createClassForCheckout(schedule: ['max_capacity' => 1]);
+    $class = createClassForCheckout();
+    letStripeOpenEveryCheckout();
+    $attemptOnFullClass = openCheckoutWithCustomer($full);
+    Booking::factory()->paid()->create(['schedule_id' => $full->id, 'booking_date' => '2026-10-07']);
+    $attemptOnFullClass->call('pay')->assertHasErrors('booking');
+
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay')->assertRedirect('https://checkout.stripe.com/test');
+    }
+});
+
+test('does not count a start that Stripe could not open towards the limit', function () {
+    $class = createClassForCheckout();
+    $stripe = $this->mock(CreateStripeCheckoutSession::class);
+    $stripe->shouldReceive('execute')->once()->andThrow(new UnknownApiErrorException('Stripe is down'));
+    $stripe->shouldReceive('execute')->andReturn(['url' => 'https://checkout.stripe.com/test', 'session_id' => 'cs_test_123']);
+    openCheckoutWithCustomer($class)->call('pay')->assertHasErrors('booking');
+
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay')->assertRedirect('https://checkout.stripe.com/test');
+    }
+});
+
+test('does not hold the booking starts of another visitor against this one', function () {
+    $class = createClassForCheckout();
+    letStripeOpenEveryCheckout();
+    // Another visitor, at a different address, has used up their five starts.
+    foreach (range(1, 5) as $start) {
+        RateLimiter::hit('booking-starts:203.0.113.10', 600);
+    }
+
+    openCheckoutWithCustomer($class)
+        ->call('pay')
+        ->assertHasNoErrors()
         ->assertRedirect('https://checkout.stripe.com/test');
 });
