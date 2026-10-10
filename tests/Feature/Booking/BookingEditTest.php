@@ -144,7 +144,10 @@ test('rescheduled email is sent when schedule changes', function () {
 test('rescheduled email is sent when booking date changes', function () {
     Mail::fake();
 
-    $booking = Booking::factory()->create(['email' => 'client@example.com']);
+    $booking = Booking::factory()->create([
+        'email' => 'client@example.com',
+        'booking_date' => now()->addDays(3)->toDateString(),
+    ]);
     $originalDate = $booking->booking_date->copy();
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
