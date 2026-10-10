@@ -39,7 +39,7 @@ function createPendingBooking(int $scheduleId, string $date = '2026-10-07', int 
     ]);
 }
 
-test('creates an unpaid booking that holds the place for 30 minutes', function () {
+test('creates an unpaid booking that holds the place five minutes beyond the 30 minute payment window', function () {
     $schedule = createBookableClass();
 
     $booking = createPendingBooking($schedule->id);
@@ -55,7 +55,7 @@ test('creates an unpaid booking that holds the place for 30 minutes', function (
         ->membership_id->toBeNull()
         ->stripe_checkout_session_id->toBeNull();
     expect($booking->fresh()->booking_date->toDateString())->toBe('2026-10-07');
-    expect($booking->fresh()->expires_at->toDateTimeString())->toBe('2026-10-05 09:30:00');
+    expect($booking->fresh()->expires_at->toDateTimeString())->toBe('2026-10-05 09:35:00');
 });
 
 test('rejects a booking for a slot customers cannot book', function (array $service, array $schedule, string $date) {

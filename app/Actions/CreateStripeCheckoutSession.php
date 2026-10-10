@@ -58,7 +58,7 @@ class CreateStripeCheckoutSession
                 'metadata' => [
                     'booking_id' => $booking->id,
                 ],
-                'expires_at' => now()->addMinutes(30)->timestamp,
+                'expires_at' => now()->addMinutes(CreatePendingBooking::PAYMENT_WINDOW_MINUTES)->timestamp,
             ]);
         } catch (ApiErrorException $e) {
             Log::error('Stripe checkout session creation failed', [

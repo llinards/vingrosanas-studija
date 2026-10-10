@@ -9,5 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('payments:send-reminders')->everyMinute();
-Schedule::command('bookings:expire-pending')->everyFiveMinutes();
+Schedule::command('bookings:expire-pending')->everyMinute();
 Schedule::command('memberships:expire-pending')->everyFiveMinutes();
