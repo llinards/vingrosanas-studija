@@ -129,3 +129,23 @@ test('shows how many people are signed up and how many places are free for the c
         ->assertSee('Pieteikušies: 2 no 12 · Brīvas vietas: 10')
         ->assertDontSee('Atlikušās vietas');
 });
+
+test('refuses a new booking for a date that has passed', function () {
+    $this->travelTo('2026-10-10 12:00:00');
+    $schedule = Schedule::factory()->create();
+
+    Livewire::test('booking.booking-create')
+        ->set('service_type_id', $schedule->service->service_type_id)
+        ->set('service_id', $schedule->service_id)
+        ->set('schedule_id', $schedule->id)
+        ->set('booking_date', '2026-10-09')
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('phone', '+37120000000')
+        ->set('email', 'janis@example.com')
+        ->set('payment_status', 'paid')
+        ->call('save')
+        ->assertHasErrors(['booking_date' => 'after_or_equal']);
+
+    expect(Booking::count())->toBe(0);
+});

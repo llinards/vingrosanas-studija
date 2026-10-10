@@ -135,6 +135,21 @@ new class extends Component
     }
 
     /**
+     * A booking that keeps its date may be corrected after that date has passed;
+     * only a move to a different date has to land on today or later.
+     *
+     * @return array<int, string>
+     */
+    protected function bookingDateRules(): array
+    {
+        $savedDate = Booking::findOrFail($this->bookingId)->booking_date->format('Y-m-d');
+
+        return $this->booking_date === $savedDate
+            ? ['required', 'date']
+            : ['required', 'date', 'after_or_equal:today'];
+    }
+
+    /**
      * Validate and save the updated booking data.
      */
     public function save(): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Mail\BookingRescheduled;
 use App\Models\Booking;
@@ -229,4 +230,58 @@ test('does not show sign-ups for an individual session', function () {
     Livewire::test('booking.booking-edit', ['booking' => $booking])
         ->assertDontSee('Pieteikušies')
         ->assertDontSee('Brīvas vietas');
+});
+
+test('saves corrections to a booking whose date has passed', function () {
+    Mail::fake();
+    $this->travelTo('2026-10-10 12:00:00');
+    $booking = Booking::factory()->paid()->create(['booking_date' => '2026-10-08', 'phone' => '+371 20000000']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('attendance_status', 'missed')
+        ->set('payment_status', 'refunded')
+        ->set('phone', '+371 29999999')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.bookings.index'));
+
+    expect($booking->fresh())
+        ->attendance_status->toBe(AttendanceStatus::Missed)
+        ->payment_status->toBe(PaymentStatus::Refunded)
+        ->phone->toBe('+371 29999999');
+    expect($booking->fresh()->booking_date->toDateString())->toBe('2026-10-08');
+    Mail::assertNotQueued(BookingRescheduled::class);
+});
+
+test('refuses to move a booking onto a date that has passed', function (string $currentDate) {
+    Mail::fake();
+    $this->travelTo('2026-10-10 12:00:00');
+    $booking = Booking::factory()->paid()->create(['booking_date' => $currentDate]);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('booking_date', '2026-10-07')
+        ->call('save')
+        ->assertHasErrors(['booking_date' => 'after_or_equal'])
+        ->assertSee('Datumam jābūt šodienai vai nākotnē.')
+        ->assertNoRedirect();
+
+    expect($booking->fresh()->booking_date->toDateString())->toBe($currentDate);
+    Mail::assertNotQueued(BookingRescheduled::class);
+})->with([
+    'from another past date' => ['2026-10-08'],
+    'from a future date' => ['2026-10-20'],
+]);
+
+test('moves a past booking to a future date and tells the customer', function () {
+    Mail::fake();
+    $this->travelTo('2026-10-10 12:00:00');
+    $booking = Booking::factory()->paid()->create(['booking_date' => '2026-10-08', 'email' => 'client@example.com']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('booking_date', '2026-10-17')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($booking->fresh()->booking_date->toDateString())->toBe('2026-10-17');
+    Mail::assertQueued(BookingRescheduled::class, fn ($mail) => $mail->hasTo('client@example.com'));
 });

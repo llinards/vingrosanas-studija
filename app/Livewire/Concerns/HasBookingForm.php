@@ -207,7 +207,7 @@ trait HasBookingForm
         return [
             'service_id' => ['required', 'exists:services,id'],
             'schedule_id' => ['required', 'exists:schedules,id'],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'booking_date' => $this->bookingDateRules(),
             'participant_count' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
@@ -216,6 +216,16 @@ trait HasBookingForm
             'payment_status' => ['required', 'string'],
             'attendance_status' => ['required', 'string'],
         ];
+    }
+
+    /**
+     * Get the validation rules for the booking date: a booking is placed on today or a later day.
+     *
+     * @return array<int, string>
+     */
+    protected function bookingDateRules(): array
+    {
+        return ['required', 'date', 'after_or_equal:today'];
     }
 
     /**
