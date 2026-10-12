@@ -61,6 +61,24 @@
 
             <flux:switch wire:model="is_active" :label="__('Aktīvs')"/>
 
+            @if($this->bookingsToMove > 0)
+                <flux:callout variant="warning" icon="exclamation-triangle">
+                    <flux:callout.heading>
+                        {{ $this->bookingsToMove % 10 === 1 && $this->bookingsToMove % 100 !== 11
+                            ? __('Šai nodarbībai ir :count nākotnes rezervācija.', ['count' => $this->bookingsToMove])
+                            : __('Šai nodarbībai ir :count nākotnes rezervācijas.', ['count' => $this->bookingsToMove]) }}
+                    </flux:callout.heading>
+                    <flux:callout.text>
+                        {{ __('Tās tiks pārceltas uz jauno laiku, un klienti saņems e-pastu par izmaiņām.') }}
+                    </flux:callout.text>
+                    <div>
+                        <flux:button wire:click="saveAndMoveBookings" variant="primary" size="sm">
+                            {{ __('Apstiprināt un pārcelt') }}
+                        </flux:button>
+                    </div>
+                </flux:callout>
+            @endif
+
             <div class="flex items-center justify-end gap-4">
                 <flux:button href="{{ route('admin.schedules.index') }}" wire:navigate variant="ghost">
                     {{ __('Atcelt') }}

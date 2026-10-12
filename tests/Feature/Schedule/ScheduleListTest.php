@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\DayOfWeek;
+use App\Models\Booking;
 use App\Models\Schedule;
 use App\Models\User;
 use Livewire\Livewire;
@@ -144,4 +145,26 @@ test('schedule list shows recurring schedules regardless of day', function () {
     $scheduleIds = $component->instance()->schedules->pluck('id')->toArray();
 
     expect($scheduleIds)->toContain($recurringSchedule->id);
+});
+
+test('refuses to delete a class that has upcoming bookings', function () {
+    $schedule = Schedule::factory()->create();
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => now()->addDays(3)->toDateString()]);
+
+    Livewire::test('schedule.schedule-list')
+        ->call('destroy', $schedule->id);
+
+    $this->assertModelExists($schedule);
+    $this->assertModelExists($booking);
+});
+
+test('deletes a class whose bookings are all past or no longer hold a place', function () {
+    $schedule = Schedule::factory()->create();
+    Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => now()->subDays(3)->toDateString()]);
+    Booking::factory()->refunded()->create(['schedule_id' => $schedule->id, 'booking_date' => now()->addDays(3)->toDateString()]);
+
+    Livewire::test('schedule.schedule-list')
+        ->call('destroy', $schedule->id);
+
+    $this->assertModelMissing($schedule);
 });

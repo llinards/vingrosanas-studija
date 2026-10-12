@@ -91,6 +91,17 @@ class Booking extends Model
     }
 
     /**
+     * Scope to bookings that hold a place on a class taking place today or later.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query->active()->whereDate('booking_date', '>=', today()->toDateString());
+    }
+
+    /**
      * Check if the booking payment is still pending and not expired.
      */
     public function isPendingPayment(): bool
