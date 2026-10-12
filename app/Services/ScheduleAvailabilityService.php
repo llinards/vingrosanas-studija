@@ -127,6 +127,22 @@ class ScheduleAvailabilityService
     }
 
     /**
+     * Whether the class takes place on the given date: its weekday for a weekly class, its date for a one-off.
+     */
+    public function runsOn(Schedule $schedule, Carbon $date): bool
+    {
+        return $this->matchesDay($schedule, $date);
+    }
+
+    /**
+     * Whether a studio closure or an absence of the class's coach covers the class on the given date.
+     */
+    public function isClosedOn(Schedule $schedule, Carbon $date): bool
+    {
+        return $this->isSlotBlocked($schedule, UnavailableDate::forDate($date)->get());
+    }
+
+    /**
      * Get the last date customers may book.
      */
     public function bookingHorizonEnd(): Carbon

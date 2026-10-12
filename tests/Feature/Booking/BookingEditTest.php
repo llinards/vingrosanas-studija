@@ -288,3 +288,20 @@ test('moves a past booking to a future date and tells the customer', function ()
     expect($booking->fresh()->booking_date->toDateString())->toBe('2026-10-17');
     Mail::assertQueued(BookingRescheduled::class, fn ($mail) => $mail->hasTo('client@example.com'));
 });
+
+test('does not warn that the class is full because of the booking being edited', function () {
+    $schedule = Schedule::factory()->create(['day_of_week' => 3, 'max_capacity' => 1]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertDontSee('Nodarbība šajā datumā ir pilna.');
+});
+
+test('warns on the edit screen when other bookings already fill the class', function () {
+    $schedule = Schedule::factory()->create(['day_of_week' => 3, 'max_capacity' => 1]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+    Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Nodarbība šajā datumā ir pilna.');
+});

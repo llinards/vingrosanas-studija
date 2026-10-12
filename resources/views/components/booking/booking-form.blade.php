@@ -41,7 +41,7 @@
                                       wire:model.live="booking_date"/>
                 </div>
                 <div class="flex-1">
-                    <flux:input type="number" wire:model="participant_count" :label="__('Dalībnieku skaits')"
+                    <flux:input type="number" wire:model.blur="participant_count" :label="__('Dalībnieku skaits')"
                                 min="1"/>
                     @if($this->schedule_id && $this->booking_date && $this->selectedSchedule && !$this->isExclusiveService)
                         <flux:text class="mt-2 text-sm text-zinc-500">
@@ -50,6 +50,12 @@
                     @endif
                 </div>
             </div>
+
+            @foreach($this->slotWarnings as $warning)
+                <flux:callout wire:key="slot-warning-{{ $loop->index }}" variant="warning" icon="exclamation-triangle">
+                    <flux:callout.heading>{{ $warning }}</flux:callout.heading>
+                </flux:callout>
+            @endforeach
 
             <flux:separator/>
 

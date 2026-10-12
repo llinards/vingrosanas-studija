@@ -9,7 +9,9 @@ use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
+use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
 
 trait HasBookingForm
@@ -149,6 +151,58 @@ trait HasBookingForm
             ->where('schedule_id', $this->schedule_id)
             ->whereDate('booking_date', $this->booking_date)
             ->exists();
+    }
+
+    /**
+     * Get the id of the booking being edited, so that it is not counted against itself.
+     */
+    protected function editedBookingId(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * List what would stop a customer from making this booking.
+     *
+     * The studio may still save it; the warnings only prevent doing so by accident.
+     *
+     * @return list<string>
+     */
+    #[Computed]
+    public function slotWarnings(): array
+    {
+        $schedule = $this->selectedSchedule;
+
+        if (! $schedule || ! $this->booking_date) {
+            return [];
+        }
+
+        $date = Carbon::parse($this->booking_date);
+        $availability = app(ScheduleAvailabilityService::class);
+        $warnings = [];
+
+        $otherBookings = Booking::active()
+            ->where('schedule_id', $schedule->id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->when($this->editedBookingId(), fn ($query, int $bookingId) => $query->where('id', '!=', $bookingId));
+
+        $isFull = $this->isExclusiveService
+            ? $otherBookings->exists() || (int) $this->participant_count > $schedule->max_capacity
+            : (int) $otherBookings->sum('participant_count') + (int) $this->participant_count > $schedule->max_capacity;
+
+        if ($isFull) {
+            $warnings[] = __('Nodarbība šajā datumā ir pilna.');
+        }
+
+        if (! $availability->runsOn($schedule, $date)) {
+            $warnings[] = __('Šī nodarbība šajā nedēļas dienā nenotiek.');
+        }
+
+        if ($availability->isClosedOn($schedule, $date)) {
+            $warnings[] = __('Šajā datumā studija ir slēgta vai treneris nav pieejams.');
+        }
+
+        return $warnings;
     }
 
     /**
