@@ -134,6 +134,14 @@ class Booking extends Model
     }
 
     /**
+     * Check if the customer paid for this booking through Stripe and the money has not been returned.
+     */
+    public function isPaidThroughStripe(): bool
+    {
+        return $this->payment_status === PaymentStatus::Paid && filled($this->payment_reference);
+    }
+
+    /**
      * Check if the booking is eligible for a refund.
      *
      * A booking can be refunded if it is paid and the service

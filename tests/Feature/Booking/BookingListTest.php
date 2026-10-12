@@ -666,3 +666,25 @@ test('booking list combines multiple filters', function () {
     expect($bookings)->toHaveCount(1);
     expect($bookings->first()->id)->toBe($matchingBooking->id);
 });
+
+test('warns before deleting a booking paid through Stripe that it will not be refunded automatically', function () {
+    Booking::factory()->paid()->create([
+        'booking_date' => now()->addDays(3)->toDateString(),
+        'payment_reference' => 'pi_test_paid',
+    ]);
+
+    Livewire::test('booking.booking-list')
+        ->assertSee('Šī rezervācija ir apmaksāta. Dzēšot tā netiks atmaksāta automātiski. Vai tiešām vēlies dzēst?');
+});
+
+test('asks only the usual question before deleting a booking that was not paid through Stripe', function (array $attributes) {
+    Booking::factory()->create(array_merge(['booking_date' => now()->addDays(3)->toDateString()], $attributes));
+
+    Livewire::test('booking.booking-list')
+        ->assertSee('Vai tiešām vēlies dzēst rezervāciju?')
+        ->assertDontSee('netiks atmaksāta automātiski');
+})->with([
+    'unpaid' => [['payment_status' => PaymentStatus::Pending]],
+    'marked paid in admin without a Stripe payment' => [['payment_status' => PaymentStatus::Paid, 'payment_reference' => null]],
+    'already refunded' => [['payment_status' => PaymentStatus::Refunded, 'payment_reference' => 'pi_test_refunded']],
+]);

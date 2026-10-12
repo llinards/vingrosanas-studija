@@ -310,7 +310,9 @@ new class extends Component {
                                     <flux:button href="{{ route('admin.bookings.edit', $booking) }}" variant="primary"
                                         size="sm" icon="pencil">
                                     </flux:button>
-                                    <flux:button wire:confirm="{{ __('Vai tiešām vēlies dzēst rezervāciju?') }}"
+                                    <flux:button wire:confirm="{{ $booking->isPaidThroughStripe()
+                                            ? __('Šī rezervācija ir apmaksāta. Dzēšot tā netiks atmaksāta automātiski. Vai tiešām vēlies dzēst?')
+                                            : __('Vai tiešām vēlies dzēst rezervāciju?') }}"
                                         variant="danger" size="sm" icon="trash"
                                         wire:click="destroy({{ $booking->id }})">
                                     </flux:button>
