@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\Service;
 use App\Models\ServiceType;
 use Flux\Flux;
@@ -109,6 +110,20 @@ new class extends Component {
      */
     public function destroy(Service $service): void
     {
+        $upcomingBookings = Booking::upcoming()
+            ->whereHas('schedule', fn ($query) => $query->where('service_id', $service->id))
+            ->count();
+
+        if ($upcomingBookings > 0) {
+            Flux::toast(
+                text: __('Nevar dzēst — šī pakalpojuma nodarbībām ir nākotnes rezervācijas (:count).', ['count' => $upcomingBookings]),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+
+            return;
+        }
+
         try {
             $service->delete();
 

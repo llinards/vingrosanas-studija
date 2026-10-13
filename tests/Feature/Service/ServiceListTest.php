@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\Coach;
+use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
 use App\Models\User;
@@ -111,4 +113,16 @@ test('services list refreshes after deletion', function () {
 
     $component->assertDontSee($services[0]->name)
         ->assertSee($services[1]->name);
+});
+
+test('refuses to delete a service whose classes have upcoming bookings', function () {
+    $service = Service::factory()->create();
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => now()->addDays(3)->toDateString()]);
+
+    Livewire::test('service.service-list')
+        ->call('destroy', $service->id);
+
+    $this->assertModelExists($service);
+    $this->assertModelExists($booking);
 });

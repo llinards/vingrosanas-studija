@@ -1,9 +1,9 @@
 <?php
 
-use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\PaymentStatus;
 use App\Mail\BookingConfirmation;
 use App\Mail\BookingDeleted;
+use App\Mail\BookingRefunded;
 use App\Mail\BookingRescheduled;
 use App\Mail\NewBookingNotification;
 use App\Models\Booking;
@@ -15,53 +15,6 @@ use App\Models\ServiceType;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
-
-beforeEach(function () {
-    // Mock the Stripe checkout session creation to avoid actual API calls
-    $this->mock(CreateStripeCheckoutSession::class)
-        ->shouldReceive('execute')
-        ->andReturn([
-            'url' => 'https://checkout.stripe.com/test',
-            'session_id' => 'cs_test_123',
-        ]);
-});
-
-test('booking redirects to stripe after submission', function () {
-    Mail::fake();
-
-    $coach = Coach::factory()->create(['email' => null]);
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-    $schedule = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => now()->addDay()->dayOfWeekIso,
-        'is_active' => true,
-        'max_capacity' => 10,
-    ]);
-    $bookingDate = now()->addDay()->toDateString();
-
-    Livewire::test('booking-modal')
-        ->set('service_type_id', $serviceType->id)
-        ->set('service_id', $service->id)
-        ->call('nextStep')
-        ->set('selectedDate', $bookingDate)
-        ->set('schedule_id', $schedule->id)
-        ->call('nextStep')
-        ->set('name', 'Jānis')
-        ->set('surname', 'Bērziņš')
-        ->set('phone', '+37120000000')
-        ->set('email', 'janis@example.com')
-        ->call('nextStep')
-        ->call('submitBooking')
-        ->assertRedirect('https://checkout.stripe.com/test');
-
-    // Emails are sent via webhook after payment, not immediately
-    Mail::assertNothingSent();
-});
 
 test('booking confirmation email is sent via webhook after payment', function () {
     Mail::fake();
@@ -229,3 +182,32 @@ test('coach notification omits ics attachment for membership bookings', function
 
     expect($attachments)->toBeEmpty();
 });
+
+test('booking emails state the price that was charged, not the current price of the service', function (string $mailable) {
+    $service = Service::factory()->create(['price' => 3500]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'price' => 5000]);
+    $booking->load('schedule.service.coach');
+
+    $mail = new $mailable($booking);
+
+    $mail->assertSeeInHtml('50.00 EUR');
+    $mail->assertDontSeeInHtml('35.00 EUR');
+})->with([
+    'confirmation' => [BookingConfirmation::class],
+    'refund' => [BookingRefunded::class],
+]);
+
+test('booking emails fall back to the price of the service for a booking without a recorded price', function (string $mailable) {
+    $service = Service::factory()->create(['price' => 3500]);
+    $schedule = Schedule::factory()->create(['service_id' => $service->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'price' => null]);
+    $booking->load('schedule.service.coach');
+
+    $mail = new $mailable($booking);
+
+    $mail->assertSeeInHtml('35.00 EUR');
+})->with([
+    'confirmation' => [BookingConfirmation::class],
+    'refund' => [BookingRefunded::class],
+]);

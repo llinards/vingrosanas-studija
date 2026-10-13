@@ -198,3 +198,65 @@ test('deleting selected service type clears selection', function () {
         ->call('deleteServiceType', $serviceType->id)
         ->assertSet('service_type_id', null);
 });
+
+test('saves the class duration in minutes', function () {
+    $serviceType = ServiceType::factory()->create();
+    $coach = Coach::factory()->create();
+
+    Livewire::test('service.service-create')
+        ->set('name', 'Pilates')
+        ->set('service_type_id', $serviceType->id)
+        ->set('coach_id', $coach->id)
+        ->set('price', '15.00')
+        ->set('duration_minutes', '45')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', [
+        'name' => 'Pilates',
+        'duration_minutes' => 45,
+    ]);
+});
+
+test('duration defaults to 60 minutes', function () {
+    Livewire::test('service.service-create')
+        ->assertSet('duration_minutes', '60');
+});
+
+test('rejects an invalid duration', function (string $duration, string $rule) {
+    Livewire::test('service.service-create')
+        ->set('duration_minutes', $duration)
+        ->call('save')
+        ->assertHasErrors(['duration_minutes' => $rule]);
+})->with([
+    'empty' => ['', 'required'],
+    'not a whole number' => ['45.5', 'integer'],
+    'shorter than 5 minutes' => ['4', 'min'],
+    'longer than 8 hours' => ['481', 'max'],
+]);
+
+test('shows the duration validation message in latvian', function () {
+    Livewire::test('service.service-create')
+        ->set('duration_minutes', '')
+        ->call('save')
+        ->assertSee('Ilgums ir obligāts.');
+});
+
+test('membership service does not require a duration', function () {
+    $serviceType = ServiceType::factory()->create();
+
+    Livewire::test('service.service-create')
+        ->set('name', 'Abonements 4x')
+        ->set('service_type_id', $serviceType->id)
+        ->set('price', '45.00')
+        ->set('is_membership', true)
+        ->set('sessions_count', '4')
+        ->set('duration_minutes', '')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', [
+        'name' => 'Abonements 4x',
+        'duration_minutes' => 60,
+    ]);
+});

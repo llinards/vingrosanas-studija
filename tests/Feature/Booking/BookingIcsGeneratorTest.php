@@ -98,3 +98,24 @@ test('special characters in service name are escaped per rfc 5545', function () 
 
     expect($ics)->toContain('SUMMARY:Test\\, Service\\; With\\\\Specials — Anna Liepa');
 });
+
+test('dtend follows the duration of the service', function () {
+    $service = Service::factory()->exclusive()->create(['duration_minutes' => 45]);
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'start_time' => '10:00:00',
+    ]);
+
+    $booking = Booking::factory()->create([
+        'schedule_id' => $schedule->id,
+        'booking_date' => '2026-01-15',
+    ]);
+    $booking->load('schedule.service.coach');
+
+    $ics = (new BookingIcsGenerator)->generate($booking);
+
+    // 10:00 Europe/Riga in January is 08:00 UTC.
+    expect($ics)
+        ->toContain('DTSTART:20260115T080000Z')
+        ->toContain('DTEND:20260115T084500Z');
+});

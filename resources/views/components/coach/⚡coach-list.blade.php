@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\Coach;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -46,6 +47,20 @@ new class extends Component
      */
     public function destroy(Coach $coach): void
     {
+        $upcomingBookings = Booking::upcoming()
+            ->whereHas('schedule.service', fn ($query) => $query->where('coach_id', $coach->id))
+            ->count();
+
+        if ($upcomingBookings > 0) {
+            Flux::toast(
+                text: __('Nevar dzēst — šī trenera nodarbībām ir nākotnes rezervācijas (:count).', ['count' => $upcomingBookings]),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+
+            return;
+        }
+
         try {
             $coach->deleteImage();
             $coach->delete();

@@ -14,6 +14,8 @@ class Service extends Model
     /** @use HasFactory<ServiceFactory> */
     use HasFactory;
 
+    public const DEFAULT_DURATION_MINUTES = 60;
+
     /**
      * @return BelongsTo<ServiceType, $this>
      */
@@ -47,11 +49,13 @@ class Service extends Model
     }
 
     /**
-     * Get the maximum number of participants allowed for this service.
+     * Get the total price in cents for a booking of the given group size.
+     *
+     * Falls back to the base price when no tier is defined for that size.
      */
-    public function maxParticipants(): int
+    public function priceFor(int $participantCount): int
     {
-        return $this->priceTiers()->max('participant_count') ?? 1;
+        return $this->priceTiers->firstWhere('participant_count', $participantCount)?->price ?? $this->price;
     }
 
     /**
@@ -75,6 +79,7 @@ class Service extends Model
             'notify_coach_on_cancellation' => 'boolean',
             'sessions_count' => 'integer',
             'price' => 'integer',
+            'duration_minutes' => 'integer',
             'position' => 'integer',
         ];
     }

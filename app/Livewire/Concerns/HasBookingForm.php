@@ -5,19 +5,18 @@ namespace App\Livewire\Concerns;
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
+use App\Models\Coach;
 use App\Models\Schedule;
-use App\Models\Service;
-use App\Models\ServicePriceTier;
-use App\Models\ServiceType;
 use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 
 trait HasBookingForm
 {
-    public ?int $service_type_id = null;
-
-    public ?int $service_id = null;
+    public ?int $coach_id = null;
 
     public ?int $schedule_id = null;
 
@@ -38,58 +37,6 @@ trait HasBookingForm
     public string $attendance_status = 'pending';
 
     /**
-     * Get all available service types for the booking form dropdown.
-     */
-    #[Computed]
-    public function serviceTypes(): Collection
-    {
-        return ServiceType::all();
-    }
-
-    /**
-     * Get active services filtered by the selected service type.
-     *
-     * Only returns services that have active schedules available.
-     */
-    #[Computed]
-    public function services(): Collection
-    {
-        return Service::with(['coach', 'priceTiers'])
-            ->where('is_active', true)
-            ->when($this->service_type_id, fn ($query) => $query->where('service_type_id', $this->service_type_id))
-            ->whereHas('schedules', fn ($query) => $query->where('is_active', true))
-            ->get();
-    }
-
-    /**
-     * Get the currently selected service with its price tiers.
-     */
-    #[Computed]
-    public function selectedService(): ?Service
-    {
-        if (! $this->service_id) {
-            return null;
-        }
-
-        return $this->services->firstWhere('id', $this->service_id);
-    }
-
-    /**
-     * Get active schedules for the selected service.
-     */
-    #[Computed]
-    public function schedules(): Collection
-    {
-        if (! $this->service_id) {
-            return new Collection;
-        }
-
-        return Schedule::where('service_id', $this->service_id)
-            ->where('is_active', true)
-            ->get();
-    }
-
-    /**
      * Get the currently selected schedule.
      */
     #[Computed]
@@ -99,41 +46,149 @@ trait HasBookingForm
             return null;
         }
 
-        return Schedule::find($this->schedule_id);
+        return Schedule::with('service')->find($this->schedule_id);
     }
 
     /**
-     * Check if the selected service is exclusive (one booking per slot).
+     * Check if the selected class is an individual session (one booking per slot).
      */
     #[Computed]
     public function isExclusiveService(): bool
     {
-        return $this->selectedService?->is_exclusive ?? false;
+        return $this->selectedSchedule?->service->is_exclusive ?? false;
     }
 
     /**
-     * Get available price tiers filtered by the selected schedule's max_capacity.
+     * Get the coaches who have a class that can be booked, by name.
      *
-     * @return \Illuminate\Support\Collection<int, ServicePriceTier>
+     * The coach of the booking being edited is always included.
      */
     #[Computed]
-    public function availablePriceTiers(): \Illuminate\Support\Collection
+    public function coaches(): Collection
     {
-        $service = $this->selectedService;
-        $schedule = $this->selectedSchedule;
+        $savedCoachId = $this->savedBooking()?->schedule->service->coach_id;
 
-        if (! $service) {
-            return collect();
+        return Coach::query()
+            ->whereHas('services', fn ($query) => $query
+                ->where('is_active', true)
+                ->where('is_membership', false)
+                ->whereHas('schedules', fn ($query) => $query->where('is_active', true)))
+            ->when($savedCoachId, fn ($query, int $coachId) => $query->orWhere('id', $coachId))
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * List the classes of the chosen coach with their usual day and time.
+     *
+     * One-off classes whose date has passed are left out. The class of the booking
+     * being edited stays in the list even after it was switched off or its date passed.
+     *
+     * @return list<array{id: int, label: string}>
+     */
+    #[Computed]
+    public function classesOfCoach(): array
+    {
+        if (! $this->coach_id) {
+            return [];
         }
 
-        $query = $service->priceTiers()->orderBy('participant_count');
+        $savedScheduleId = $this->savedBooking()?->schedule_id;
 
-        // Filter by schedule's max_capacity if schedule is selected
-        if ($schedule) {
-            $query->where('participant_count', '<=', $schedule->max_capacity);
+        return Schedule::query()
+            ->with('service')
+            ->whereHas('service', fn ($query) => $query->where('coach_id', $this->coach_id))
+            ->where(fn ($query) => $query
+                ->where(fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereHas('service', fn ($query) => $query->where('is_active', true)->where('is_membership', false))
+                    ->where(fn ($query) => $query
+                        ->whereNotNull('day_of_week')
+                        ->orWhereDate('date', '>=', today()->toDateString())))
+                ->when($savedScheduleId, fn ($query, int $scheduleId) => $query->orWhere('id', $scheduleId)))
+            ->get()
+            ->sortBy(fn (Schedule $schedule) => [
+                $schedule->service->name,
+                $schedule->day_of_week?->value ?? 8,
+                $schedule->date?->toDateString() ?? '',
+                substr((string) $schedule->start_time, 0, 5),
+            ])
+            ->map(fn (Schedule $schedule): array => [
+                'id' => $schedule->id,
+                'label' => $schedule->service->name.' — '.$this->usualDayLabel($schedule).' '.substr((string) $schedule->start_time, 0, 5),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Describe when a class usually takes place: "trešdienās" for a weekly class, its date for a one-off.
+     */
+    private function usualDayLabel(Schedule $schedule): string
+    {
+        if ($schedule->day_of_week === null) {
+            return $schedule->date->format('d.m.Y');
         }
 
-        return $query->get();
+        return Str::lower(Str::replaceLast('a', 'ās', $schedule->day_of_week->label()));
+    }
+
+    /**
+     * Whether saving the form will return the customer's money through Stripe.
+     */
+    #[Computed]
+    public function willRefundThroughStripe(): bool
+    {
+        return $this->payment_status === PaymentStatus::Refunded->value
+            && ($this->savedBooking()?->isPaidThroughStripe() ?? false);
+    }
+
+    /**
+     * Whether the payment status can no longer change because the money went back through Stripe.
+     */
+    #[Computed]
+    public function isPaymentStatusLocked(): bool
+    {
+        return $this->savedBooking()?->isRefundedThroughStripe() ?? false;
+    }
+
+    /**
+     * Get the booking being edited as it is stored, or null when a new booking is being created.
+     */
+    protected function savedBooking(): ?Booking
+    {
+        return null;
+    }
+
+    /**
+     * Drop the chosen class when it does not belong to the newly chosen coach.
+     */
+    public function updatedCoachId(): void
+    {
+        unset($this->classesOfCoach);
+
+        if ($this->schedule_id && ! in_array($this->schedule_id, array_column($this->classesOfCoach, 'id'), true)) {
+            $this->schedule_id = null;
+            $this->participant_count = 1;
+            unset($this->selectedSchedule, $this->isExclusiveService, $this->signedUpParticipants, $this->slotWarnings, $this->isSlotAlreadyBooked);
+        }
+    }
+
+    /**
+     * Reset the participant count when another class is chosen.
+     */
+    public function updatedScheduleId(): void
+    {
+        $this->participant_count = 1;
+        unset($this->selectedSchedule, $this->isExclusiveService, $this->signedUpParticipants, $this->slotWarnings, $this->isSlotAlreadyBooked);
+    }
+
+    /**
+     * Recalculate the sign-ups and warnings for the newly chosen date.
+     */
+    public function updatedBookingDate(): void
+    {
+        unset($this->signedUpParticipants, $this->slotWarnings, $this->isSlotAlreadyBooked);
     }
 
     /**
@@ -153,22 +208,73 @@ trait HasBookingForm
     }
 
     /**
-     * Get the remaining capacity for the selected slot.
+     * Get the id of the booking being edited, so that it is not counted against itself.
+     */
+    protected function editedBookingId(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * List what would stop a customer from making this booking.
+     *
+     * The studio may still save it; the warnings only prevent doing so by accident.
+     *
+     * @return list<string>
      */
     #[Computed]
-    public function remainingCapacity(): int
+    public function slotWarnings(): array
+    {
+        $schedule = $this->selectedSchedule;
+
+        if (! $schedule || ! $this->booking_date) {
+            return [];
+        }
+
+        $date = Carbon::parse($this->booking_date);
+        $availability = app(ScheduleAvailabilityService::class);
+        $warnings = [];
+
+        $otherBookings = Booking::active()
+            ->where('schedule_id', $schedule->id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->when($this->editedBookingId(), fn ($query, int $bookingId) => $query->where('id', '!=', $bookingId));
+
+        $isFull = $this->isExclusiveService
+            ? $otherBookings->exists() || (int) $this->participant_count > $schedule->max_capacity
+            : (int) $otherBookings->sum('participant_count') + (int) $this->participant_count > $schedule->max_capacity;
+
+        if ($isFull) {
+            $warnings[] = __('Nodarbība šajā datumā ir pilna.');
+        }
+
+        if (! $availability->runsOn($schedule, $date)) {
+            $warnings[] = __('Šī nodarbība šajā nedēļas dienā nenotiek.');
+        }
+
+        if ($availability->isClosedOn($schedule, $date)) {
+            $warnings[] = __('Šajā datumā studija ir slēgta vai treneris nav pieejams.');
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Count the people currently signed up for the selected class and date.
+     *
+     * When a booking is being edited, its own participants are part of the count.
+     */
+    #[Computed]
+    public function signedUpParticipants(): int
     {
         if (! $this->schedule_id || ! $this->booking_date) {
             return 0;
         }
 
-        $schedule = $this->selectedSchedule;
-        if (! $schedule) {
-            return 0;
-        }
-
-        return app(ScheduleAvailabilityService::class)
-            ->remainingCapacity($schedule, $this->booking_date, $this->isExclusiveService);
+        return (int) Booking::active()
+            ->where('schedule_id', $this->schedule_id)
+            ->whereDate('booking_date', $this->booking_date)
+            ->sum('participant_count');
     }
 
     /**
@@ -207,9 +313,9 @@ trait HasBookingForm
     protected function rules(): array
     {
         return [
-            'service_id' => ['required', 'exists:services,id'],
-            'schedule_id' => ['required', 'exists:schedules,id'],
-            'booking_date' => ['required', 'date', 'after_or_equal:today'],
+            'coach_id' => ['required', 'exists:coaches,id'],
+            'schedule_id' => ['required', 'exists:schedules,id', Rule::in(array_column($this->classesOfCoach, 'id'))],
+            'booking_date' => $this->bookingDateRules(),
             'participant_count' => ['required', 'integer', 'min:1'],
             'name' => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
@@ -221,6 +327,16 @@ trait HasBookingForm
     }
 
     /**
+     * Get the validation rules for the booking date: a booking is placed on today or a later day.
+     *
+     * @return array<int, string>
+     */
+    protected function bookingDateRules(): array
+    {
+        return ['required', 'date', 'after_or_equal:today'];
+    }
+
+    /**
      * Get the custom validation messages for the booking form.
      *
      * @return array<string, string>
@@ -228,10 +344,11 @@ trait HasBookingForm
     protected function messages(): array
     {
         return [
-            'service_id.required' => __('Pakalpojums ir obligāts.'),
-            'service_id.exists' => __('Izvēlētais pakalpojums neeksistē.'),
-            'schedule_id.required' => __('Grafiks ir obligāts.'),
-            'schedule_id.exists' => __('Izvēlētais grafiks neeksistē.'),
+            'coach_id.required' => __('Treneris ir obligāts.'),
+            'coach_id.exists' => __('Izvēlētais treneris neeksistē.'),
+            'schedule_id.required' => __('Nodarbība ir obligāta.'),
+            'schedule_id.exists' => __('Izvēlētā nodarbība neeksistē.'),
+            'schedule_id.in' => __('Izvēlētā nodarbība nepieder šim trenerim.'),
             'booking_date.required' => __('Datums ir obligāts.'),
             'booking_date.date' => __('Datumam jābūt derīgam datumam.'),
             'booking_date.after_or_equal' => __('Datumam jābūt šodienai vai nākotnē.'),

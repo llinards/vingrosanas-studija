@@ -52,6 +52,18 @@ new class extends Component
      */
     public function destroy(Schedule $schedule): void
     {
+        $upcomingBookings = $schedule->bookings()->upcoming()->count();
+
+        if ($upcomingBookings > 0) {
+            Flux::toast(
+                text: __('Nevar dzēst — šai nodarbībai ir nākotnes rezervācijas (:count).', ['count' => $upcomingBookings]),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
+
+            return;
+        }
+
         try {
             $schedule->delete();
 

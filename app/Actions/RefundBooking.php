@@ -17,14 +17,21 @@ class RefundBooking
     /**
      * Process a full refund for the given booking via Stripe.
      *
+     * A customer may only cancel within the cancellation window. The studio
+     * refunds at any time by passing $enforceCancellationWindow as false.
+     *
      * @throws RefundNotAllowedException
      * @throws ApiErrorException
      */
-    public function execute(Booking $booking, bool $notifyCoach = false): void
+    public function execute(Booking $booking, bool $notifyCoach = false, bool $enforceCancellationWindow = true): void
     {
         $booking->loadMissing('schedule.service.coach');
 
-        if (! $booking->isRefundable()) {
+        $isAllowed = $enforceCancellationWindow
+            ? $booking->isRefundable()
+            : $booking->isPaidThroughStripe();
+
+        if (! $isAllowed) {
             throw new RefundNotAllowedException($booking);
         }
 

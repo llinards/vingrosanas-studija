@@ -6,17 +6,16 @@ use App\Models\Booking;
 
 class BookingIcsGenerator
 {
-    private const EVENT_DURATION_MINUTES = 60;
-
     private const REMINDER_MINUTES_BEFORE = 15;
 
     public function generate(Booking $booking): string
     {
+        $service = $booking->schedule->service;
+
         $start = $booking->getServiceDateTime()->utc();
-        $end = $start->copy()->addMinutes(self::EVENT_DURATION_MINUTES);
+        $end = $start->copy()->addMinutes($service->duration_minutes);
         $stamp = now()->utc();
 
-        $service = $booking->schedule->service;
         $domain = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'localhost';
         $customerName = trim("{$booking->name} {$booking->surname}");
 

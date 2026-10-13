@@ -6,30 +6,21 @@
 
         <form wire:submit="save" class="flex flex-col gap-6">
             <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <flux:select wire:model.live="service_id" :label="__('Pakalpojums')">
-                        <flux:select.option value="">{{ __('Izvēlies pakalpojumu') }}</flux:select.option>
-                        @foreach($this->services as $service)
-                            <flux:select.option :value="$service->id">{{ $service->name }} ({{ $service->coach->name }})
-                            </flux:select.option>
+                <div class="sm:w-1/3">
+                    <flux:select wire:model.live="coach_id" :label="__('Treneris')">
+                        <flux:select.option value="">{{ __('Izvēlies treneri') }}</flux:select.option>
+                        @foreach($this->coaches as $coach)
+                            <flux:select.option wire:key="coach-{{ $coach->id }}" :value="$coach->id">{{ $coach->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </div>
-
                 <div class="flex-1">
-                    <flux:select wire:model.live="schedule_id" :label="__('Grafiks')">
-                        <flux:select.option value="">{{ __('Izvēlies grafiku') }}</flux:select.option>
-                        @foreach($this->schedules as $schedule)
-                            <flux:select.option :value="$schedule->id">
-                                @if($schedule->day_of_week)
-                                    {{ $schedule->day_of_week->label() }}
-                                @else
-                                    {{ $schedule->date->format('d.m.Y') }}
-                                @endif
-                                — {{ substr($schedule->start_time, 0, 5) }}
-                                ({{ __('maks.') }} {{ $schedule->max_capacity }}
-                                )
-                            </flux:select.option>
+                    <flux:select wire:model.live="schedule_id" :label="__('Nodarbība')">
+                        <flux:select.option value="">
+                            {{ $this->coach_id ? __('Izvēlies nodarbību') : __('Vispirms izvēlies treneri') }}
+                        </flux:select.option>
+                        @foreach($this->classesOfCoach as $class)
+                            <flux:select.option wire:key="class-{{ $class['id'] }}" :value="$class['id']">{{ $class['label'] }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </div>
@@ -41,15 +32,21 @@
                                       wire:model.live="booking_date"/>
                 </div>
                 <div class="flex-1">
-                    <flux:input type="number" wire:model="participant_count" :label="__('Dalībnieku skaits')"
+                    <flux:input type="number" wire:model.blur="participant_count" :label="__('Dalībnieku skaits')"
                                 min="1"/>
-                    @if($this->schedule_id && $this->booking_date && !$this->isExclusiveService)
+                    @if($this->schedule_id && $this->booking_date && $this->selectedSchedule && !$this->isExclusiveService)
                         <flux:text class="mt-2 text-sm text-zinc-500">
-                            {{ __('Atlikušās vietas') }}: {{ $this->remainingCapacity }}
+                            {{ __('Pieteikušies') }}: {{ $this->signedUpParticipants }} {{ __('no') }} {{ $this->selectedSchedule->max_capacity }} · {{ __('Brīvas vietas') }}: {{ max(0, $this->selectedSchedule->max_capacity - $this->signedUpParticipants) }}
                         </flux:text>
                     @endif
                 </div>
             </div>
+
+            @foreach($this->slotWarnings as $warning)
+                <flux:callout wire:key="slot-warning-{{ $loop->index }}" variant="warning" icon="exclamation-triangle">
+                    <flux:callout.heading>{{ $warning }}</flux:callout.heading>
+                </flux:callout>
+            @endforeach
 
             <flux:separator/>
 
@@ -75,11 +72,21 @@
 
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <flux:select wire:model="payment_status" :label="__('Maksājuma statuss')">
+                    <flux:select wire:model.live="payment_status" :label="__('Maksājuma statuss')"
+                                 :disabled="$this->isPaymentStatusLocked">
                         @foreach($this->paymentStatusOptions as $option)
                             <flux:select.option :value="$option['value']">{{ $option['label'] }}</flux:select.option>
                         @endforeach
                     </flux:select>
+                    @if($this->isPaymentStatusLocked)
+                        <flux:text class="mt-2 text-sm text-zinc-500">
+                            {{ __('Atmaksāts caur Stripe — statusu vairs nevar mainīt.') }}
+                        </flux:text>
+                    @elseif($this->willRefundThroughStripe)
+                        <flux:text class="mt-2 text-sm text-amber-600">
+                            {{ __('Saglabājot klientam caur Stripe tiks atmaksāta pilna summa.') }}
+                        </flux:text>
+                    @endif
                 </div>
                 <div class="flex-1">
                     <flux:select wire:model="attendance_status" :label="__('Apmeklējuma statuss')">
