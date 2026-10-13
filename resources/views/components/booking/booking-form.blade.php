@@ -6,30 +6,21 @@
 
         <form wire:submit="save" class="flex flex-col gap-6">
             <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <flux:select wire:model.live="service_id" :label="__('Pakalpojums')">
-                        <flux:select.option value="">{{ __('Izvēlies pakalpojumu') }}</flux:select.option>
-                        @foreach($this->services as $service)
-                            <flux:select.option :value="$service->id">{{ $service->name }} ({{ $service->coach->name }})
-                            </flux:select.option>
+                <div class="sm:w-1/3">
+                    <flux:select wire:model.live="coach_id" :label="__('Treneris')">
+                        <flux:select.option value="">{{ __('Izvēlies treneri') }}</flux:select.option>
+                        @foreach($this->coaches as $coach)
+                            <flux:select.option wire:key="coach-{{ $coach->id }}" :value="$coach->id">{{ $coach->name }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </div>
-
                 <div class="flex-1">
-                    <flux:select wire:model.live="schedule_id" :label="__('Grafiks')">
-                        <flux:select.option value="">{{ __('Izvēlies grafiku') }}</flux:select.option>
-                        @foreach($this->schedules as $schedule)
-                            <flux:select.option :value="$schedule->id">
-                                @if($schedule->day_of_week)
-                                    {{ $schedule->day_of_week->label() }}
-                                @else
-                                    {{ $schedule->date->format('d.m.Y') }}
-                                @endif
-                                — {{ substr($schedule->start_time, 0, 5) }}
-                                ({{ __('maks.') }} {{ $schedule->max_capacity }}
-                                )
-                            </flux:select.option>
+                    <flux:select wire:model.live="schedule_id" :label="__('Nodarbība')">
+                        <flux:select.option value="">
+                            {{ $this->coach_id ? __('Izvēlies nodarbību') : __('Vispirms izvēlies treneri') }}
+                        </flux:select.option>
+                        @foreach($this->classesOfCoach as $class)
+                            <flux:select.option wire:key="class-{{ $class['id'] }}" :value="$class['id']">{{ $class['label'] }}</flux:select.option>
                         @endforeach
                     </flux:select>
                 </div>

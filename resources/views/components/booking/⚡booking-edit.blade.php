@@ -27,8 +27,7 @@ new class extends Component
         $booking->load('schedule.service');
 
         $this->bookingId = $booking->id;
-        $this->service_type_id = $booking->schedule->service->service_type_id;
-        $this->service_id = $booking->schedule->service_id;
+        $this->coach_id = $booking->schedule->service->coach_id;
         $this->schedule_id = $booking->schedule_id;
         $this->booking_date = $booking->booking_date->format('Y-m-d');
         $this->participant_count = $booking->participant_count;
@@ -38,56 +37,6 @@ new class extends Component
         $this->email = $booking->email;
         $this->payment_status = $booking->payment_status->value;
         $this->attendance_status = $booking->attendance_status->value;
-    }
-
-    /**
-     * Reset dependent fields when service type changes.
-     */
-    public function updatedServiceTypeId(): void
-    {
-        $this->service_id = null;
-        $this->schedule_id = null;
-        $this->participant_count = 1;
-        unset(
-            $this->services,
-            $this->schedules,
-            $this->selectedService,
-            $this->isExclusiveService,
-            $this->availablePriceTiers
-        );
-    }
-
-    /**
-     * Reset dependent fields when service changes.
-     */
-    public function updatedServiceId(): void
-    {
-        $this->schedule_id = null;
-        $this->participant_count = 1;
-        unset(
-            $this->schedules,
-            $this->selectedService,
-            $this->selectedSchedule,
-            $this->isExclusiveService,
-            $this->availablePriceTiers
-        );
-    }
-
-    /**
-     * Reset participant count and capacity when schedule changes.
-     */
-    public function updatedScheduleId(): void
-    {
-        $this->participant_count = 1;
-        unset($this->selectedSchedule, $this->availablePriceTiers, $this->signedUpParticipants, $this->slotWarnings, $this->isSlotAlreadyBooked);
-    }
-
-    /**
-     * Recalculate capacity when booking date changes.
-     */
-    public function updatedBookingDate(): void
-    {
-        unset($this->signedUpParticipants, $this->slotWarnings, $this->isSlotAlreadyBooked);
     }
 
     /**
@@ -137,6 +86,11 @@ new class extends Component
     protected function editedBookingId(): ?int
     {
         return $this->bookingId;
+    }
+
+    protected function savedBooking(): ?Booking
+    {
+        return Booking::with('schedule.service')->find($this->bookingId);
     }
 
     /**

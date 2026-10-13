@@ -52,11 +52,10 @@ test('booking edit form is populated with booking data', function () {
 
 test('can update a booking', function () {
     $booking = Booking::factory()->create();
-    $newSchedule = Schedule::factory()->create(['is_active' => true]);
+    $newSchedule = Schedule::factory()->create(['is_active' => true, 'day_of_week' => now()->addDay()->dayOfWeekIso]);
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
-        ->set('service_type_id', $newSchedule->service->service_type_id)
-        ->set('service_id', $newSchedule->service_id)
+        ->set('coach_id', $newSchedule->service->coach_id)
         ->set('schedule_id', $newSchedule->id)
         ->set('booking_date', now()->addDay()->toDateString())
         ->set('name', 'Anna')
@@ -123,13 +122,11 @@ test('rescheduled email is sent when schedule changes', function () {
     Mail::fake();
 
     $booking = Booking::factory()->create(['email' => 'client@example.com']);
-    $newSchedule = Schedule::factory()->create(['is_active' => true]);
+    $newSchedule = Schedule::factory()->create(['is_active' => true, 'day_of_week' => $booking->booking_date->dayOfWeekIso]);
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
-        ->set('service_type_id', $newSchedule->service->service_type_id)
-        ->set('service_id', $newSchedule->service_id)
+        ->set('coach_id', $newSchedule->service->coach_id)
         ->set('schedule_id', $newSchedule->id)
-        ->set('booking_date', $booking->booking_date->format('Y-m-d'))
         ->call('save')
         ->assertHasNoErrors()
         ->assertRedirect(route('admin.bookings.index'));
@@ -147,6 +144,7 @@ test('rescheduled email is sent when booking date changes', function () {
     $booking = Booking::factory()->create([
         'email' => 'client@example.com',
         'booking_date' => now()->addDays(3)->toDateString(),
+        'schedule_id' => Schedule::factory()->create(['day_of_week' => now()->addWeek()->dayOfWeekIso])->id,
     ]);
     $originalDate = $booking->booking_date->copy();
 
@@ -209,7 +207,7 @@ test('does not count a booking that no longer holds a place as signed up', funct
 ]);
 
 test('shows the sign-ups of the newly chosen date when the date is changed', function () {
-    $schedule = Schedule::factory()->create(['max_capacity' => 12]);
+    $schedule = Schedule::factory()->create(['day_of_week' => 3, 'max_capacity' => 12]);
     $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
@@ -278,7 +276,11 @@ test('refuses to move a booking onto a date that has passed', function (string $
 test('moves a past booking to a future date and tells the customer', function () {
     Mail::fake();
     $this->travelTo('2026-10-10 12:00:00');
-    $booking = Booking::factory()->paid()->create(['booking_date' => '2026-10-08', 'email' => 'client@example.com']);
+    $booking = Booking::factory()->paid()->create([
+        'booking_date' => '2026-10-08',
+        'email' => 'client@example.com',
+        'schedule_id' => Schedule::factory()->create(['day_of_week' => 6])->id,
+    ]);
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
         ->set('booking_date', '2026-10-17')
@@ -304,4 +306,78 @@ test('warns on the edit screen when other bookings already fill the class', func
 
     Livewire::test('booking.booking-edit', ['booking' => $booking])
         ->assertSee('Nodarbība šajā datumā ir pilna.');
+});
+
+test('still offers the class of a booking after that class was switched off', function () {
+    $schedule = Schedule::factory()->create([
+        'service_id' => Service::factory()->create(['name' => 'Slēgtā nodarbība'])->id,
+        'day_of_week' => 3,
+        'is_active' => false,
+    ]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-02']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSet('schedule_id', $schedule->id)
+        ->assertSee('Slēgtā nodarbība')
+        ->set('phone', '+371 29999999')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('admin.bookings.index'));
+});
+
+test('keeps and warns about a booking that sits on a day its class does not run', function () {
+    $schedule = Schedule::factory()->create([
+        'service_id' => Service::factory()->create(['name' => 'Trešdienas nodarbība'])->id,
+        'day_of_week' => 3,
+    ]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-12-03']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSet('schedule_id', $schedule->id)
+        ->assertSee('Trešdienas nodarbība')
+        ->assertSee('Šī nodarbība šajā nedēļas dienā nenotiek.')
+        ->set('phone', '+371 29999999')
+        ->call('save')
+        ->assertHasNoErrors();
+});
+
+test('opens with the coach of the booking selected', function () {
+    $booking = Booking::factory()->paid()->create();
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSet('coach_id', $booking->schedule->service->coach_id)
+        ->assertSet('schedule_id', $booking->schedule_id);
+});
+
+test('keeps the class when a booking is moved to a day its class does not normally run', function () {
+    Mail::fake();
+    $this->travelTo('2026-10-05 09:00:00');
+    $schedule = Schedule::factory()->create(['day_of_week' => 3]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-10-07']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->set('booking_date', '2026-10-09')
+        ->assertSet('schedule_id', $schedule->id)
+        ->assertSee('Šī nodarbība šajā nedēļas dienā nenotiek.')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($booking->fresh()->booking_date->toDateString())->toBe('2026-10-09');
+    Mail::assertQueued(BookingRescheduled::class);
+});
+
+test('still offers the past one-off class of the booking being edited', function () {
+    $this->travelTo('2026-10-10 12:00:00');
+    $schedule = Schedule::factory()->create([
+        'service_id' => Service::factory()->create(['name' => 'Pagājušā meistarklase'])->id,
+        'day_of_week' => null,
+        'date' => '2026-10-07',
+    ]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => '2026-10-07']);
+
+    Livewire::test('booking.booking-edit', ['booking' => $booking])
+        ->assertSee('Pagājušā meistarklase')
+        ->set('attendance_status', 'attended')
+        ->call('save')
+        ->assertHasNoErrors();
 });
