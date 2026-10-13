@@ -134,6 +134,25 @@ trait HasBookingForm
     }
 
     /**
+     * Whether saving the form will return the customer's money through Stripe.
+     */
+    #[Computed]
+    public function willRefundThroughStripe(): bool
+    {
+        return $this->payment_status === PaymentStatus::Refunded->value
+            && ($this->savedBooking()?->isPaidThroughStripe() ?? false);
+    }
+
+    /**
+     * Whether the payment status can no longer change because the money went back through Stripe.
+     */
+    #[Computed]
+    public function isPaymentStatusLocked(): bool
+    {
+        return $this->savedBooking()?->isRefundedThroughStripe() ?? false;
+    }
+
+    /**
      * Get the booking being edited as it is stored, or null when a new booking is being created.
      */
     protected function savedBooking(): ?Booking

@@ -72,11 +72,21 @@
 
             <div class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
-                    <flux:select wire:model="payment_status" :label="__('Maksājuma statuss')">
+                    <flux:select wire:model.live="payment_status" :label="__('Maksājuma statuss')"
+                                 :disabled="$this->isPaymentStatusLocked">
                         @foreach($this->paymentStatusOptions as $option)
                             <flux:select.option :value="$option['value']">{{ $option['label'] }}</flux:select.option>
                         @endforeach
                     </flux:select>
+                    @if($this->isPaymentStatusLocked)
+                        <flux:text class="mt-2 text-sm text-zinc-500">
+                            {{ __('Atmaksāts caur Stripe — statusu vairs nevar mainīt.') }}
+                        </flux:text>
+                    @elseif($this->willRefundThroughStripe)
+                        <flux:text class="mt-2 text-sm text-amber-600">
+                            {{ __('Saglabājot klientam caur Stripe tiks atmaksāta pilna summa.') }}
+                        </flux:text>
+                    @endif
                 </div>
                 <div class="flex-1">
                     <flux:select wire:model="attendance_status" :label="__('Apmeklējuma statuss')">

@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\RefundBooking;
-use App\Exceptions\RefundNotAllowedException;
+use App\Enums\PaymentStatus;
 use App\Livewire\Concerns\HasBookingForm;
 use App\Mail\BookingRescheduled;
 use App\Models\Booking;
@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Stripe\Exception\ApiErrorException;
 
 new class extends Component
 {
@@ -37,50 +38,6 @@ new class extends Component
         $this->email = $booking->email;
         $this->payment_status = $booking->payment_status->value;
         $this->attendance_status = $booking->attendance_status->value;
-    }
-
-    /**
-     * Check if the current booking is eligible for refund.
-     */
-    #[Computed]
-    public function isRefundable(): bool
-    {
-        $booking = Booking::with('schedule')->find($this->bookingId);
-
-        return $booking ? $booking->isRefundable() : false;
-    }
-
-    /**
-     * Process a refund for the current booking.
-     */
-    public function refund(): void
-    {
-        $booking = Booking::findOrFail($this->bookingId);
-
-        try {
-            app(RefundBooking::class)->execute($booking);
-
-            Flux::toast(
-                text: __('Rezervācija veiksmīgi atmaksāta!'),
-                variant: 'success',
-            );
-
-            $this->redirect(route('admin.bookings.index'), navigate: true);
-        } catch (RefundNotAllowedException $e) {
-            Flux::toast(
-                text: __('Atmaksa nav iespējama. Līdz pakalpojumam jābūt vairāk nekā 24 stundām.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
-        } catch (\Exception $e) {
-            Log::error($e);
-
-            Flux::toast(
-                text: __('Neizdevās veikt atmaksu. Lūdzu, mēģini vēlreiz.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
-        }
     }
 
     protected function editedBookingId(): ?int
@@ -115,8 +72,19 @@ new class extends Component
     {
         $this->validate();
 
+        $booking = Booking::findOrFail($this->bookingId);
+
+        if ($booking->isRefundedThroughStripe() && $this->payment_status !== PaymentStatus::Refunded->value) {
+            $this->addError('payment_status', __('Šī rezervācija ir atmaksāta caur Stripe, tāpēc maksājuma statusu vairs nevar mainīt.'));
+
+            return;
+        }
+
         try {
-            $booking = Booking::findOrFail($this->bookingId);
+            // Returning the money comes first: if Stripe refuses, nothing about the booking is changed.
+            if ($booking->isPaidThroughStripe() && $this->payment_status === PaymentStatus::Refunded->value) {
+                app(RefundBooking::class)->execute($booking, enforceCancellationWindow: false);
+            }
 
             $scheduleChanged = $booking->schedule_id !== (int) $this->schedule_id;
             $dateChanged = $booking->booking_date->format('Y-m-d') !== $this->booking_date;
@@ -146,6 +114,12 @@ new class extends Component
             );
 
             $this->redirect(route('admin.bookings.index'), navigate: true);
+        } catch (ApiErrorException $e) {
+            Flux::toast(
+                text: __('Neizdevās veikt atmaksu caur Stripe. Rezervācija nav mainīta.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -171,24 +145,4 @@ new class extends Component
 
 <div>
     <x-booking.booking-form :heading="__('Rediģēt rezervāciju')"/>
-
-    @if($this->isRefundable)
-        <div class="flex min-h-full flex-col items-center justify-center px-6">
-            <div class="w-full max-w-2xl">
-                <flux:separator class="my-6"/>
-
-                <flux:heading level="2" size="lg" class="mb-4">{{ __('Atmaksa') }}</flux:heading>
-
-                <flux:text class="mb-4">
-                    {{ __('Atmaksa ir iespējama, jo līdz pakalpojumam ir vairāk nekā 24 stundas.') }}
-                </flux:text>
-                <flux:button wire:click="refund"
-                             wire:confirm="{{__('Vai tiešām vēlies veikt atmaksu un atcelt rezervāciju?')}}"
-                             variant="danger"
-                             icon="arrow-uturn-left">
-                    {{ __('Veikt atmaksu') }}
-                </flux:button>
-            </div>
-        </div>
-    @endif
 </div>
