@@ -641,7 +641,8 @@ new class extends Component {
                             <flux:radio.group wire:model.live="session_schedule_id"
                                               :label="__('Pieejamie laiki')" variant="cards">
                                 @foreach($this->sessionAvailableTimeSlots as $slot)
-                                    <flux:radio :value="$slot['schedule_id']"
+                                    <flux:radio wire:key="session-slot-{{ $slot['schedule_id'] }}"
+                                                :value="$slot['schedule_id']"
                                                 :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
                                                 :description="$slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
                                 @endforeach
