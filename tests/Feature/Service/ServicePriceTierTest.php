@@ -33,8 +33,7 @@ test('service can have multiple price tiers', function () {
         'price' => 4500,
     ]);
 
-    expect($service->priceTiers)->toHaveCount(3)
-        ->and($service->maxParticipants())->toBe(3);
+    expect($service->priceTiers)->toHaveCount(3);
 });
 
 test('price tiers are ordered by participant count', function () {
@@ -104,8 +103,7 @@ test('creating a service with additional price tiers', function () {
     $service = Service::where('name', 'Individual Training')->first();
 
     expect($service)->not->toBeNull()
-        ->and($service->priceTiers)->toHaveCount(3)
-        ->and($service->maxParticipants())->toBe(3);
+        ->and($service->priceTiers)->toHaveCount(3);
 
     $tierFor2 = $service->priceTiers->where('participant_count', 2)->first();
     $tierFor3 = $service->priceTiers->where('participant_count', 3)->first();
@@ -194,8 +192,7 @@ test('removing price tier from form deletes it', function () {
 
     $service->refresh();
 
-    expect($service->priceTiers)->toHaveCount(2)
-        ->and($service->maxParticipants())->toBe(2);
+    expect($service->priceTiers)->toHaveCount(2);
 });
 
 test('add price tier button adds new tier with incremented count', function () {

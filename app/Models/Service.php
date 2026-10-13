@@ -49,14 +49,6 @@ class Service extends Model
     }
 
     /**
-     * Get the maximum number of participants allowed for this service.
-     */
-    public function maxParticipants(): int
-    {
-        return $this->priceTiers()->max('participant_count') ?? 1;
-    }
-
-    /**
      * Get the total price in cents for a booking of the given group size.
      *
      * Falls back to the base price when no tier is defined for that size.

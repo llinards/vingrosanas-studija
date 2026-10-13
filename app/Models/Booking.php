@@ -112,16 +112,6 @@ class Booking extends Model
     }
 
     /**
-     * Check if the booking has expired without payment.
-     */
-    public function isExpired(): bool
-    {
-        return $this->payment_status === PaymentStatus::Pending
-            && $this->expires_at !== null
-            && $this->expires_at->isPast();
-    }
-
-    /**
      * Mark the booking as paid with the given payment reference.
      */
     public function markAsPaid(string $paymentReference): void
