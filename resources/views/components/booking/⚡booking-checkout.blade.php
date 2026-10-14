@@ -1,14 +1,17 @@
 <?php
 
+use App\Actions\ConfirmBookingPayment;
 use App\Actions\CreatePendingBooking;
 use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\SlotStatus;
 use App\Exceptions\SlotUnavailableException;
+use App\Models\Booking;
 use App\Models\Schedule;
 use App\Services\ScheduleAvailabilityService;
 use Flux\Flux;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -154,6 +157,12 @@ new class extends Component
             return;
         }
 
+        if ($booking->price === 0) {
+            $this->confirmFreeBooking($booking);
+
+            return;
+        }
+
         try {
             $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $booking->price);
         } catch (ApiErrorException) {
@@ -170,6 +179,27 @@ new class extends Component
         RateLimiter::hit($this->bookingStartsKey(), self::BOOKING_STARTS_WINDOW_SECONDS);
 
         $this->redirect($checkout['url'], navigate: false);
+    }
+
+    /**
+     * Confirm a free booking straight away, as there is nothing to pay at Stripe.
+     *
+     * The random code stands in for the Checkout Session id, which the success page and the
+     * confirmation email use as the customer's access code. Without a payment reference the
+     * booking is never sent to Stripe for a refund.
+     */
+    private function confirmFreeBooking(Booking $booking): void
+    {
+        $accessCode = 'free_'.Str::random(40);
+
+        $booking->update(['stripe_checkout_session_id' => $accessCode]);
+
+        app(ConfirmBookingPayment::class)->execute($booking, null);
+
+        // Free bookings count towards the limit too, or nothing would stop a class being filled with them.
+        RateLimiter::hit($this->bookingStartsKey(), self::BOOKING_STARTS_WINDOW_SECONDS);
+
+        $this->redirect(route('booking.success', ['booking' => $booking, 'session_id' => $accessCode]), navigate: false);
     }
 
     /**
@@ -234,7 +264,7 @@ new class extends Component
                     </div>
                     <div class="flex justify-between gap-2 text-sm">
                         <flux:text class="text-zinc-500 shrink-0">{{ __('Cena') }}</flux:text>
-                        <flux:text class="font-semibold">{{ Number::currency($this->price / 100, 'EUR') }}</flux:text>
+                        <flux:text class="font-semibold">{{ price_label($this->price) }}</flux:text>
                     </div>
                 </div>
 
@@ -245,7 +275,7 @@ new class extends Component
                         @foreach($this->participantOptions as $option)
                             <flux:radio wire:key="participants-{{ $option }}" :value="$option"
                                         :label="$option . ' ' . ($option === 1 ? __('persona') : __('personas'))"
-                                        :description="Number::currency($this->schedule->service->priceFor($option) / 100, 'EUR')"/>
+                                        :description="price_label($this->schedule->service->priceFor($option))"/>
                         @endforeach
                     </flux:radio.group>
                 @endif
@@ -269,7 +299,7 @@ new class extends Component
                         <flux:button class="btn btn-sm btn-tertiary">{{ __('Atcelt') }}</flux:button>
                     </flux:modal.close>
                     <flux:button type="submit" class="btn btn-sm btn-primary"
-                                 :disabled="$isProcessing">{{ __('Apmaksāt ar karti') }}</flux:button>
+                                 :disabled="$isProcessing">{{ $this->price === 0 ? __('Apstiprināt rezervāciju') : __('Apmaksāt ar karti') }}</flux:button>
                 </div>
             </form>
         @else

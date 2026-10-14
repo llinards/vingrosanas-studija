@@ -112,9 +112,9 @@ class Booking extends Model
     }
 
     /**
-     * Mark the booking as paid with the given payment reference.
+     * Mark the booking as paid with the given payment reference, or none for a free booking.
      */
-    public function markAsPaid(string $paymentReference): void
+    public function markAsPaid(?string $paymentReference): void
     {
         $this->update([
             'payment_status' => PaymentStatus::Paid,

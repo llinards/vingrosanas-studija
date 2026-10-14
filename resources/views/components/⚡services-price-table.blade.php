@@ -73,7 +73,7 @@ new class extends Component {
                                                     @endif
                                                 </flux:table.cell>
                                                 <flux:table.cell class="w-28" align="end">
-                                                    {{ Number::currency($tier->price / 100, 'EUR') }}
+                                                    {{ price_label($tier->price) }}
                                                 </flux:table.cell>
                                             </flux:table.row>
                                         @endforeach
@@ -90,7 +90,7 @@ new class extends Component {
                                                 @endif
                                             </flux:table.cell>
                                             <flux:table.cell class="w-28" align="end">
-                                                {{ Number::currency($service->price / 100, 'EUR') }}
+                                                {{ price_label($service->price) }}
                                             </flux:table.cell>
                                         </flux:table.row>
                                     @endif

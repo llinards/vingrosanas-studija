@@ -2,6 +2,8 @@
 
 use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\PaymentStatus;
+use App\Mail\BookingConfirmation;
+use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Coach;
 use App\Models\Schedule;
@@ -410,4 +412,54 @@ test('does not open the checkout for a class of an inactive coach', function () 
         ->assertSet('scheduleId', null)
         ->assertSee('Šis laiks vairs nav pieejams.')
         ->assertDontSee('Apmaksāt ar karti');
+});
+
+test('confirms a free class without Stripe and sends the customer to the success page', function () {
+    Mail::fake();
+    $class = createClassForCheckout(['price' => 0]);
+    $this->mock(CreateStripeCheckoutSession::class)->shouldNotReceive('execute');
+
+    $checkout = openCheckoutWithCustomer($class)
+        ->assertSee('Bez maksas')
+        ->assertSee('Apstiprināt rezervāciju')
+        ->assertDontSee('Apmaksāt ar karti')
+        ->call('pay')
+        ->assertHasNoErrors();
+
+    $booking = Booking::sole();
+    expect($booking)
+        ->payment_status->toBe(PaymentStatus::Paid)
+        ->payment_reference->toBeNull()
+        ->expires_at->toBeNull()
+        ->stripe_checkout_session_id->toStartWith('free_');
+
+    $successUrl = route('booking.success', ['booking' => $booking, 'session_id' => $booking->stripe_checkout_session_id]);
+    $checkout->assertRedirect($successUrl);
+
+    Mail::assertQueued(BookingConfirmation::class, fn (BookingConfirmation $mail) => $mail->hasTo('anna@example.com'));
+    Mail::assertQueued(NewBookingNotification::class, fn (NewBookingNotification $mail) => $mail->hasTo($class->service->coach->email));
+    (new BookingConfirmation($booking))
+        ->assertSeeInHtml('Bez maksas')
+        ->assertSeeInHtml('Lai atceltu rezervāciju, lūdzu, sazinieties ar mums.')
+        ->assertDontSeeInHtml('ne vēlāk kā 24 stundas');
+
+    $this->get($successUrl)
+        ->assertSuccessful()
+        ->assertSee('Rezervācija veiksmīga!')
+        ->assertDontSee('Atcelt rezervāciju');
+});
+
+test('counts free bookings towards the booking start limit', function () {
+    Mail::fake();
+    $class = createClassForCheckout(['price' => 0]);
+    foreach (range(1, 5) as $start) {
+        openCheckoutWithCustomer($class)->call('pay')->assertHasNoErrors();
+    }
+
+    openCheckoutWithCustomer($class)
+        ->call('pay')
+        ->assertHasErrors('booking')
+        ->assertNoRedirect();
+
+    expect(Booking::count())->toBe(5);
 });

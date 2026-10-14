@@ -213,7 +213,7 @@ new class extends Component
                                 @endif
 
                                 <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm">
-                                    <span>{{ $entry['has_price_range'] ? __('no').' ' : '' }}{{ Number::currency($entry['price_from'] / 100, 'EUR') }}</span>
+                                    <span>{{ $entry['has_price_range'] ? __('no').' '.Number::currency($entry['price_from'] / 100, 'EUR') : price_label($entry['price_from']) }}</span>
                                     @if(! $isBookable)
                                         <span class="font-medium uppercase">{{ $this->statusLabel($entry['status']) }}</span>
                                     @elseif($entry['is_exclusive'])

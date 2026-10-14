@@ -12,8 +12,10 @@ class ConfirmBookingPayment
 {
     /**
      * Mark a booking as paid and tell the customer and the coach.
+     *
+     * A free booking has no payment, so its reference is null.
      */
-    public function execute(Booking $booking, string $paymentReference): void
+    public function execute(Booking $booking, ?string $paymentReference): void
     {
         $booking->markAsPaid($paymentReference);
 
