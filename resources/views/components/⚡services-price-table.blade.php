@@ -14,10 +14,11 @@ new class extends Component {
         return ServiceType::with([
             'services' => fn($query) => $query
                 ->where('is_active', true)
+                ->excludingOneTimeEvents()
                 ->with('priceTiers')
                 ->orderBy('position')
         ])
-                          ->whereHas('services', fn($query) => $query->where('is_active', true))
+                          ->whereHas('services', fn($query) => $query->where('is_active', true)->excludingOneTimeEvents())
                           ->orderBy('position')
                           ->get()
                           ->each(function (ServiceType $serviceType): void {

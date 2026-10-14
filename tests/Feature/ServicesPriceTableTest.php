@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServicePriceTier;
 use App\Models\ServiceType;
@@ -106,4 +107,41 @@ test('price table hides service type when all its services are inactive', functi
     $this->get('/')
         ->assertSuccessful()
         ->assertDontSee('Tukšais veids');
+});
+
+test('price table hides one-time events', function () {
+    $service = Service::factory()->create([
+        'name' => 'Vienreizējs-Pasākums-XYZ',
+        'is_active' => true,
+    ]);
+
+    Schedule::factory()->specificDate()->create([
+        'service_id' => $service->id,
+        'is_active' => true,
+    ]);
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertDontSee('Vienreizējs-Pasākums-XYZ');
+});
+
+test('price table shows a weekly service that also has a one-time date', function () {
+    $service = Service::factory()->create([
+        'name' => 'Iknedēļas-Ar-Datumu-XYZ',
+        'is_active' => true,
+    ]);
+
+    Schedule::factory()->create([
+        'service_id' => $service->id,
+        'is_active' => true,
+    ]);
+
+    Schedule::factory()->specificDate()->create([
+        'service_id' => $service->id,
+        'is_active' => true,
+    ]);
+
+    $this->get('/')
+        ->assertSuccessful()
+        ->assertSee('Iknedēļas-Ar-Datumu-XYZ');
 });
