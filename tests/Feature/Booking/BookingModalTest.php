@@ -2,12 +2,16 @@
 
 use App\Actions\CreateMembershipCheckoutSession;
 use App\Actions\CreateStripeCheckoutSession;
+use App\Enums\PaymentStatus;
+use App\Mail\BookingConfirmation;
+use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;
 use Stripe\Exception\UnknownApiErrorException;
 
@@ -423,6 +427,60 @@ test('double submit is prevented by isProcessing guard', function () {
     $component->call('submitBooking');
 
     expect(Booking::count())->toBe(1);
+
+    Carbon::setTestNow();
+});
+
+test('free booking is confirmed without stripe and opens the success page', function () {
+    Carbon::setTestNow(Carbon::today()->setTime(8, 0));
+    Mail::fake();
+
+    $serviceType = ServiceType::factory()->create();
+    $service = Service::factory()->create([
+        'service_type_id' => $serviceType->id,
+        'price' => 0,
+        'is_active' => true,
+    ]);
+
+    $schedule = Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => today()->dayOfWeekIso,
+        'start_time' => '10:00',
+        'is_active' => true,
+    ]);
+
+    $this->mock(CreateStripeCheckoutSession::class)
+        ->shouldNotReceive('execute');
+
+    $component = Livewire::test('booking-modal')
+        ->set('service_type_id', $serviceType->id)
+        ->set('service_id', $service->id)
+        ->set('selectedDate', today()->toDateString())
+        ->set('schedule_id', $schedule->id)
+        ->set('step', 4)
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('phone', '+37120000000')
+        ->set('email', 'test@example.com')
+        ->assertSee(__('Apstiprināt rezervāciju'))
+        ->assertDontSee(__('Apmaksāt ar karti'))
+        ->call('submitBooking');
+
+    $booking = Booking::sole();
+
+    expect($booking->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($booking->expires_at)->toBeNull()
+        ->and($booking->payment_reference)->toBeNull()
+        ->and($booking->stripe_checkout_session_id)->toStartWith('free_');
+
+    $successUrl = route('booking.success', ['booking' => $booking, 'session_id' => $booking->stripe_checkout_session_id]);
+
+    $component->assertRedirect($successUrl);
+
+    Mail::assertQueued(BookingConfirmation::class, fn (BookingConfirmation $mail) => $mail->hasTo('test@example.com'));
+    Mail::assertQueued(NewBookingNotification::class, fn (NewBookingNotification $mail) => $mail->hasTo($service->coach->email));
+
+    $this->get($successUrl)->assertSuccessful();
 
     Carbon::setTestNow();
 });

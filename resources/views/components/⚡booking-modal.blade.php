@@ -3,6 +3,8 @@
 use App\Actions\CreateMembershipCheckoutSession;
 use App\Actions\CreateStripeCheckoutSession;
 use App\Enums\PaymentStatus;
+use App\Mail\BookingConfirmation;
+use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
@@ -14,6 +16,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -696,6 +700,12 @@ new class extends Component {
             return;
         }
 
+        if ($price === 0) {
+            $this->confirmFreeBooking($booking);
+
+            return;
+        }
+
         // Create Stripe Checkout Session and redirect
         try {
             $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $price);
@@ -708,6 +718,40 @@ new class extends Component {
         }
 
         $this->redirect($checkout['url'], navigate: false);
+    }
+
+    /**
+     * Confirm a €0.00 booking without Stripe, which never reports back for a free checkout.
+     *
+     * The random token stands in for the Checkout Session id, which the success page and the
+     * confirmation email use as the customer's access token. The payment reference stays empty,
+     * so the booking is never sent to Stripe for a refund.
+     */
+    private function confirmFreeBooking(Booking $booking): void
+    {
+        $accessToken = 'free_'.Str::random(40);
+
+        $booking->update([
+            'payment_status'             => PaymentStatus::Paid,
+            'expires_at'                 => null,
+            'stripe_checkout_session_id' => $accessToken,
+        ]);
+
+        $booking->load('schedule.service.coach');
+
+        Mail::to($booking->email)->send(new BookingConfirmation($booking));
+
+        $coachEmail = $booking->schedule->service->coach->email ?? null;
+
+        if ($coachEmail) {
+            Mail::to($coachEmail)->send(new NewBookingNotification($booking));
+        }
+
+        Log::info('Free booking confirmed without Stripe', [
+            'booking_id' => $booking->id,
+        ]);
+
+        $this->redirect(route('booking.success', ['booking' => $booking, 'session_id' => $accessToken]), navigate: false);
     }
 
     public function submitMembership(): void
@@ -1260,7 +1304,7 @@ new class extends Component {
                                          class="btn btn-sm btn-tertiary">{{ __('Atpakaļ') }}</flux:button>
                             <flux:button wire:click="{{ $mode === 'booking' ? 'submitBooking' : 'submitMembership' }}"
                                          class="btn btn-sm btn-primary"
-                                         :disabled="$isProcessing">{{ __('Apmaksāt ar karti') }}</flux:button>
+                                         :disabled="$isProcessing">{{ $mode === 'booking' && $this->selectedPrice === 0 ? __('Apstiprināt rezervāciju') : __('Apmaksāt ar karti') }}</flux:button>
                         </div>
                     </div>
                 @endif
