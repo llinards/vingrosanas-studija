@@ -65,6 +65,21 @@ class Service extends Model
         return $query->where('is_membership', true);
     }
 
+    /**
+     * Leave out one-time events: services whose active schedules are all on a specific date.
+     *
+     * Services with no active schedules are kept.
+     *
+     * @param  Builder<Service>  $query
+     * @return Builder<Service>
+     */
+    public function scopeExcludingOneTimeEvents(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $query) => $query
+            ->whereDoesntHave('schedules', fn (Builder $schedules) => $schedules->where('is_active', true)->whereNotNull('date'))
+            ->orWhereHas('schedules', fn (Builder $schedules) => $schedules->where('is_active', true)->whereNull('date')));
+    }
+
     protected function casts(): array
     {
         return [
