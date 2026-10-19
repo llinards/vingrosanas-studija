@@ -2,6 +2,8 @@
 
 use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\SlotStatus;
+use App\Exceptions\SlotUnavailableException;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
@@ -87,6 +89,7 @@ new class extends Component {
         return ServiceType::whereHas('services', function ($query) {
             $query->where('is_active', true)
                   ->where('is_membership_eligible', true)
+                  ->whereDoesntHave('coach', fn($q) => $q->where('is_active', false))
                   ->whereHas('schedules', fn($q) => $q->where('is_active', true));
         })->get();
     }
@@ -105,6 +108,7 @@ new class extends Component {
                       ->where('is_active', true)
                       ->where('is_membership_eligible', true)
                       ->where('service_type_id', $this->rebook_service_type_id)
+                      ->whereDoesntHave('coach', fn($query) => $query->where('is_active', false))
                       ->whereHas('schedules', fn($query) => $query->where('is_active', true))
                       ->get();
     }
@@ -168,6 +172,7 @@ new class extends Component {
         $this->rebook_service_id      = null;
         $this->rebook_date            = null;
         $this->rebook_schedule_id     = null;
+        $this->resetErrorBag();
         unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
@@ -181,6 +186,7 @@ new class extends Component {
         $this->rebook_service_id      = null;
         $this->rebook_date            = null;
         $this->rebook_schedule_id     = null;
+        $this->resetErrorBag();
         unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
     }
 
@@ -207,55 +213,42 @@ new class extends Component {
 
     /**
      * Confirm the rebook and update the booking.
+     *
+     * The new time is checked here against every booking rule, because the browser only limits what is shown.
      */
     public function confirmRebook(): void
     {
         $this->validate([
             'rebook_service_id'  => ['required', 'exists:services,id'],
-            'rebook_date'        => ['required', 'date'],
+            'rebook_date'        => [
+                'required', 'date_format:Y-m-d',
+                'after_or_equal:'.today()->toDateString(),
+                'before_or_equal:'.$this->membership->period_end->toDateString(),
+            ],
             'rebook_schedule_id' => ['required', 'exists:schedules,id'],
         ], [
-            'rebook_service_id.required'  => __('Jums ir jāizvēlās pakalpojums.'),
-            'rebook_date.required'        => __('Datums ir obligāts.'),
-            'rebook_schedule_id.required' => __('Laika slots ir obligāts.'),
+            'rebook_service_id.required'   => __('Jums ir jāizvēlās pakalpojums.'),
+            'rebook_date.required'         => __('Datums ir obligāts.'),
+            'rebook_date.after_or_equal'   => __('Datumam jābūt abonementa periodā.'),
+            'rebook_date.before_or_equal'  => __('Datumam jābūt abonementa periodā.'),
+            'rebook_schedule_id.required'  => __('Laika slots ir obligāts.'),
         ]);
-
-        // The browser can submit a schedule that was never shown for this date.
-        $isOffered = collect($this->rebookTimeSlots)->contains('schedule_id', $this->rebook_schedule_id);
-
-        if ( ! $isOffered) {
-            $this->rebook_schedule_id = null;
-
-            Flux::toast(
-                text: __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
-
-            return;
-        }
 
         $booking = $this->findReschedulableBooking($this->rebookingBookingId);
 
         try {
             DB::transaction(function () use ($booking) {
-                $schedule = Schedule::lockForUpdate()->findOrFail($this->rebook_schedule_id);
+                $schedule = Schedule::with('service.coach')->lockForUpdate()->findOrFail($this->rebook_schedule_id);
 
-                // Verify capacity (excluding the booking being rebooked)
-                $bookedParticipants = Booking::active()
-                                             ->where('schedule_id', $this->rebook_schedule_id)
-                                             ->whereDate('booking_date', $this->rebook_date)
-                                             ->where('id', '!=', $this->rebookingBookingId)
-                                             ->sum('participant_count');
+                $status = app(ScheduleAvailabilityService::class)
+                    ->slotStatus($schedule, Carbon::parse($this->rebook_date), excludeBookingId: $booking->id);
 
-                $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                if ($remaining < 1) {
-                    throw new \RuntimeException('No capacity available');
+                if ( ! $schedule->service->is_membership_eligible || $status !== SlotStatus::Available) {
+                    throw new SlotUnavailableException;
                 }
 
                 $booking->update([
-                    'schedule_id'  => $this->rebook_schedule_id,
+                    'schedule_id'  => $schedule->id,
                     'booking_date' => $this->rebook_date,
                 ]);
             });
@@ -267,20 +260,14 @@ new class extends Component {
                 text: __('Nodarbība veiksmīgi pārplānota!'),
                 variant: 'success',
             );
-        } catch (\RuntimeException $e) {
-            Flux::toast(
-                text: __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
+        } catch (SlotUnavailableException) {
+            $this->rebook_schedule_id = null;
+            unset($this->rebookUnavailableDates, $this->rebookTimeSlots);
+            $this->addError('rebook', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
         } catch (\Exception $e) {
             Log::error($e);
 
-            Flux::toast(
-                text: __('Neizdevās pārplānot nodarbību. Lūdzu, mēģiniet vēlreiz.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
+            $this->addError('rebook', __('Neizdevās pārplānot nodarbību. Lūdzu, mēģiniet vēlreiz.'));
         }
     }
 
@@ -422,6 +409,9 @@ new class extends Component {
                                     <flux:text
                                         class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
                                 @endif
+
+                                <flux:error name="rebook_date"/>
+                                <flux:error name="rebook"/>
 
                                 <div class="flex justify-between">
                                     <flux:link as="button" wire:click="cancelRebook">{{ __('Atcelt') }}</flux:link>

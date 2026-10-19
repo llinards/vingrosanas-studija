@@ -2,10 +2,12 @@
 
 use App\Enums\AttendanceStatus;
 use App\Models\Booking;
+use App\Models\Coach;
 use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
+use App\Models\UnavailableDate;
 use Illuminate\Support\Carbon;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
@@ -180,4 +182,88 @@ test('a session that was attended after the reschedule form opened is not moved'
     $component->call('confirmRebook')->assertNotFound();
 
     expect($booking->refresh()->schedule_id)->toBe($originalScheduleId);
+});
+
+/**
+ * A membership-eligible Wednesday 18:00 class (Wednesday 2026-10-07 in the pinned week).
+ */
+function membershipClassOnWednesday(array $serviceAttributes = [], array $scheduleAttributes = []): Schedule
+{
+    $service = Service::factory()->membershipEligible()->create([
+        'service_type_id' => ServiceType::factory(),
+        'is_active' => true,
+        ...$serviceAttributes,
+    ]);
+
+    return Schedule::factory()->create([
+        'service_id' => $service->id,
+        'day_of_week' => 3,
+        'start_time' => '18:00',
+        'max_capacity' => 10,
+        'is_active' => true,
+        ...$scheduleAttributes,
+    ]);
+}
+
+test('a session is not moved to a time the rules do not allow', function (Closure $createClass, string $date, string $errorKey, string $message) {
+    $this->travelTo(Carbon::parse('2026-10-05 09:00:00'));
+
+    $membership = membershipWithManageAccess();
+    $booking = Booking::factory()->forMembership($membership)->create(['booking_date' => '2026-10-09']);
+    $originalScheduleId = $booking->schedule_id;
+    $class = $createClass();
+
+    Livewire::withQueryParams(['session_id' => 'cs_test_manage_own'])
+        ->test('membership.membership-manage', ['membership' => $membership])
+        ->call('startRebook', $booking->id)
+        ->set('rebook_service_type_id', $class->service->service_type_id)
+        ->set('rebook_service_id', $class->service_id)
+        ->set('rebook_date', $date)
+        ->set('rebook_schedule_id', $class->id)
+        ->call('confirmRebook')
+        ->assertHasErrors($errorKey)
+        ->assertSee($message);
+
+    expect($booking->refresh())
+        ->schedule_id->toBe($originalScheduleId)
+        ->booking_date->toDateString()->toBe('2026-10-09');
+})->with([
+    'a past date' => [fn () => membershipClassOnWednesday(), '2026-09-30', 'rebook_date', 'Datumam jābūt abonementa periodā.'],
+    'a date after the membership period' => [fn () => membershipClassOnWednesday(), '2026-11-11', 'rebook_date', 'Datumam jābūt abonementa periodā.'],
+    'a day the studio is closed' => [function () {
+        UnavailableDate::factory()->range(Carbon::parse('2026-10-07'), Carbon::parse('2026-10-07'))->create();
+
+        return membershipClassOnWednesday();
+    }, '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
+    'a class not allowed for memberships' => [fn () => membershipClassOnWednesday(['is_membership_eligible' => false]), '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
+    'a class of an inactive coach' => [fn () => membershipClassOnWednesday(['coach_id' => Coach::factory()->create(['is_active' => false])->id]), '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
+    'a full class' => [function () {
+        $class = membershipClassOnWednesday(scheduleAttributes: ['max_capacity' => 1]);
+        Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+        return $class;
+    }, '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
+    'a taken individual session' => [function () {
+        $class = membershipClassOnWednesday(['is_exclusive' => true]);
+        Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+        return $class;
+    }, '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
+]);
+
+test('classes of an inactive coach are not offered for rescheduling', function () {
+    $this->travelTo(Carbon::parse('2026-10-05 09:00:00'));
+
+    $membership = membershipWithManageAccess();
+    $booking = Booking::factory()->forMembership($membership)->create();
+    $class = membershipClassOnWednesday([
+        'name' => 'Pilates ar neaktīvu treneri',
+        'coach_id' => Coach::factory()->create(['is_active' => false])->id,
+    ]);
+
+    Livewire::withQueryParams(['session_id' => 'cs_test_manage_own'])
+        ->test('membership.membership-manage', ['membership' => $membership])
+        ->call('startRebook', $booking->id)
+        ->set('rebook_service_type_id', $class->service->service_type_id)
+        ->assertDontSee('Pilates ar neaktīvu treneri');
 });

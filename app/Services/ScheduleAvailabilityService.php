@@ -108,8 +108,9 @@ class ScheduleAvailabilityService
      * Decide whether a customer can book the given schedule on the given date.
      *
      * This is the authoritative check behind the timetable and the checkout.
+     * Pass $excludeBookingId when moving an existing booking, so it does not count against itself.
      */
-    public function slotStatus(Schedule $schedule, Carbon $date): SlotStatus
+    public function slotStatus(Schedule $schedule, Carbon $date, ?int $excludeBookingId = null): SlotStatus
     {
         $status = $this->calendarStatus($schedule, $date, now());
 
@@ -121,7 +122,7 @@ class ScheduleAvailabilityService
             return SlotStatus::Cancelled;
         }
 
-        $remaining = $this->remainingCapacity($schedule, $date->toDateString(), $schedule->service->is_exclusive);
+        $remaining = $this->remainingCapacity($schedule, $date->toDateString(), $schedule->service->is_exclusive, $excludeBookingId);
 
         return $remaining >= 1 ? SlotStatus::Available : SlotStatus::Full;
     }
