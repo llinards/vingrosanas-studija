@@ -104,3 +104,20 @@ test('membership payment reminder email contains correct data', function () {
     $mailable->assertSeeInHtml($membership->period_end->format('d.m.Y'), escape: false);
     $mailable->assertSeeInHtml('https://checkout.stripe.com/test');
 });
+
+test('reminder goes out while about ten minutes are left on the Stripe payment page', function (int $minutesUntilHoldEnds, bool $isSent) {
+    Membership::factory()->create([
+        'payment_status' => PaymentStatus::Pending,
+        'expires_at' => now()->addMinutes($minutesUntilHoldEnds),
+        'stripe_checkout_session_id' => 'cs_test_123',
+    ]);
+
+    $this->artisan('payments:send-reminders')->assertSuccessful();
+
+    $isSent
+        ? Mail::assertQueued(MembershipPaymentReminder::class)
+        : Mail::assertNotQueued(MembershipPaymentReminder::class);
+})->with([
+    'ten minutes of payment time left' => [15, true],
+    'the payment page has closed, only the grace period is left' => [4, false],
+]);

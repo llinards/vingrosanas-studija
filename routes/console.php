@@ -10,4 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('payments:send-reminders')->everyMinute();
 Schedule::command('bookings:expire-pending')->everyMinute();
-Schedule::command('memberships:expire-pending')->everyFiveMinutes();
+Schedule::command('memberships:expire-pending')->everyMinute();

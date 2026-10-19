@@ -32,6 +32,7 @@ class CreateMembershipCheckoutSession
         try {
             $session = Session::create([
                 'mode' => 'payment',
+                'locale' => 'lv',
                 'line_items' => [[
                     'price_data' => [
                         'currency' => config('cashier.currency', 'eur'),
@@ -49,7 +50,7 @@ class CreateMembershipCheckoutSession
                 'metadata' => [
                     'membership_id' => $membership->id,
                 ],
-                'expires_at' => now()->addMinutes(30)->timestamp,
+                'expires_at' => now()->addMinutes(CreatePendingBooking::PAYMENT_WINDOW_MINUTES)->timestamp,
             ]);
         } catch (ApiErrorException $e) {
             Log::error('Stripe membership checkout session creation failed', [

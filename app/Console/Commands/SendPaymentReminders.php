@@ -92,8 +92,8 @@ class SendPaymentReminders extends Command
             ->where('payment_status', PaymentStatus::Pending)
             ->whereNotNull('expires_at')
             ->whereNull('payment_reminder_sent_at')
-            ->where('expires_at', '>', now())
-            ->where('expires_at', '<=', now()->addMinutes(10))
+            ->where('expires_at', '>', now()->addMinutes(CreatePendingBooking::HOLD_GRACE_MINUTES))
+            ->where('expires_at', '<=', now()->addMinutes(10 + CreatePendingBooking::HOLD_GRACE_MINUTES))
             ->get();
 
         $sent = 0;
