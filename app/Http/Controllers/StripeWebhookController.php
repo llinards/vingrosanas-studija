@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Actions\ConfirmBookingPayment;
+use App\Actions\ConfirmMembershipPayment;
 use App\Enums\PaymentStatus;
 use App\Mail\BookingRefunded;
-use App\Mail\MembershipConfirmation;
 use App\Mail\MembershipRefunded;
-use App\Mail\NewMembershipNotification;
 use App\Models\Booking;
 use App\Models\Membership;
 use Illuminate\Http\Request;
@@ -107,26 +106,7 @@ class StripeWebhookController extends Controller
             return response('Already processed', 200);
         }
 
-        $membership->markAsPaid($session->payment_intent);
-
-        $membership->load('bookings.schedule.service.coach');
-
-        Mail::to($membership->email)->send(new MembershipConfirmation($membership));
-
-        // Send notification to each unique coach
-        $coachEmails = $membership->bookings
-            ->map(fn ($booking) => $booking->schedule->service->coach->email ?? null)
-            ->filter()
-            ->unique();
-
-        foreach ($coachEmails as $coachEmail) {
-            Mail::to($coachEmail)->send(new NewMembershipNotification($membership));
-        }
-
-        Log::info('Membership payment completed', [
-            'membership_id' => $membership->id,
-            'payment_intent' => $session->payment_intent,
-        ]);
+        app(ConfirmMembershipPayment::class)->execute($membership, $session->payment_intent);
 
         return response('Membership payment processed', 200);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\ConfirmMembershipPayment;
 use App\Enums\PaymentStatus;
 use App\Mail\MembershipConfirmation;
 use App\Mail\MembershipRefunded;
@@ -232,4 +233,24 @@ test('stripe webhook handles membership refund event', function () {
     expect($booking->payment_status)->toBe(PaymentStatus::Refunded);
 
     Mail::assertQueued(MembershipRefunded::class);
+});
+
+test('confirming a membership payment marks its waiting sessions paid and emails the customer', function () {
+    $membership = Membership::factory()->create([
+        'payment_status' => PaymentStatus::Pending,
+        'expires_at' => now()->addMinutes(30),
+    ]);
+    $sessions = Booking::factory()->count(2)->forMembership($membership)->create([
+        'payment_status' => PaymentStatus::Pending,
+    ]);
+
+    app(ConfirmMembershipPayment::class)->execute($membership, 'pi_test_confirm_123');
+
+    expect($membership->fresh())
+        ->payment_status->toBe(PaymentStatus::Paid)
+        ->payment_reference->toBe('pi_test_confirm_123')
+        ->expires_at->toBeNull();
+    expect($sessions->map->fresh())
+        ->each(fn ($session) => $session->payment_status->toBe(PaymentStatus::Paid));
+    Mail::assertQueued(MembershipConfirmation::class);
 });

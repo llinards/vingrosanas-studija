@@ -1,16 +1,15 @@
 <?php
 
 use App\Actions\CreateMembershipCheckoutSession;
-use App\Enums\PaymentStatus;
-use App\Models\Booking;
-use App\Models\Membership;
+use App\Actions\CreatePendingMembership;
+use App\Exceptions\InvalidMembershipSelectionException;
+use App\Exceptions\SlotUnavailableException;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
 use App\Services\ScheduleAvailabilityService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Stripe\Exception\ApiErrorException;
@@ -144,12 +143,13 @@ new class extends Component {
     }
 
     /**
-     * Latest date selectable: three months ahead for the first session, then one month from the anchor.
+     * Latest date selectable: the booking horizon for the first session, then one month from the anchor.
      */
     #[Computed]
     public function sessionWindowEnd(): Carbon
     {
-        return $this->membershipAnchorDate()?->copy()->addMonth() ?? Carbon::today()->addMonths(3);
+        return $this->membershipAnchorDate()?->copy()->addMonth()
+            ?? app(ScheduleAvailabilityService::class)->bookingHorizonEnd();
     }
 
     /**
@@ -241,25 +241,33 @@ new class extends Component {
         }
 
         if ($this->step === 3) {
-            $this->validate([
-                'name'    => ['required', 'string', 'max:255'],
-                'surname' => ['required', 'string', 'max:255'],
-                'phone'   => ['required', 'string', 'max:50'],
-                'email'   => ['required', 'email', 'max:255'],
-            ], [
-                'name.required'    => __('Vārds ir obligāts.'),
-                'name.max'         => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
-                'surname.required' => __('Uzvārds ir obligāts.'),
-                'surname.max'      => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
-                'phone.required'   => __('Tālrunis ir obligāts.'),
-                'phone.max'        => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
-                'email.required'   => __('E-pasts ir obligāts.'),
-                'email.email'      => __('E-pastam jābūt derīgai e-pasta adresei.'),
-                'email.max'        => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
-            ]);
+            $this->validateCustomer();
         }
 
         $this->step++;
+    }
+
+    /**
+     * Validate the customer's contact details.
+     */
+    private function validateCustomer(): void
+    {
+        $this->validate([
+            'name'    => ['required', 'string', 'max:255'],
+            'surname' => ['required', 'string', 'max:255'],
+            'phone'   => ['required', 'string', 'max:50'],
+            'email'   => ['required', 'email', 'max:255'],
+        ], [
+            'name.required'    => __('Vārds ir obligāts.'),
+            'name.max'         => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'surname.required' => __('Uzvārds ir obligāts.'),
+            'surname.max'      => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'phone.required'   => __('Tālrunis ir obligāts.'),
+            'phone.max'        => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
+            'email.required'   => __('E-pasts ir obligāts.'),
+            'email.email'      => __('E-pastam jābūt derīgai e-pasta adresei.'),
+            'email.max'        => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
+        ]);
     }
 
     public function previousStep(): void
@@ -364,84 +372,25 @@ new class extends Component {
         if ($this->isProcessing) {
             return;
         }
+
+        $this->validateCustomer();
         $this->isProcessing = true;
 
-        $membershipService = $this->membershipService;
-        $price             = $this->membershipService?->price ?? 0;
-
-        if ( ! $membershipService || count($this->sessions) !== $membershipService->sessions_count) {
-            $this->isProcessing = false;
-
-            return;
-        }
-
-        // Period: one month from the earliest selected session (sessions are bookable up to 3 months ahead).
-        $periodStart = $this->membershipAnchorDate()?->copy()->startOfDay() ?? today();
-        $periodEnd   = $periodStart->copy()->addMonth();
-
-        $latestSession = collect($this->sessions)
-            ->map(fn (array $session) => Carbon::parse($session['date']))
-            ->max();
-
-        if ($periodStart->lt(today())
-            || $periodStart->gt(today()->addMonths(3))
-            || ($latestSession && $latestSession->gt($periodEnd))) {
+        try {
+            $membership = app(CreatePendingMembership::class)->execute(
+                $this->selectedMembershipServiceId ?? 0,
+                collect($this->sessions)
+                    ->map(fn (array $session) => ['schedule_id' => (int) $session['schedule_id'], 'date' => (string) $session['date']])
+                    ->all(),
+                ['name' => $this->name, 'surname' => $this->surname, 'phone' => $this->phone, 'email' => $this->email],
+            );
+        } catch (InvalidMembershipSelectionException) {
             $this->isProcessing = false;
             $this->addError('sessions', __('Abonementa nodarbības nav derīgā periodā.'));
             $this->step = 2;
 
             return;
-        }
-
-        $result = DB::transaction(function () use ($membershipService, $price, $periodStart, $periodEnd) {
-            // Verify capacity for all sessions
-            foreach ($this->sessions as $session) {
-                $schedule = Schedule::lockForUpdate()->findOrFail($session['schedule_id']);
-
-                $bookedParticipants = Booking::active()
-                                             ->where('schedule_id', $session['schedule_id'])
-                                             ->whereDate('booking_date', $session['date'])
-                                             ->sum('participant_count');
-
-                $remaining = $schedule->max_capacity - $bookedParticipants;
-
-                if ($remaining < 1) {
-                    return null;
-                }
-            }
-
-            $membership = Membership::create([
-                'email'          => $this->email,
-                'name'           => $this->name,
-                'surname'        => $this->surname,
-                'phone'          => $this->phone,
-                'service_id'     => $membershipService->id,
-                'price'          => $price,
-                'sessions_total' => $membershipService->sessions_count,
-                'period_start'   => $periodStart,
-                'period_end'     => $periodEnd,
-                'payment_status' => PaymentStatus::Pending,
-                'expires_at'     => now()->addMinutes(30),
-            ]);
-
-            foreach ($this->sessions as $session) {
-                Booking::create([
-                    'membership_id'     => $membership->id,
-                    'schedule_id'       => $session['schedule_id'],
-                    'booking_date'      => $session['date'],
-                    'name'              => $this->name,
-                    'surname'           => $this->surname,
-                    'phone'             => $this->phone,
-                    'email'             => $this->email,
-                    'participant_count' => 1,
-                    'payment_status'    => PaymentStatus::Paid,
-                ]);
-            }
-
-            return $membership;
-        });
-
-        if ( ! $result) {
+        } catch (SlotUnavailableException) {
             $this->isProcessing = false;
             $this->addError('sessions',
                 __('Kāds no izvēlētajiem laikiem vairs nav pieejams. Lūdzu, pārbaudiet un mēģiniet vēlreiz.'));
@@ -451,8 +400,11 @@ new class extends Component {
         }
 
         try {
-            $checkout = app(CreateMembershipCheckoutSession::class)->execute($result);
+            $checkout = app(CreateMembershipCheckoutSession::class)->execute($membership);
         } catch (ApiErrorException $e) {
+            // Without a payment page nobody can pay, so free the places straight away.
+            $membership->delete();
+
             $this->isProcessing = false;
             $this->addError('membership', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
             $this->step = 3;

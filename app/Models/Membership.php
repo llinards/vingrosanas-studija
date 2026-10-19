@@ -100,6 +100,19 @@ class Membership extends Model
     }
 
     /**
+     * Mark the sessions still waiting for this membership's payment as paid.
+     */
+    public function markSessionsAsPaid(): void
+    {
+        $this->bookings()
+            ->where('payment_status', PaymentStatus::Pending)
+            ->update([
+                'payment_status' => PaymentStatus::Paid,
+                'expires_at' => null,
+            ]);
+    }
+
+    /**
      * Mark the membership as refunded with the given refund reference.
      */
     public function markAsRefunded(string $refundReference): void

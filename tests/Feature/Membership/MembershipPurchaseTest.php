@@ -104,7 +104,7 @@ test('walks from the membership product through the sessions and customer detail
         ->assertSee('Apmaksāt ar karti');
 });
 
-test('buying a membership creates an unpaid membership with its sessions booked and sends the customer to Stripe', function () {
+test('buying a membership creates an unpaid membership with its sessions waiting for payment and sends the customer to Stripe', function () {
     $class = createMembershipEligibleClass();
     $membershipService = Service::factory()->membership(2)->create(['price' => 4500]);
     $this->mock(CreateMembershipCheckoutSession::class)
@@ -127,7 +127,7 @@ test('buying a membership creates an unpaid membership with its sessions booked 
         ->phone->toBe('+371 20000000')
         ->email->toBe('anna@example.com')
         ->payment_status->toBe(PaymentStatus::Pending);
-    expect($membership->expires_at->toDateTimeString())->toBe('2026-10-05 08:30:00');
+    expect($membership->expires_at->toDateTimeString())->toBe('2026-10-05 08:35:00');
     expect($membership->period_start->toDateString())->toBe('2026-10-07');
     expect($membership->period_end->toDateString())->toBe('2026-11-07');
 
@@ -138,7 +138,7 @@ test('buying a membership creates an unpaid membership with its sessions booked 
         ->membership_id->toBe($membership->id)
         ->schedule_id->toBe($class->id)
         ->participant_count->toBe(1)
-        ->payment_status->toBe(PaymentStatus::Paid)
+        ->payment_status->toBe(PaymentStatus::Pending)
         ->email->toBe('anna@example.com')
         ->expires_at->toBeNull());
 });
@@ -159,7 +159,7 @@ test('does not sell a membership when one of its sessions filled up meanwhile', 
     expect(Booking::count())->toBe(1);
 });
 
-test('returns to the customer details with an error when Stripe is unavailable', function () {
+test('returns to the customer details and frees the places when Stripe is unavailable', function () {
     $class = createMembershipEligibleClass();
     $membershipService = Service::factory()->membership(2)->create();
     $this->mock(CreateMembershipCheckoutSession::class)
@@ -172,4 +172,7 @@ test('returns to the customer details with an error when Stripe is unavailable',
         ->assertHasErrors('membership')
         ->assertSet('step', 3)
         ->assertNoRedirect();
+
+    expect(Membership::count())->toBe(0);
+    expect(Booking::count())->toBe(0);
 });

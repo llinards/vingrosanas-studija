@@ -164,14 +164,14 @@ test('membership period starts on the earliest selected session date', function 
     Carbon::setTestNow();
 });
 
-test('first session can be picked up to three months ahead and anchors the period', function () {
+test('first session can be picked up to the booking horizon and anchors the period', function () {
     Carbon::setTestNow(Carbon::today()->setTime(8, 0));
 
     $this->mock(CreateMembershipCheckoutSession::class)
         ->shouldReceive('execute')
         ->andReturn(['url' => 'https://stripe.test/checkout', 'session_id' => 'cs_test_123']);
 
-    $firstDate = today()->addMonths(3);
+    $firstDate = today()->addWeeks(12);
 
     $serviceType = ServiceType::factory()->create();
     $membershipService = Service::factory()->membership(2)->create();
@@ -219,7 +219,7 @@ test('first session can be picked up to three months ahead and anchors the perio
     Carbon::setTestNow();
 });
 
-test('first session beyond three months is rejected', function () {
+test('first session beyond the booking horizon is rejected', function () {
     Carbon::setTestNow(Carbon::today()->setTime(8, 0));
 
     $serviceType = ServiceType::factory()->create();
@@ -228,7 +228,7 @@ test('first session beyond three months is rejected', function () {
         'service_type_id' => $serviceType->id,
         'is_active' => true,
     ]);
-    $farDate = today()->addMonths(4);
+    $farDate = today()->addWeeks(13);
     $schedule = Schedule::factory()->create([
         'service_id' => $eligibleService->id,
         'day_of_week' => $farDate->dayOfWeekIso,
