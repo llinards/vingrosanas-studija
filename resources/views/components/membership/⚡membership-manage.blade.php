@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AttendanceStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Membership;
@@ -26,6 +27,7 @@ new class extends Component {
     /**
      * The booking ID being rebooked (null if not rebooking).
      */
+    #[Locked]
     public ?int $rebookingBookingId = null;
 
     /**
@@ -161,7 +163,7 @@ new class extends Component {
      */
     public function startRebook(int $bookingId): void
     {
-        $this->rebookingBookingId     = $bookingId;
+        $this->rebookingBookingId     = $this->findReschedulableBooking($bookingId)->id;
         $this->rebook_service_type_id = null;
         $this->rebook_service_id      = null;
         $this->rebook_date            = null;
@@ -233,9 +235,10 @@ new class extends Component {
             return;
         }
 
+        $booking = $this->findReschedulableBooking($this->rebookingBookingId);
+
         try {
-            DB::transaction(function () {
-                $booking  = Booking::findOrFail($this->rebookingBookingId);
+            DB::transaction(function () use ($booking) {
                 $schedule = Schedule::lockForUpdate()->findOrFail($this->rebook_schedule_id);
 
                 // Verify capacity (excluding the booking being rebooked)
@@ -282,11 +285,28 @@ new class extends Component {
     }
 
     /**
-     * Check if a booking can be rebooked (is in the future).
+     * Check if a booking can be rebooked (is in the future and not attended).
      */
     public function canRebook(Booking $booking): bool
     {
-        return $booking->getServiceDateTime()->isAfter(now());
+        return $booking->attendance_status !== AttendanceStatus::Attended
+            && $booking->getServiceDateTime()->isAfter(now());
+    }
+
+    /**
+     * Find a session of this membership that the customer may still move, or respond with 404.
+     */
+    private function findReschedulableBooking(?int $bookingId): Booking
+    {
+        $booking = $this->membership->bookings()
+                                    ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
+                                    ->find($bookingId);
+
+        if ( ! $booking || ! $this->canRebook($booking)) {
+            abort(404);
+        }
+
+        return $booking;
     }
 
     /**
