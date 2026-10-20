@@ -595,78 +595,62 @@ new class extends Component
                         @forelse($day['entries'] as $entry)
                             @if($this->isMembershipMode)
                                 @php($cardState = $this->membershipCardState($entry))
-                                <article wire:key="pick-{{ $entry['schedule_id'] }}-{{ $entry['date'] }}"
-                                         @class([
-                                             'flex flex-col gap-2 rounded-xl border p-3',
-                                             'border-blue bg-blue/5 ring-1 ring-blue' => $cardState === 'picked',
-                                             'border-zinc-200 bg-surface' => in_array($cardState, ['available', 'locked'], true),
-                                             'border-zinc-100 bg-zinc-50 text-zinc-400' => in_array($cardState, ['unavailable', 'outside-period'], true),
-                                         ])>
-                                    <div class="font-heading text-lg font-medium">{{ $entry['start_time'] }}</div>
-                                    <div class="font-medium leading-snug">{{ $entry['service_name'] }}</div>
-                                    @if($entry['coach_name'] !== '')
-                                        <div class="text-sm">{{ $entry['coach_name'] }}</div>
-                                    @endif
-
-                                    <div class="text-sm">
-                                        @if($cardState === 'unavailable')
-                                            <span class="font-medium uppercase">{{ $this->statusLabel($entry['status']) }}</span>
-                                        @elseif($cardState === 'outside-period')
-                                            <span class="font-medium uppercase">{{ __('Ārpus perioda') }}</span>
-                                        @elseif($entry['is_exclusive'])
-                                            <span>{{ __('Individuāli') }}</span>
-                                        @elseif($cardState === 'picked')
-                                            <span>{{ $this->placesLabel(max(0, $entry['remaining'] - 1)) }}</span>
+                                <x-timetable.class-card wire:key="pick-{{ $entry['schedule_id'] }}-{{ $entry['date'] }}"
+                                                        :entry="$entry"
+                                                        :tone="match ($cardState) { 'picked' => 'picked', 'unavailable', 'outside-period' => 'muted', default => 'normal' }"
+                                                        :lines="[
+                                                            $entry['coach_name'],
+                                                            match (true) {
+                                                                in_array($cardState, ['unavailable', 'outside-period'], true) => null,
+                                                                $entry['is_exclusive'] => __('Individuāli'),
+                                                                $cardState === 'picked' => $this->placesLabel(max(0, $entry['remaining'] - 1)),
+                                                                default => $this->placesLabel($entry['remaining']),
+                                                            },
+                                                        ]">
+                                    <x-slot:action>
+                                        @if($cardState === 'picked')
+                                            <flux:button variant="filled" size="sm" class="lg:w-full" icon="check"
+                                                         wire:click="removeSession({{ $entry['schedule_id'] }}, '{{ $entry['date'] }}')">
+                                                {{ __('Noņemt') }}
+                                            </flux:button>
+                                        @elseif(in_array($cardState, ['available', 'locked'], true))
+                                            <flux:button variant="primary" size="sm" class="lg:w-full"
+                                                         :disabled="$cardState === 'locked'"
+                                                         wire:click="addSession({{ $entry['schedule_id'] }}, '{{ $entry['date'] }}')">
+                                                {{ __('Pievienot') }}
+                                            </flux:button>
                                         @else
-                                            <span>{{ $this->placesLabel($entry['remaining']) }}</span>
+                                            <span class="text-sm font-medium uppercase">
+                                                {{ $cardState === 'outside-period' ? __('Ārpus perioda') : $this->statusLabel($entry['status']) }}
+                                            </span>
                                         @endif
-                                    </div>
-
-                                    @if($cardState === 'picked')
-                                        <flux:button variant="filled" size="sm" class="w-full" icon="check"
-                                                     wire:click="removeSession({{ $entry['schedule_id'] }}, '{{ $entry['date'] }}')">
-                                            {{ __('Noņemt') }}
-                                        </flux:button>
-                                    @elseif(in_array($cardState, ['available', 'locked'], true))
-                                        <flux:button variant="primary" size="sm" class="w-full"
-                                                     :disabled="$cardState === 'locked'"
-                                                     wire:click="addSession({{ $entry['schedule_id'] }}, '{{ $entry['date'] }}')">
-                                            {{ __('Pievienot') }}
-                                        </flux:button>
-                                    @endif
-                                </article>
+                                    </x-slot:action>
+                                </x-timetable.class-card>
                             @else
                                 @php($isBookable = $entry['status'] === \App\Enums\SlotStatus::Available)
-                                <article wire:key="slot-{{ $entry['schedule_id'] }}-{{ $entry['date'] }}"
-                                         @class([
-                                             'flex flex-col gap-2 rounded-xl border p-3',
-                                             'border-zinc-200 bg-surface' => $isBookable,
-                                             'border-zinc-100 bg-zinc-50 text-zinc-400' => ! $isBookable,
-                                         ])>
-                                    <div class="font-heading text-lg font-medium">{{ $entry['start_time'] }}</div>
-                                    <div class="font-medium leading-snug">{{ $entry['service_name'] }}</div>
-                                    @if($entry['coach_name'] !== '')
-                                        <div class="text-sm">{{ $entry['coach_name'] }}</div>
-                                    @endif
-
-                                    <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm">
-                                        <span>{{ $entry['has_price_range'] ? __('no').' '.Number::currency($entry['price_from'] / 100, 'EUR') : price_label($entry['price_from']) }}</span>
-                                        @if(! $isBookable)
-                                            <span class="font-medium uppercase">{{ $this->statusLabel($entry['status']) }}</span>
-                                        @elseif($entry['is_exclusive'])
-                                            <span>{{ __('Individuāli') }}</span>
+                                <x-timetable.class-card wire:key="slot-{{ $entry['schedule_id'] }}-{{ $entry['date'] }}"
+                                                        :entry="$entry"
+                                                        :tone="$isBookable ? 'normal' : 'muted'"
+                                                        :lines="[
+                                                            $entry['coach_name'],
+                                                            $entry['has_price_range'] ? __('no').' '.Number::currency($entry['price_from'] / 100, 'EUR') : price_label($entry['price_from']),
+                                                            match (true) {
+                                                                ! $isBookable => null,
+                                                                $entry['is_exclusive'] => __('Individuāli'),
+                                                                default => $this->placesLabel($entry['remaining']),
+                                                            },
+                                                        ]">
+                                    <x-slot:action>
+                                        @if($isBookable)
+                                            <flux:button variant="primary" size="sm" class="lg:w-full"
+                                                         wire:click="$dispatch('open-booking-checkout', { scheduleId: {{ $entry['schedule_id'] }}, date: '{{ $entry['date'] }}' })">
+                                                {{ __('Pieteikties') }}
+                                            </flux:button>
                                         @else
-                                            <span>{{ $this->placesLabel($entry['remaining']) }}</span>
+                                            <span class="text-sm font-medium uppercase">{{ $this->statusLabel($entry['status']) }}</span>
                                         @endif
-                                    </div>
-
-                                    @if($isBookable)
-                                        <flux:button variant="primary" size="sm" class="w-full"
-                                                     wire:click="$dispatch('open-booking-checkout', { scheduleId: {{ $entry['schedule_id'] }}, date: '{{ $entry['date'] }}' })">
-                                            {{ __('Pieteikties') }}
-                                        </flux:button>
-                                    @endif
-                                </article>
+                                    </x-slot:action>
+                                </x-timetable.class-card>
                             @endif
                         @empty
                             <flux:text size="sm">{{ __('Nodarbību nav') }}</flux:text>

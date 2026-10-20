@@ -3,6 +3,7 @@
 use App\Actions\ConfirmBookingPayment;
 use App\Actions\CreatePendingBooking;
 use App\Actions\CreateStripeCheckoutSession;
+use App\Enums\DayOfWeek;
 use App\Enums\SlotStatus;
 use App\Exceptions\SlotUnavailableException;
 use App\Models\Booking;
@@ -221,29 +222,15 @@ new class extends Component
                 <flux:heading size="lg">{{ __('Pieteikšanās nodarbībai') }}</flux:heading>
 
                 {{-- CLASS SUMMARY --}}
-                <div class="rounded-lg border border-zinc-200 p-3 space-y-1">
-                    <div class="flex justify-between gap-2 text-sm">
-                        <flux:text class="text-zinc-500 shrink-0">{{ __('Nodarbība') }}</flux:text>
-                        <flux:text class="font-medium text-right">{{ $this->schedule->service->name }}</flux:text>
+                <div>
+                    <div class="flex justify-between gap-4 font-medium">
+                        <span>{{ $this->schedule->service->name }}</span>
+                        <span class="shrink-0">{{ price_label($this->price) }}</span>
                     </div>
-                    @if($this->schedule->service->coach)
-                        <div class="flex justify-between gap-2 text-sm">
-                            <flux:text class="text-zinc-500 shrink-0">{{ __('Treneris') }}</flux:text>
-                            <flux:text class="font-medium text-right">{{ $this->schedule->service->coach->name }}</flux:text>
-                        </div>
-                    @endif
-                    <div class="flex justify-between gap-2 text-sm">
-                        <flux:text class="text-zinc-500 shrink-0">{{ __('Datums') }}</flux:text>
-                        <flux:text class="font-medium">{{ Carbon::parse($date)->format('d.m.Y') }}</flux:text>
-                    </div>
-                    <div class="flex justify-between gap-2 text-sm">
-                        <flux:text class="text-zinc-500 shrink-0">{{ __('Laiks') }}</flux:text>
-                        <flux:text class="font-medium">{{ substr($this->schedule->start_time, 0, 5) }}</flux:text>
-                    </div>
-                    <div class="flex justify-between gap-2 text-sm">
-                        <flux:text class="text-zinc-500 shrink-0">{{ __('Cena') }}</flux:text>
-                        <flux:text class="font-semibold">{{ price_label($this->price) }}</flux:text>
-                    </div>
+                    <flux:text size="sm">
+                        {{ DayOfWeek::from(Carbon::parse($date)->dayOfWeekIso)->label() }},
+                        {{ Carbon::parse($date)->format('d.m.Y') }} {{ substr($this->schedule->start_time, 0, 5) }}@if($this->schedule->service->coach) · {{ $this->schedule->service->coach->name }}@endif
+                    </flux:text>
                 </div>
 
                 {{-- GROUP SIZE (individual sessions with several price tiers) --}}
@@ -259,11 +246,7 @@ new class extends Component
                 @endif
 
                 {{-- CUSTOMER DETAILS --}}
-                <flux:input wire:model="name" :label="__('Vārds')" :placeholder="__('Ievadiet vārdu')"/>
-                <flux:input wire:model="surname" :label="__('Uzvārds')" :placeholder="__('Ievadiet uzvārdu')"/>
-                <flux:input wire:model="phone" :label="__('Tālrunis')" :placeholder="__('Ievadiet tālruni')"/>
-                <flux:input wire:model="email" type="email" :label="__('E-pasts')"
-                            :placeholder="__('Ievadiet e-pastu')"/>
+                <x-booking.customer-fields/>
 
                 @error('participantCount')
                 <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
