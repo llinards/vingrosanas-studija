@@ -171,12 +171,20 @@ test('switching to a smaller membership keeps the earliest sessions', function (
         ->assertSee('atstātas pirmās 2');
 });
 
+test('scrolls to the calendar once a membership is chosen', function () {
+    createPickerClass();
+
+    openPickerWith(Service::factory()->membership(2)->create())
+        ->assertDispatched('membership-chosen');
+});
+
 test('ignores a membership that is not on sale', function () {
     createPickerClass();
     $retired = Service::factory()->membership(2)->create(['is_active' => false]);
 
     openPickerWith($retired)
-        ->assertSet('membershipServiceId', null);
+        ->assertSet('membershipServiceId', null)
+        ->assertNotDispatched('membership-chosen');
 });
 
 test('continue opens the membership checkout with the picked sessions', function () {
