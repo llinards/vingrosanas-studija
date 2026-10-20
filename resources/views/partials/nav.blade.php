@@ -45,11 +45,6 @@
                     <flux:navlist.item href="{{ route('timetable') }}" @click="open = false">{{ __('Pieteikties') }}</flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>
-                    <flux:modal.trigger name="booking-modal">
-                        <flux:navlist.item @click="open = false">{{ __('Abonementi') }}</flux:navlist.item>
-                    </flux:modal.trigger>
-                </flux:navlist>
-                <flux:navlist>
                     <flux:navlist.item href="/#aboutUs" @click="open = false">{{ __('Par mums') }}</flux:navlist.item>
                 </flux:navlist>
                 <flux:navlist>

@@ -186,17 +186,19 @@ test('home page sends visitors who want to book to the timetable', function () {
         ->assertSee('href="'.route('timetable').'"', escape: false);
 });
 
-test('timetable page keeps the membership purchase reachable from the menu', function () {
+test('the menu has no separate memberships entry, as memberships are bought on the timetable', function () {
     $this->get(route('timetable'))
-        ->assertSee('Abonementi')
-        ->assertSeeLivewire('booking-modal');
+        ->assertSee('href="'.route('timetable').'"', escape: false)
+        ->assertDontSee('Abonementi');
 });
 
-test('timetable itself does not show a memberships button', function () {
+test('timetable opens on single classes with a switch to memberships', function () {
     createClassForTimetablePage();
 
     Livewire::test('timetable')
-        ->assertDontSee('Abonementi');
+        ->assertSee('Vienreizēja nodarbība')
+        ->assertSee('Abonements')
+        ->assertDontSee('Pievienot');
 });
 
 test('shows the classes of every service type together without a filter', function () {
@@ -226,4 +228,18 @@ test('hides the classes of a coach who is switched to inactive and shows them ag
 
     Livewire::test('timetable')
         ->assertSee('Fusion Pilates');
+});
+
+test('swiping back from a Monday opens the previous week on Sunday, while the arrows open weeks on Monday', function () {
+    createClassForTimetablePage();
+
+    Livewire::test('timetable')
+        ->set('week', 2)
+        ->call('previousWeek', true)
+        ->assertSet('week', 1)
+        ->assertSee("day: '2026-10-18'", escape: false)
+        ->call('nextWeek')
+        ->assertSee("day: '2026-10-19'", escape: false)
+        ->call('previousWeek')
+        ->assertSee("day: '2026-10-12'", escape: false);
 });

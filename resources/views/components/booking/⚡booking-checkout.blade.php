@@ -7,10 +7,10 @@ use App\Enums\SlotStatus;
 use App\Exceptions\SlotUnavailableException;
 use App\Models\Booking;
 use App\Models\Schedule;
+use App\Services\BookingStartLimiter;
 use App\Services\ScheduleAvailabilityService;
 use Flux\Flux;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -21,13 +21,6 @@ use Stripe\Exception\ApiErrorException;
 
 new class extends Component
 {
-    /**
-     * How many bookings one visitor may start within the window below.
-     */
-    private const MAX_BOOKING_STARTS = 5;
-
-    private const BOOKING_STARTS_WINDOW_SECONDS = 600;
-
     #[Locked]
     public ?int $scheduleId = null;
 
@@ -134,8 +127,10 @@ new class extends Component
             'participantCount.*' => __('Izvēlētais dalībnieku skaits nav pieejams.'),
         ]);
 
-        if (RateLimiter::tooManyAttempts($this->bookingStartsKey(), self::MAX_BOOKING_STARTS)) {
-            $this->addError('booking', $this->tooManyBookingStartsMessage());
+        $limiter = app(BookingStartLimiter::class);
+
+        if ($limiter->tooManyStarts()) {
+            $this->addError('booking', $limiter->tooManyStartsMessage());
 
             return;
         }
@@ -176,7 +171,7 @@ new class extends Component
         }
 
         // Only a start that holds a place and reaches Stripe counts towards the limit.
-        RateLimiter::hit($this->bookingStartsKey(), self::BOOKING_STARTS_WINDOW_SECONDS);
+        $limiter->hit();
 
         $this->redirect($checkout['url'], navigate: false);
     }
@@ -197,26 +192,9 @@ new class extends Component
         app(ConfirmBookingPayment::class)->execute($booking, null);
 
         // Free bookings count towards the limit too, or nothing would stop a class being filled with them.
-        RateLimiter::hit($this->bookingStartsKey(), self::BOOKING_STARTS_WINDOW_SECONDS);
+        app(BookingStartLimiter::class)->hit();
 
         $this->redirect(route('booking.success', ['booking' => $booking, 'session_id' => $accessCode]), navigate: false);
-    }
-
-    /**
-     * Key under which the booking starts of the current visitor are counted.
-     */
-    private function bookingStartsKey(): string
-    {
-        return 'booking-starts:'.request()->ip();
-    }
-
-    private function tooManyBookingStartsMessage(): string
-    {
-        $minutes = max(1, (int) ceil(RateLimiter::availableIn($this->bookingStartsKey()) / 60));
-
-        return $minutes === 1
-            ? __('Pārāk daudz mēģinājumu. Lūdzu, mēģiniet vēlreiz pēc 1 minūtes.')
-            : __('Pārāk daudz mēģinājumu. Lūdzu, mēģiniet vēlreiz pēc :minutes minūtēm.', ['minutes' => $minutes]);
     }
 
     private function isBookable(int $scheduleId, string $date): bool

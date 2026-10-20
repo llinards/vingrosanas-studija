@@ -54,3 +54,12 @@ test('gives the customer 30 minutes to pay for the membership on the Stripe page
 
     expect($stripe->requests[0]['expires_at'])->toBe(now()->setTime(9, 30)->timestamp);
 });
+
+test('brings a customer who cancels payment back to the timetable in membership mode', function () {
+    $stripe = recordStripeMembershipCheckoutRequests();
+    $membership = Membership::factory()->create();
+
+    app(CreateMembershipCheckoutSession::class)->execute($membership);
+
+    expect($stripe->requests[0]['cancel_url'])->toBe(route('timetable', ['veids' => 'abonements', 'membership_cancelled' => 1]));
+});

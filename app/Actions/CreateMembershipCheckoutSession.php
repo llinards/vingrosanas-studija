@@ -46,7 +46,7 @@ class CreateMembershipCheckoutSession
                 ]],
                 'customer_email' => $membership->email,
                 'success_url' => route('membership.success', ['membership' => $membership->id]).'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('home').'?membership_cancelled=1',
+                'cancel_url' => route('timetable', ['veids' => 'abonements', 'membership_cancelled' => 1]),
                 'metadata' => [
                     'membership_id' => $membership->id,
                 ],
