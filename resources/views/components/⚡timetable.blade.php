@@ -245,7 +245,6 @@ new class extends Component
 
     /**
      * Accept only a product on sale, and keep the earliest picks when the new one has fewer sessions.
-     * The page then scrolls down to the calendar, where the sessions are picked.
      */
     public function updatedMembershipServiceId(): void
     {
@@ -257,8 +256,6 @@ new class extends Component
 
             return;
         }
-
-        $this->dispatch('membership-chosen');
 
         $sessionsCount = $this->membershipService->sessions_count;
 
@@ -523,8 +520,7 @@ new class extends Component
     @endif
 
     {{-- WEEK NAVIGATION --}}
-    <div class="flex scroll-mt-4 items-center justify-between gap-4 border-y border-black py-3"
-         x-on:membership-chosen.window="$el.scrollIntoView({ behavior: 'smooth', block: 'start' })">
+    <div class="flex items-center justify-between gap-4 border-y border-black py-3">
         <flux:button variant="ghost" icon="chevron-left" wire:click="previousWeek" :disabled="$week === 0"
                      :aria-label="__('Iepriekšējā nedēļa')"/>
         <flux:heading level="3">
