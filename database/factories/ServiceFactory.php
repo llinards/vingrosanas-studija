@@ -56,6 +56,16 @@ class ServiceFactory extends Factory
     }
 
     /**
+     * Put the service in the same category (service type) as the given service.
+     */
+    public function inCategoryOf(Service $service): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'service_type_id' => $service->service_type_id,
+        ]);
+    }
+
+    /**
      * Create a membership service with a given session count.
      */
     public function membership(int $sessions = 4): static

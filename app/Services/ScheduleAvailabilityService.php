@@ -20,11 +20,11 @@ class ScheduleAvailabilityService
      * Group classes are always listed together with their status. Individual
      * sessions are listed only while they can still be booked. Classes of an
      * inactive coach are left out. With $membershipEligibleOnly, only the classes
-     * a membership can be used for are listed.
+     * a membership can be used for are listed; $serviceTypeId narrows them to one category.
      *
      * @return array<string, list<array{schedule_id: int, date: string, start_time: string, service_name: string, coach_name: string, is_exclusive: bool, price_from: int, has_price_range: bool, remaining: int, status: SlotStatus}>>
      */
-    public function weekTimetable(Carbon $weekStart, bool $membershipEligibleOnly = false): array
+    public function weekTimetable(Carbon $weekStart, bool $membershipEligibleOnly = false, ?int $serviceTypeId = null): array
     {
         $weekStart = $weekStart->copy()->startOfDay();
         $weekEnd = $weekStart->copy()->addDays(6);
@@ -37,6 +37,7 @@ class ScheduleAvailabilityService
                 ->where('is_active', true)
                 ->where('is_membership', false)
                 ->when($membershipEligibleOnly, fn (Builder $query) => $query->where('is_membership_eligible', true))
+                ->when($serviceTypeId !== null, fn (Builder $query) => $query->where('service_type_id', $serviceTypeId))
                 ->whereDoesntHave('coach', fn (Builder $query) => $query->where('is_active', false)))
             ->where(fn (Builder $query) => $query
                 ->whereNotNull('day_of_week')

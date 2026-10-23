@@ -84,7 +84,7 @@ test('requires a membership product before the sessions can be picked', function
 
 test('walks from the membership product through the sessions and customer details to the confirmation', function () {
     $class = createMembershipEligibleClass();
-    $membershipService = Service::factory()->membership(2)->create(['name' => 'Mēneša abonements (2x)']);
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create(['name' => 'Mēneša abonements (2x)']);
 
     $modal = Livewire::test('booking-modal')
         ->set('selectedMembershipServiceId', $membershipService->id)
@@ -106,7 +106,7 @@ test('walks from the membership product through the sessions and customer detail
 
 test('buying a membership creates an unpaid membership with its sessions waiting for payment and sends the customer to Stripe', function () {
     $class = createMembershipEligibleClass();
-    $membershipService = Service::factory()->membership(2)->create(['price' => 4500]);
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create(['price' => 4500]);
     $this->mock(CreateMembershipCheckoutSession::class)
         ->shouldReceive('execute')
         ->once()
@@ -145,7 +145,7 @@ test('buying a membership creates an unpaid membership with its sessions waiting
 
 test('does not sell a membership when one of its sessions filled up meanwhile', function () {
     $class = createMembershipEligibleClass(['max_capacity' => 1]);
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
     $this->mock(CreateMembershipCheckoutSession::class)->shouldNotReceive('execute');
     $modal = membershipReadyToPay($membershipService, $class);
     Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-14']);
@@ -161,7 +161,7 @@ test('does not sell a membership when one of its sessions filled up meanwhile', 
 
 test('returns to the customer details and frees the places when Stripe is unavailable', function () {
     $class = createMembershipEligibleClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
     $this->mock(CreateMembershipCheckoutSession::class)
         ->shouldReceive('execute')
         ->once()

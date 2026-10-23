@@ -48,7 +48,7 @@ function openMembershipCheckout(Service $membershipService, Schedule $class): Te
 
 test('shows the membership, its period, price and sessions', function () {
     $class = createMembershipCheckoutClass();
-    $membershipService = Service::factory()->membership(2)->create(['name' => 'Mēneša abonements (2x)', 'price' => 4500]);
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create(['name' => 'Mēneša abonements (2x)', 'price' => 4500]);
 
     openMembershipCheckout($membershipService, $class)
         ->assertSee('Mēneša abonements (2x)')
@@ -61,7 +61,7 @@ test('shows the membership, its period, price and sessions', function () {
 
 test('buying reserves the sessions as an unpaid membership and sends the customer to Stripe', function () {
     $class = createMembershipCheckoutClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
     $this->mock(CreateMembershipCheckoutSession::class)
         ->shouldReceive('execute')
         ->once()
@@ -86,7 +86,7 @@ test('requires the customer details', function () {
     $this->mock(CreateMembershipCheckoutSession::class)->shouldNotReceive('execute');
 
     Livewire::test('membership.membership-checkout')
-        ->call('open', Service::factory()->membership(1)->create()->id, [['schedule_id' => $class->id, 'date' => '2026-10-07']])
+        ->call('open', Service::factory()->membership(1)->inCategoryOf($class->service)->create()->id, [['schedule_id' => $class->id, 'date' => '2026-10-07']])
         ->set('email', 'not-an-email')
         ->call('pay')
         ->assertHasErrors(['name', 'surname', 'phone', 'email']);
@@ -97,7 +97,7 @@ test('requires the customer details', function () {
 test('tells the customer when a session was taken meanwhile and refreshes the timetable', function () {
     $class = createMembershipCheckoutClass(['max_capacity' => 1]);
     $this->mock(CreateMembershipCheckoutSession::class)->shouldNotReceive('execute');
-    $checkout = openMembershipCheckout(Service::factory()->membership(2)->create(), $class);
+    $checkout = openMembershipCheckout(Service::factory()->membership(2)->inCategoryOf($class->service)->create(), $class);
     Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-14']);
 
     $checkout->call('pay')
@@ -113,7 +113,7 @@ test('refuses sessions that do not match the membership', function () {
     $class = createMembershipCheckoutClass();
     $this->mock(CreateMembershipCheckoutSession::class)->shouldNotReceive('execute');
 
-    openMembershipCheckout(Service::factory()->membership(3)->create(), $class)
+    openMembershipCheckout(Service::factory()->membership(3)->inCategoryOf($class->service)->create(), $class)
         ->call('pay')
         ->assertHasErrors('membership')
         ->assertNoRedirect();
@@ -128,7 +128,7 @@ test('frees the sessions when Stripe is unavailable', function () {
         ->once()
         ->andThrow(new UnknownApiErrorException('Stripe is down'));
 
-    openMembershipCheckout(Service::factory()->membership(2)->create(), $class)
+    openMembershipCheckout(Service::factory()->membership(2)->inCategoryOf($class->service)->create(), $class)
         ->call('pay')
         ->assertHasErrors('membership')
         ->assertNoRedirect();
@@ -144,7 +144,7 @@ test('shares the start limit with single bookings', function () {
         app(BookingStartLimiter::class)->hit();
     }
 
-    openMembershipCheckout(Service::factory()->membership(2)->create(), $class)
+    openMembershipCheckout(Service::factory()->membership(2)->inCategoryOf($class->service)->create(), $class)
         ->call('pay')
         ->assertHasErrors('membership')
         ->assertSee('Pārāk daudz mēģinājumu.');
@@ -161,7 +161,7 @@ test('a membership that reached Stripe counts towards the start limit', function
         app(BookingStartLimiter::class)->hit();
     }
 
-    openMembershipCheckout(Service::factory()->membership(2)->create(), $class)
+    openMembershipCheckout(Service::factory()->membership(2)->inCategoryOf($class->service)->create(), $class)
         ->call('pay')
         ->assertRedirect('https://checkout.stripe.com/membership');
 

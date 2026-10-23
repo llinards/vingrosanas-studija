@@ -22,7 +22,7 @@ class CreatePendingMembership
      *
      * Every rule is re-checked here under a lock on the schedule rows, so the
      * caller's own state (a session list built in the browser) is never trusted.
-     * The membership runs for one month from its earliest session. Its sessions
+     * Every session must be a class of the membership's category. The membership runs for one month from its earliest session. Its sessions
      * wait for payment with no expiry of their own: they hold their places until
      * the membership is paid or removed with it.
      *
@@ -66,7 +66,7 @@ class CreatePendingMembership
                 $schedule = $schedules->get($session['schedule_id']);
 
                 if ($schedule === null
-                    || ! $schedule->service->is_membership_eligible
+                    || ! $schedule->service->isCoveredBy($membershipService)
                     || $this->availability->slotStatus($schedule, $sessionDates[$index]) !== SlotStatus::Available) {
                     throw new SlotUnavailableException;
                 }

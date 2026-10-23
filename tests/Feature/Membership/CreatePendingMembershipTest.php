@@ -51,7 +51,7 @@ function createPendingMembership(Service $membershipService, array $sessions): M
 
 test('creates an unpaid membership whose sessions wait for payment and hold their places', function () {
     $class = createMembershipClass();
-    $membershipService = Service::factory()->membership(2)->create(['price' => 4500]);
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create(['price' => 4500]);
 
     $membership = createPendingMembership($membershipService, [
         ['schedule_id' => $class->id, 'date' => '2026-10-14'],
@@ -120,7 +120,7 @@ test('refuses a membership that is not on sale or a session list that does not f
 
 test('refuses a session the class rules do not allow', function (Closure $createClass, string $date) {
     $class = $createClass();
-    $membershipService = Service::factory()->membership(1)->create();
+    $membershipService = Service::factory()->membership(1)->inCategoryOf($class->service)->create();
 
     expect(fn () => createPendingMembership($membershipService, [['schedule_id' => $class->id, 'date' => $date]]))
         ->toThrow(SlotUnavailableException::class);
@@ -152,6 +152,17 @@ test('refuses a session the class rules do not allow', function (Closure $create
         return $class;
     }, '2026-10-07'],
 ]);
+
+test('refuses a session of a class from another category than the membership', function () {
+    $class = createMembershipClass();
+    $membershipService = Service::factory()->membership(1)->create();
+
+    expect(fn () => createPendingMembership($membershipService, [['schedule_id' => $class->id, 'date' => '2026-10-07']]))
+        ->toThrow(SlotUnavailableException::class);
+
+    expect(Membership::count())->toBe(0)
+        ->and(Booking::count())->toBe(0);
+});
 
 test('refuses a session of a class that does not exist', function () {
     $membershipService = Service::factory()->membership(1)->create();

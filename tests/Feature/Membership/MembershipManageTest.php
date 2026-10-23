@@ -23,6 +23,7 @@ test('session is moved to a time slot offered for the selected date', function (
         'period_end' => today()->addMonth(),
     ]);
     $serviceType = ServiceType::factory()->create();
+    $membership->service->update(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -65,6 +66,7 @@ test('session is not moved to a time slot that does not run on the selected date
         'period_end' => today()->addMonth(),
     ]);
     $serviceType = ServiceType::factory()->create();
+    $membership->service->update(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -156,6 +158,7 @@ test('a session that was attended after the reschedule form opened is not moved'
 
     $membership = membershipWithManageAccess();
     $serviceType = ServiceType::factory()->create();
+    $membership->service->update(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -212,6 +215,7 @@ test('a session is not moved to a time the rules do not allow', function (Closur
     $booking = Booking::factory()->forMembership($membership)->create(['booking_date' => '2026-10-09']);
     $originalScheduleId = $booking->schedule_id;
     $class = $createClass();
+    $membership->service->update(['service_type_id' => $class->service->service_type_id]);
 
     Livewire::withQueryParams(['session_id' => 'cs_test_manage_own'])
         ->test('membership.membership-manage', ['membership' => $membership])
@@ -251,6 +255,32 @@ test('a session is not moved to a time the rules do not allow', function (Closur
     }, '2026-10-07', 'rebook', 'Šis laiks vairs nav pieejams.'],
 ]);
 
+test('a session is not moved to a class of another category than the membership', function () {
+    $this->travelTo(Carbon::parse('2026-10-05 09:00:00'));
+
+    $membership = membershipWithManageAccess();
+    $booking = Booking::factory()->forMembership($membership)->create(['booking_date' => '2026-10-09']);
+    $originalScheduleId = $booking->schedule_id;
+    $otherCategoryClass = membershipClassOnWednesday(['name' => 'Fizioterapija bērniem']);
+    $otherCategoryClass->service->serviceType->update(['name' => 'Fizioterapija']);
+
+    Livewire::withQueryParams(['session_id' => 'cs_test_manage_own'])
+        ->test('membership.membership-manage', ['membership' => $membership])
+        ->call('startRebook', $booking->id)
+        ->assertDontSee('Fizioterapija')
+        ->set('rebook_service_type_id', $otherCategoryClass->service->service_type_id)
+        ->assertDontSee('Fizioterapija bērniem')
+        ->set('rebook_service_id', $otherCategoryClass->service_id)
+        ->set('rebook_date', '2026-10-07')
+        ->set('rebook_schedule_id', $otherCategoryClass->id)
+        ->call('confirmRebook')
+        ->assertHasErrors('rebook');
+
+    expect($booking->refresh())
+        ->schedule_id->toBe($originalScheduleId)
+        ->booking_date->toDateString()->toBe('2026-10-09');
+});
+
 test('classes of an inactive coach are not offered for rescheduling', function () {
     $this->travelTo(Carbon::parse('2026-10-05 09:00:00'));
 
@@ -260,6 +290,7 @@ test('classes of an inactive coach are not offered for rescheduling', function (
         'name' => 'Pilates ar neaktīvu treneri',
         'coach_id' => Coach::factory()->create(['is_active' => false])->id,
     ]);
+    $membership->service->update(['service_type_id' => $class->service->service_type_id]);
 
     Livewire::withQueryParams(['session_id' => 'cs_test_manage_own'])
         ->test('membership.membership-manage', ['membership' => $membership])

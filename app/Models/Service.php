@@ -49,6 +49,17 @@ class Service extends Model
     }
 
     /**
+     * Whether a session of this class can be part of the given membership:
+     * the class is open to memberships and belongs to the membership's category.
+     */
+    public function isCoveredBy(Service $membership): bool
+    {
+        return $this->is_membership_eligible
+            && ! $this->is_membership
+            && (int) $this->service_type_id === (int) $membership->service_type_id;
+    }
+
+    /**
      * Get the total price in cents for a booking of the given group size.
      *
      * Falls back to the base price when no tier is defined for that size.

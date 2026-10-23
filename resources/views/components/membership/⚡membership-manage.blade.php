@@ -81,17 +81,20 @@ new class extends Component {
     }
 
     /**
-     * Get service types for the rebook form.
+     * Get service types for the rebook form: only the membership's own category.
      */
     #[Computed]
     public function serviceTypes(): Collection
     {
-        return ServiceType::whereHas('services', function ($query) {
-            $query->where('is_active', true)
-                  ->where('is_membership_eligible', true)
-                  ->whereDoesntHave('coach', fn($q) => $q->where('is_active', false))
-                  ->whereHas('schedules', fn($q) => $q->where('is_active', true));
-        })->get();
+        return ServiceType::query()
+                          ->when($this->membership->service, fn($query, Service $membershipService) => $query->whereKey($membershipService->service_type_id))
+                          ->whereHas('services', function ($query) {
+                              $query->where('is_active', true)
+                                    ->where('is_membership_eligible', true)
+                                    ->whereDoesntHave('coach', fn($q) => $q->where('is_active', false))
+                                    ->whereHas('schedules', fn($q) => $q->where('is_active', true));
+                          })
+                          ->get();
     }
 
     /**
@@ -108,6 +111,7 @@ new class extends Component {
                       ->where('is_active', true)
                       ->where('is_membership_eligible', true)
                       ->where('service_type_id', $this->rebook_service_type_id)
+                      ->when($this->membership->service, fn($query, Service $membershipService) => $query->where('service_type_id', $membershipService->service_type_id))
                       ->whereDoesntHave('coach', fn($query) => $query->where('is_active', false))
                       ->whereHas('schedules', fn($query) => $query->where('is_active', true))
                       ->get();
@@ -243,7 +247,7 @@ new class extends Component {
                 $status = app(ScheduleAvailabilityService::class)
                     ->slotStatus($schedule, Carbon::parse($this->rebook_date), excludeBookingId: $booking->id);
 
-                if ( ! $schedule->service->is_membership_eligible || $status !== SlotStatus::Available) {
+                if ( ! $this->isCoveredByMembership($schedule->service) || $status !== SlotStatus::Available) {
                     throw new SlotUnavailableException;
                 }
 
@@ -278,6 +282,19 @@ new class extends Component {
     {
         return $booking->attendance_status !== AttendanceStatus::Attended
             && $booking->getServiceDateTime()->isAfter(now());
+    }
+
+    /**
+     * Whether a class can take a session of this membership. A membership whose product
+     * was deleted has no category, so any class open to memberships is allowed.
+     */
+    private function isCoveredByMembership(Service $service): bool
+    {
+        $membershipService = $this->membership->service;
+
+        return $membershipService === null
+            ? $service->is_membership_eligible
+            : $service->isCoveredBy($membershipService);
     }
 
     /**

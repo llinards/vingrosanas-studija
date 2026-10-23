@@ -88,7 +88,7 @@ test('does not add a session before a membership is chosen', function () {
 
 test('adds and removes sessions and offers to continue once all are picked', function () {
     $class = createPickerClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
 
     openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
@@ -108,7 +108,7 @@ test('adds and removes sessions and offers to continue once all are picked', fun
 
 test('does not add more sessions than the membership has', function () {
     $class = createPickerClass();
-    $membershipService = Service::factory()->membership(1)->create();
+    $membershipService = Service::factory()->membership(1)->inCategoryOf($class->service)->create();
 
     openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
@@ -119,7 +119,7 @@ test('does not add more sessions than the membership has', function () {
 
 test('keeps every session within one month of the first', function () {
     $class = createPickerClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
 
     openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
@@ -132,7 +132,7 @@ test('keeps every session within one month of the first', function () {
 
 test('does not add a session that cannot be booked', function (Closure $makeClass) {
     $class = $makeClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
 
     openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
@@ -154,10 +154,49 @@ test('does not add a session that cannot be booked', function (Closure $makeClas
     'class not on that day' => fn () => createPickerClass(schedule: ['day_of_week' => 4]),
 ]);
 
+test('a chosen membership lists only the classes of its own category', function () {
+    createPickerClass(['name' => 'Fusion Pilates']);
+    $physio = createPickerClass(['name' => 'Ārstnieciskā vingrošana'], ['start_time' => '10:00']);
+    $physioMembership = Service::factory()->membership(4)->inCategoryOf($physio->service)->create();
+
+    Livewire::withQueryParams(['veids' => 'abonements'])
+        ->test('timetable')
+        ->assertSee('Fusion Pilates')
+        ->assertSee('Ārstnieciskā vingrošana')
+        ->set('membershipServiceId', $physioMembership->id)
+        ->assertSee('Ārstnieciskā vingrošana')
+        ->assertDontSee('Fusion Pilates');
+});
+
+test('does not add a class from another category than the membership', function () {
+    $pilates = createPickerClass();
+    $physio = createPickerClass(schedule: ['start_time' => '10:00']);
+    $physioMembership = Service::factory()->membership(2)->inCategoryOf($physio->service)->create();
+
+    openPickerWith($physioMembership)
+        ->call('addSession', $pilates->id, '2026-10-07')
+        ->assertHasErrors('picks')
+        ->assertSet('picks', []);
+});
+
+test('switching to a membership of another category drops the sessions it does not cover', function () {
+    $pilates = createPickerClass();
+    $physio = createPickerClass(schedule: ['start_time' => '10:00']);
+    $physio->service->serviceType->update(['name' => 'Fizioterapija']);
+    $groupMembership = Service::factory()->membership(2)->inCategoryOf($pilates->service)->create();
+    $physioMembership = Service::factory()->membership(2)->inCategoryOf($physio->service)->create();
+
+    openPickerWith($groupMembership)
+        ->call('addSession', $pilates->id, '2026-10-07')
+        ->set('membershipServiceId', $physioMembership->id)
+        ->assertSet('picks', [])
+        ->assertSee('tikai kategorijas „Fizioterapija” nodarbībām');
+});
+
 test('switching to a smaller membership keeps the earliest sessions', function () {
     $class = createPickerClass();
-    $threeSessions = Service::factory()->membership(3)->create();
-    $twoSessions = Service::factory()->membership(2)->create();
+    $threeSessions = Service::factory()->membership(3)->inCategoryOf($class->service)->create();
+    $twoSessions = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
 
     openPickerWith($threeSessions)
         ->call('addSession', $class->id, '2026-10-21')
@@ -181,7 +220,7 @@ test('ignores a membership that is not on sale', function () {
 
 test('continue opens the membership checkout with the picked sessions', function () {
     $class = createPickerClass();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
 
     openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
@@ -200,7 +239,7 @@ test('continue opens the membership checkout with the picked sessions', function
 
 test('drops a picked session that was taken meanwhile when the timetable refreshes', function () {
     $class = createPickerClass(schedule: ['max_capacity' => 1]);
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->inCategoryOf($class->service)->create();
     $picker = openPickerWith($membershipService)
         ->call('addSession', $class->id, '2026-10-07')
         ->call('addSession', $class->id, '2026-10-14');
@@ -215,7 +254,7 @@ test('drops a picked session that was taken meanwhile when the timetable refresh
 test('the picked sessions cannot be changed from the browser', function () {
     $class = createPickerClass();
 
-    openPickerWith(Service::factory()->membership(2)->create())
+    openPickerWith(Service::factory()->membership(2)->inCategoryOf($class->service)->create())
         ->set('picks', [['schedule_id' => $class->id, 'date' => '2026-10-07']]);
 })->throws(CannotUpdateLockedPropertyException::class);
 

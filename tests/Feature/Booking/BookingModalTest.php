@@ -62,7 +62,7 @@ test('duplicate session is rejected in membership builder', function () {
     Carbon::setTestNow(Carbon::today()->setTime(8, 0));
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -118,7 +118,7 @@ test('membership period starts on the earliest selected session date', function 
         ->andReturn(['url' => 'https://stripe.test/checkout', 'session_id' => 'cs_test_123']);
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -174,7 +174,7 @@ test('first session can be picked up to the booking horizon and anchors the peri
     $firstDate = today()->addWeeks(12);
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -223,7 +223,7 @@ test('first session beyond the booking horizon is rejected', function () {
     Carbon::setTestNow(Carbon::today()->setTime(8, 0));
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -257,7 +257,7 @@ test('subsequent sessions outside the one month window are rejected', function (
     $firstDate = today()->addMonth();
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(3)->create();
+    $membershipService = Service::factory()->membership(3)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -307,7 +307,7 @@ test('submission is rejected when sessions fall outside the allowed window', fun
     $farDate = today()->addMonths(6);
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,
@@ -367,7 +367,7 @@ test('membership session is rejected when the time slot does not run on the sele
     $otherDate = today()->addDays(2);
 
     $serviceType = ServiceType::factory()->create();
-    $membershipService = Service::factory()->membership(2)->create();
+    $membershipService = Service::factory()->membership(2)->create(['service_type_id' => $serviceType->id]);
     $eligibleService = Service::factory()->membershipEligible()->create([
         'service_type_id' => $serviceType->id,
         'is_active' => true,

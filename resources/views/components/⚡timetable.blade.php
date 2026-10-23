@@ -92,7 +92,8 @@ new class extends Component
     #[Computed]
     public function membershipServices(): Collection
     {
-        return Service::where('is_membership', true)
+        return Service::with('serviceType')
+            ->where('is_membership', true)
             ->where('is_active', true)
             ->orderBy('sessions_count')
             ->orderBy('price')
@@ -142,7 +143,11 @@ new class extends Component
     #[Computed]
     public function days(): array
     {
-        $timetable = app(ScheduleAvailabilityService::class)->weekTimetable($this->weekStart, $this->isMembershipMode);
+        $timetable = app(ScheduleAvailabilityService::class)->weekTimetable(
+            $this->weekStart,
+            membershipEligibleOnly: $this->isMembershipMode,
+            serviceTypeId: $this->isMembershipMode ? $this->membershipService?->service_type_id : null,
+        );
 
         $days = [];
 
@@ -244,17 +249,31 @@ new class extends Component
     }
 
     /**
-     * Accept only a product on sale, and keep the earliest picks when the new one has fewer sessions.
+     * Accept only a product on sale. Picks from another category are dropped, and the earliest
+     * picks are kept when the new product has fewer sessions.
      */
     public function updatedMembershipServiceId(): void
     {
         $this->resetErrorBag('picks');
         $this->pickNotice = null;
+        unset($this->days, $this->hasClasses);
 
         if ($this->membershipService === null) {
             $this->membershipServiceId = null;
 
             return;
+        }
+
+        $notices = [];
+        $coveredPicks = $this->picksCoveredBy($this->membershipService);
+
+        if (count($coveredPicks) !== count($this->picks)) {
+            $this->picks = $coveredPicks;
+            unset($this->pickedSessions);
+
+            $notices[] = __('Šis abonements ir derīgs tikai kategorijas „:category” nodarbībām, tāpēc pārējās noņemtas no izvēles.', [
+                'category' => $this->membershipService->serviceType?->name,
+            ]);
         }
 
         $sessionsCount = $this->membershipService->sessions_count;
@@ -266,8 +285,10 @@ new class extends Component
                 ->all();
             unset($this->pickedSessions);
 
-            $this->pickNotice = __('Izvēlētajā abonementā ir :count nodarbības, tāpēc atstātas pirmās :count.', ['count' => $sessionsCount]);
+            $notices[] = __('Izvēlētajā abonementā ir :count nodarbības, tāpēc atstātas pirmās :count.', ['count' => $sessionsCount]);
         }
+
+        $this->pickNotice = $notices === [] ? null : implode(' ', $notices);
     }
 
     /**
@@ -415,13 +436,31 @@ new class extends Component
     }
 
     /**
-     * Whether a class can be used for a membership on that date right now.
+     * The picks whose class belongs to the given membership's category.
+     *
+     * @return list<array{schedule_id: int, date: string}>
+     */
+    private function picksCoveredBy(Service $membership): array
+    {
+        $schedules = Schedule::with('service')
+            ->whereIn('id', array_column($this->picks, 'schedule_id'))
+            ->get()
+            ->keyBy('id');
+
+        return array_values(array_filter(
+            $this->picks,
+            fn (array $pick) => $schedules->get($pick['schedule_id'])?->service->isCoveredBy($membership) ?? false,
+        ));
+    }
+
+    /**
+     * Whether a class can be used for the chosen membership on that date right now.
      */
     private function isPickable(int $scheduleId, string $date): bool
     {
         $schedule = Schedule::with('service.coach')->find($scheduleId);
 
-        if ($schedule === null || ! $schedule->service->is_membership_eligible || $schedule->service->is_membership) {
+        if ($schedule === null || $this->membershipService === null || ! $schedule->service->isCoveredBy($this->membershipService)) {
             return false;
         }
 
