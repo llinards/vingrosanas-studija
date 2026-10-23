@@ -1,14 +1,15 @@
 <?php
 
 use App\Enums\AttendanceStatus;
+use App\Enums\DayOfWeek;
 use App\Enums\PaymentStatus;
 use App\Enums\SlotStatus;
 use App\Exceptions\SlotUnavailableException;
+use App\Livewire\Concerns\ShowsWeekTimetable;
 use App\Models\Booking;
 use App\Models\Membership;
 use App\Models\Schedule;
 use App\Models\Service;
-use App\Models\ServiceType;
 use App\Services\ScheduleAvailabilityService;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -19,7 +20,10 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new class extends Component {
+new class extends Component
+{
+    use ShowsWeekTimetable;
+
     #[Locked]
     public int $membershipId;
 
@@ -27,21 +31,29 @@ new class extends Component {
     public string $sessionId;
 
     /**
-     * The booking ID being rebooked (null if not rebooking).
+     * The session being moved (null while the list of sessions is shown).
      */
     #[Locked]
     public ?int $rebookingBookingId = null;
 
     /**
-     * Rebook form fields.
+     * The class and day chosen as the new time, waiting for the customer to confirm.
      */
-    public ?int $rebook_service_type_id = null;
+    #[Locked]
+    public ?int $targetScheduleId = null;
 
-    public ?int $rebook_service_id = null;
+    #[Locked]
+    public ?string $targetDate = null;
 
-    public ?string $rebook_date = null;
+    /**
+     * Weeks ahead of the current week shown while moving a session (0 = this week).
+     */
+    public int $week = 0;
 
-    public ?int $rebook_schedule_id = null;
+    /**
+     * Whether a session has just been moved.
+     */
+    public bool $hasRebooked = false;
 
     /**
      * Initialize the component and verify access.
@@ -50,17 +62,14 @@ new class extends Component {
     {
         $sessionId = request()->query('session_id');
 
-        if ( ! $sessionId || $sessionId !== $membership->stripe_checkout_session_id) {
+        if (! $sessionId || $sessionId !== $membership->stripe_checkout_session_id) {
             abort(404);
         }
 
         $this->membershipId = $membership->id;
-        $this->sessionId    = $sessionId;
+        $this->sessionId = $sessionId;
     }
 
-    /**
-     * Get the membership.
-     */
     #[Computed]
     public function membership(): Membership
     {
@@ -68,211 +77,196 @@ new class extends Component {
     }
 
     /**
-     * Get the bookings for this membership.
+     * The sessions of this membership that still count.
      */
     #[Computed]
     public function bookings(): Collection
     {
         return $this->membership->bookings()
-                                ->with(['schedule.service.coach'])
-                                ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
-                                ->orderBy('booking_date')
-                                ->get();
+            ->with(['schedule.service.coach'])
+            ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
+            ->orderBy('booking_date')
+            ->get();
     }
 
-    /**
-     * Get service types for the rebook form: only the membership's own category.
-     */
     #[Computed]
-    public function serviceTypes(): Collection
+    public function rebookingBooking(): ?Booking
     {
-        return ServiceType::query()
-                          ->when($this->membership->service, fn($query, Service $membershipService) => $query->whereKey($membershipService->service_type_id))
-                          ->whereHas('services', function ($query) {
-                              $query->where('is_active', true)
-                                    ->where('is_membership_eligible', true)
-                                    ->whereDoesntHave('coach', fn($q) => $q->where('is_active', false))
-                                    ->whereHas('schedules', fn($q) => $q->where('is_active', true));
-                          })
-                          ->get();
+        return $this->rebookingBookingId === null ? null : $this->bookings->firstWhere('id', $this->rebookingBookingId);
     }
 
     /**
-     * Get filtered services for the rebook form.
-     */
-    #[Computed]
-    public function rebookServices(): Collection
-    {
-        if ( ! $this->rebook_service_type_id) {
-            return new Collection;
-        }
-
-        return Service::with('coach')
-                      ->where('is_active', true)
-                      ->where('is_membership_eligible', true)
-                      ->where('service_type_id', $this->rebook_service_type_id)
-                      ->when($this->membership->service, fn($query, Service $membershipService) => $query->where('service_type_id', $membershipService->service_type_id))
-                      ->whereDoesntHave('coach', fn($query) => $query->where('is_active', false))
-                      ->whereHas('schedules', fn($query) => $query->where('is_active', true))
-                      ->get();
-    }
-
-    /**
-     * Get active schedules for the rebook service.
-     */
-    #[Computed]
-    public function rebookSchedules(): Collection
-    {
-        if ( ! $this->rebook_service_id) {
-            return new Collection;
-        }
-
-        return Schedule::with('service.coach')
-                       ->where('service_id', $this->rebook_service_id)
-                       ->where('is_active', true)
-                       ->get();
-    }
-
-    /**
-     * Get unavailable dates for the rebook calendar.
-     */
-    #[Computed]
-    public function rebookUnavailableDates(): string
-    {
-        return app(ScheduleAvailabilityService::class)->unavailableDates(
-            schedules: $this->rebookSchedules,
-            startDate: Carbon::today(),
-            endDate: $this->membership->period_end,
-            excludeBookingId: $this->rebookingBookingId,
-        );
-    }
-
-    /**
-     * Get available time slots for the rebook date.
-     *
-     * @return array<int, array{schedule_id: int, start_time: string, coach_name: string, remaining: int, max_capacity: int}>
-     */
-    #[Computed]
-    public function rebookTimeSlots(): array
-    {
-        if ( ! $this->rebook_date || ! $this->rebook_service_id) {
-            return [];
-        }
-
-        return app(ScheduleAvailabilityService::class)->availableTimeSlots(
-            schedules: $this->rebookSchedules,
-            date: Carbon::parse($this->rebook_date),
-            excludeBookingId: $this->rebookingBookingId,
-        );
-    }
-
-    /**
-     * Start rebooking a specific booking.
+     * Start moving a session: show the week of that session.
      */
     public function startRebook(int $bookingId): void
     {
-        $this->rebookingBookingId     = $this->findReschedulableBooking($bookingId)->id;
-        $this->rebook_service_type_id = null;
-        $this->rebook_service_id      = null;
-        $this->rebook_date            = null;
-        $this->rebook_schedule_id     = null;
+        $booking = $this->findReschedulableBooking($bookingId);
+
+        $this->rebookingBookingId = $booking->id;
+        $this->week = $this->clampWeek($this->weekOffset($booking->booking_date));
+        $this->opensOnLastDay = false;
+        $this->hasRebooked = false;
+        $this->reset('targetScheduleId', 'targetDate');
         $this->resetErrorBag();
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
+        unset($this->rebookingBooking, $this->days);
     }
 
     /**
-     * Cancel the rebooking process.
+     * Go back to the list of sessions without moving anything.
      */
     public function cancelRebook(): void
     {
-        $this->rebookingBookingId     = null;
-        $this->rebook_service_type_id = null;
-        $this->rebook_service_id      = null;
-        $this->rebook_date            = null;
-        $this->rebook_schedule_id     = null;
+        $this->reset('rebookingBookingId', 'targetScheduleId', 'targetDate');
         $this->resetErrorBag();
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
-    }
-
-    public function updatedRebookServiceTypeId(): void
-    {
-        $this->rebook_service_id  = null;
-        $this->rebook_date        = null;
-        $this->rebook_schedule_id = null;
-        unset($this->rebookServices, $this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
-    }
-
-    public function updatedRebookServiceId(): void
-    {
-        $this->rebook_date        = null;
-        $this->rebook_schedule_id = null;
-        unset($this->rebookSchedules, $this->rebookUnavailableDates, $this->rebookTimeSlots);
-    }
-
-    public function updatedRebookDate(): void
-    {
-        $this->rebook_schedule_id = null;
-        unset($this->rebookTimeSlots);
+        unset($this->rebookingBooking);
     }
 
     /**
-     * Confirm the rebook and update the booking.
+     * Ask the customer to confirm the chosen new time. The time is checked when it is confirmed.
+     */
+    public function chooseTarget(int $scheduleId, string $date): void
+    {
+        if ($this->rebookingBookingId === null || ! Carbon::canBeCreatedFromFormat($date, 'Y-m-d')) {
+            return;
+        }
+
+        $this->resetErrorBag();
+        $this->targetScheduleId = $scheduleId;
+        $this->targetDate = $date;
+
+        Flux::modal('confirm-rebook')->show();
+    }
+
+    /**
+     * Move the session to the chosen time.
      *
      * The new time is checked here against every booking rule, because the browser only limits what is shown.
      */
     public function confirmRebook(): void
     {
-        $this->validate([
-            'rebook_service_id'  => ['required', 'exists:services,id'],
-            'rebook_date'        => [
-                'required', 'date_format:Y-m-d',
-                'after_or_equal:'.today()->toDateString(),
-                'before_or_equal:'.$this->membership->period_end->toDateString(),
-            ],
-            'rebook_schedule_id' => ['required', 'exists:schedules,id'],
-        ], [
-            'rebook_service_id.required'   => __('Jums ir jāizvēlās pakalpojums.'),
-            'rebook_date.required'         => __('Datums ir obligāts.'),
-            'rebook_date.after_or_equal'   => __('Datumam jābūt abonementa periodā.'),
-            'rebook_date.before_or_equal'  => __('Datumam jābūt abonementa periodā.'),
-            'rebook_schedule_id.required'  => __('Laika slots ir obligāts.'),
-        ]);
-
         $booking = $this->findReschedulableBooking($this->rebookingBookingId);
 
+        if ($this->targetScheduleId === null || $this->targetDate === null) {
+            return;
+        }
+
+        $date = Carbon::createFromFormat('Y-m-d', $this->targetDate)->startOfDay();
+
+        if ($date->lt(today()) || $date->gt($this->membership->period_end)) {
+            $this->refuseTarget(__('Datumam jābūt abonementa periodā.'));
+
+            return;
+        }
+
+        if ($this->hasSessionAt($this->targetScheduleId, $this->targetDate, exceptBookingId: $booking->id)) {
+            $this->refuseTarget(__('Šajā laikā jums jau ir rezervēta nodarbība.'));
+
+            return;
+        }
+
         try {
-            DB::transaction(function () use ($booking) {
-                $schedule = Schedule::with('service.coach')->lockForUpdate()->findOrFail($this->rebook_schedule_id);
+            DB::transaction(function () use ($booking, $date) {
+                $schedule = Schedule::with('service.coach')->lockForUpdate()->find($this->targetScheduleId);
 
-                $status = app(ScheduleAvailabilityService::class)
-                    ->slotStatus($schedule, Carbon::parse($this->rebook_date), excludeBookingId: $booking->id);
-
-                if ( ! $this->isCoveredByMembership($schedule->service) || $status !== SlotStatus::Available) {
+                if ($schedule === null
+                    || ! $this->isCoveredByMembership($schedule->service)
+                    || app(ScheduleAvailabilityService::class)->slotStatus($schedule, $date, excludeBookingId: $booking->id) !== SlotStatus::Available) {
                     throw new SlotUnavailableException;
                 }
 
                 $booking->update([
-                    'schedule_id'  => $schedule->id,
-                    'booking_date' => $this->rebook_date,
+                    'schedule_id' => $schedule->id,
+                    'booking_date' => $date->toDateString(),
                 ]);
             });
-
-            $this->cancelRebook();
-            unset($this->bookings);
-
-            Flux::toast(
-                text: __('Nodarbība veiksmīgi pārplānota!'),
-                variant: 'success',
-            );
         } catch (SlotUnavailableException) {
-            $this->rebook_schedule_id = null;
-            unset($this->rebookUnavailableDates, $this->rebookTimeSlots);
-            $this->addError('rebook', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
-        } catch (\Exception $e) {
-            Log::error($e);
+            $this->refuseTarget(__('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
 
-            $this->addError('rebook', __('Neizdevās pārplānot nodarbību. Lūdzu, mēģiniet vēlreiz.'));
+            return;
+        } catch (\Exception $exception) {
+            Log::error($exception);
+            $this->refuseTarget(__('Neizdevās pārplānot nodarbību. Lūdzu, mēģiniet vēlreiz.'));
+
+            return;
         }
+
+        Flux::modal('confirm-rebook')->close();
+        $this->cancelRebook();
+        $this->hasRebooked = true;
+        unset($this->bookings);
+    }
+
+    /**
+     * Label of the session being moved, e.g. "Trešdiena, 07.10. 18:00 Fusion Pilates".
+     */
+    #[Computed]
+    public function rebookingLabel(): string
+    {
+        $booking = $this->rebookingBooking;
+
+        return $booking === null ? '' : $this->sessionLabel($booking->schedule, $booking->booking_date);
+    }
+
+    /**
+     * Label of the chosen new time.
+     */
+    #[Computed]
+    public function targetLabel(): string
+    {
+        $schedule = $this->targetScheduleId === null ? null : Schedule::with('service')->find($this->targetScheduleId);
+
+        return $schedule === null || $this->targetDate === null ? '' : $this->sessionLabel($schedule, Carbon::parse($this->targetDate));
+    }
+
+    /**
+     * What a class card shows while a session is being moved, and what its button does.
+     *
+     * @param  array<string, mixed>  $entry
+     * @return array{key: string, tone: string, lines: list<?string>, button: ?array{label: string, action: string, variant: string}, status: ?string}
+     */
+    public function cardFor(array $entry): array
+    {
+        $booking = $this->rebookingBooking;
+        $isCurrent = $booking !== null
+            && (int) $booking->schedule_id === $entry['schedule_id']
+            && $booking->booking_date->toDateString() === $entry['date'];
+
+        $state = match (true) {
+            $isCurrent => 'current',
+            $this->hasSessionAt($entry['schedule_id'], $entry['date'], exceptBookingId: $booking?->id) => 'own',
+            $entry['date'] < today()->toDateString() || $entry['date'] > $this->membership->period_end->toDateString() => 'outside-period',
+            $entry['status'] !== SlotStatus::Available => 'unavailable',
+            default => 'available',
+        };
+
+        return [
+            'key' => 'move-'.$entry['schedule_id'].'-'.$entry['date'],
+            'tone' => match ($state) {
+                'current' => 'picked',
+                'available' => 'normal',
+                default => 'muted',
+            },
+            'lines' => [
+                $entry['coach_name'],
+                match (true) {
+                    ! in_array($state, ['current', 'available'], true) => null,
+                    $entry['is_exclusive'] => __('Individuāli'),
+                    default => $this->placesLabel($entry['remaining']),
+                },
+            ],
+            'button' => $state === 'available' ? [
+                'label' => __('Pārcelt šeit'),
+                'action' => 'chooseTarget('.$entry['schedule_id'].', \''.$entry['date'].'\')',
+                'variant' => 'primary',
+            ] : null,
+            'status' => match ($state) {
+                'current' => __('Pašreizējā'),
+                'own' => __('Jau rezervēta'),
+                'outside-period' => __('Ārpus perioda'),
+                'unavailable' => $this->statusLabel($entry['status']),
+                default => null,
+            },
+        ];
     }
 
     /**
@@ -282,6 +276,76 @@ new class extends Component {
     {
         return $booking->attendance_status !== AttendanceStatus::Attended
             && $booking->getServiceDateTime()->isAfter(now());
+    }
+
+    protected function firstWeek(): int
+    {
+        return 0;
+    }
+
+    /**
+     * The week in which the membership period ends.
+     */
+    protected function lastWeek(): int
+    {
+        return max(0, $this->weekOffset($this->membership->period_end));
+    }
+
+    /**
+     * Only classes of the membership's category that a membership can be used for.
+     */
+    protected function classesForWeek(Carbon $weekStart): array
+    {
+        return app(ScheduleAvailabilityService::class)->weekTimetable(
+            $weekStart,
+            membershipEligibleOnly: true,
+            serviceTypeId: $this->membership->service?->service_type_id,
+        );
+    }
+
+    protected function focusDate(): ?string
+    {
+        return $this->rebookingBooking?->booking_date->toDateString();
+    }
+
+    /**
+     * Number of weeks from the current week to the week of the given date.
+     */
+    private function weekOffset(Carbon $date): int
+    {
+        return (int) round(today()->startOfWeek(Carbon::MONDAY)->diffInWeeks($date->copy()->startOfWeek(Carbon::MONDAY)));
+    }
+
+    /**
+     * Whether this membership already has a session in that class on that day.
+     */
+    private function hasSessionAt(int $scheduleId, string $date, ?int $exceptBookingId = null): bool
+    {
+        return $this->bookings->contains(
+            fn (Booking $booking) => $booking->id !== $exceptBookingId
+                && (int) $booking->schedule_id === $scheduleId
+                && $booking->booking_date->toDateString() === $date,
+        );
+    }
+
+    /**
+     * Close the confirmation, explain why the time cannot be used and show fresh availability.
+     */
+    private function refuseTarget(string $message): void
+    {
+        Flux::modal('confirm-rebook')->close();
+        $this->reset('targetScheduleId', 'targetDate');
+        $this->addError('rebook', $message);
+        unset($this->days);
+    }
+
+    /**
+     * Label of a class on a day, e.g. "Trešdiena, 07.10. 18:00 Fusion Pilates".
+     */
+    private function sessionLabel(Schedule $schedule, Carbon $date): string
+    {
+        return DayOfWeek::from($date->dayOfWeekIso)->label().', '.$date->format('d.m.').' '
+            .substr((string) $schedule->start_time, 0, 5).' '.$schedule->service->name;
     }
 
     /**
@@ -303,10 +367,10 @@ new class extends Component {
     private function findReschedulableBooking(?int $bookingId): Booking
     {
         $booking = $this->membership->bookings()
-                                    ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
-                                    ->find($bookingId);
+            ->whereNotIn('payment_status', [PaymentStatus::Refunded, PaymentStatus::Failed])
+            ->find($bookingId);
 
-        if ( ! $booking || ! $this->canRebook($booking)) {
+        if (! $booking || ! $this->canRebook($booking)) {
             abort(404);
         }
 
@@ -319,136 +383,116 @@ new class extends Component {
     public function render(): \Illuminate\View\View
     {
         return $this->view()
-                    ->title(__('Pārvaldīt abonementu'))
-                    ->layout('layouts.main');
+            ->title(__('Pārvaldīt abonementu'))
+            ->layout('layouts.main');
     }
 };
 ?>
 
 <div class="container mx-auto pt-36 pb-12 px-4">
-    <div class="md:max-w-xl mx-auto">
-        <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-6">
-            <flux:heading level="3" class="text-center">{{ __('Mans abonements') }}</flux:heading>
-
+    @if($this->rebookingBooking)
+        {{-- MOVE A SESSION --}}
+        <div class="space-y-8">
             <div class="space-y-2">
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <flux:text>{{ __('Abonements') }}</flux:text>
-                    <flux:text>{{ $this->membership->tierLabel() }}</flux:text>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <flux:text>{{ __('Periods') }}</flux:text>
-                    <flux:text>{{ $this->membership->period_start->format('d.m.Y') }}
-                        — {{ $this->membership->period_end->format('d.m.Y') }}</flux:text>
-                </div>
-                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                    <flux:text>{{ __('Nodarbības') }}</flux:text>
-                    <flux:text class="font-semibold">{{ $this->bookings->count() }}
-                        /{{ $this->membership->sessions_total }}</flux:text>
-                </div>
+                <flux:heading level="1">{{ __('Pārcelt nodarbību') }}</flux:heading>
+                <flux:text>{{ __('Pašreiz') }}: {{ $this->rebookingLabel }}</flux:text>
+                <flux:text size="sm">
+                    {{ __('Izvēlieties jaunu laiku līdz :date.', ['date' => $this->membership->period_end->format('d.m.Y')]) }}
+                </flux:text>
+                <flux:link as="button" wire:click="cancelRebook" icon="arrow-uturn-left">{{ __('Atcelt') }}</flux:link>
             </div>
 
-            <flux:separator/>
+            <flux:error name="rebook"/>
 
-            <flux:heading level="4">{{ __('Rezervētās nodarbības') }}</flux:heading>
+            <x-timetable.week :days="$this->days" :week="$week" :week-start="$this->weekStart"
+                              :initial-day="$this->initialDay" :is-first-week="$this->isFirstWeek"
+                              :is-last-week="$this->isLastWeek" :card-for="$this->cardFor(...)"/>
+        </div>
+    @else
+        <div class="md:max-w-xl mx-auto">
+            <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-6">
+                <flux:heading level="3" class="text-center">{{ __('Mans abonements') }}</flux:heading>
 
-            <div class="space-y-3">
-                @foreach($this->bookings as $booking)
-                    <div class="rounded-lg border p-4 space-y-2" wire:key="manage-booking-{{ $booking->id }}">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <flux:text class="font-medium">{{ $booking->schedule->service->name }}</flux:text>
-                                <flux:text class="text-sm text-zinc-500">
-                                    {{ $booking->booking_date->format('d.m.Y') }}
-                                    {{ substr($booking->schedule->start_time, 0, 5) }}
-                                    — {{ $booking->schedule->service->coach->name }}
-                                </flux:text>
-                            </div>
-                            <div>
-                                @if($booking->attendance_status->value === 'attended')
-                                    <flux:badge size="sm"
-                                                color="zinc">{{ $booking->attendance_status->label() }}</flux:badge>
-                                @elseif($this->canRebook($booking))
-                                    @if($this->rebookingBookingId !== $booking->id)
-                                        <flux:button wire:click="startRebook({{ $booking->id }})"
-                                                     class="btn btn-primary">
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                        <flux:text>{{ __('Abonements') }}</flux:text>
+                        <flux:text>{{ $this->membership->tierLabel() }}</flux:text>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                        <flux:text>{{ __('Periods') }}</flux:text>
+                        <flux:text>{{ $this->membership->period_start->format('d.m.Y') }}
+                            — {{ $this->membership->period_end->format('d.m.Y') }}</flux:text>
+                    </div>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                        <flux:text>{{ __('Nodarbības') }}</flux:text>
+                        <flux:text class="font-semibold">{{ $this->bookings->count() }}
+                            /{{ $this->membership->sessions_total }}</flux:text>
+                    </div>
+                </div>
+
+                <flux:separator/>
+
+                <flux:heading level="4">{{ __('Rezervētās nodarbības') }}</flux:heading>
+
+                @if($hasRebooked)
+                    <flux:callout icon="check-circle" color="green">
+                        <flux:callout.heading>{{ __('Nodarbība pārcelta.') }}</flux:callout.heading>
+                    </flux:callout>
+                @endif
+
+                <div class="space-y-3">
+                    @foreach($this->bookings as $booking)
+                        <div class="rounded-lg border p-4" wire:key="manage-booking-{{ $booking->id }}">
+                            <div class="flex items-center justify-between gap-3">
+                                <div>
+                                    <flux:text class="font-medium">{{ $booking->schedule->service->name }}</flux:text>
+                                    <flux:text class="text-sm text-zinc-500">
+                                        {{ $booking->booking_date->format('d.m.Y') }}
+                                        {{ substr($booking->schedule->start_time, 0, 5) }}
+                                        — {{ $booking->schedule->service->coach?->name }}
+                                    </flux:text>
+                                </div>
+                                <div class="shrink-0">
+                                    @if($booking->attendance_status->value === 'attended')
+                                        <flux:badge size="sm"
+                                                    color="zinc">{{ $booking->attendance_status->label() }}</flux:badge>
+                                    @elseif($this->canRebook($booking))
+                                        <flux:button wire:click="startRebook({{ $booking->id }})" class="btn btn-primary">
                                             {{ __('Pārplānot') }}
                                         </flux:button>
-                                    @endif
-                                @else
-                                    <flux:badge size="sm" color="zinc">{{ __('Pagātnē') }}</flux:badge>
-                                @endif
-                            </div>
-                        </div>
-
-                        {{-- Rebook form for this booking --}}
-                        @if($this->rebookingBookingId === $booking->id)
-                            <flux:separator/>
-                            <div class="space-y-4 pt-2">
-                                <flux:select wire:model.live="rebook_service_type_id" :label="__('Nodarbība')">
-                                    <flux:select.option value="">{{ __('Izvēlieties nodarbību') }}</flux:select.option>
-                                    @foreach($this->serviceTypes as $type)
-                                        <flux:select.option :value="$type->id">{{ $type->name }}</flux:select.option>
-                                    @endforeach
-                                </flux:select>
-
-                                @if($this->rebook_service_type_id)
-                                    <flux:select wire:model.live="rebook_service_id" :label="__('Treniņš')">
-                                        <flux:select.option
-                                            value="">{{ __('Izvēlieties treniņu') }}</flux:select.option>
-                                        @foreach($this->rebookServices as $service)
-                                            <flux:select.option :value="$service->id">
-                                                {{ $service->name }} ({{ $service->coach->name }})
-                                            </flux:select.option>
-                                        @endforeach
-                                    </flux:select>
-                                @endif
-
-                                @if($this->rebook_service_id)
-                                    <div class="flex justify-center">
-                                        <flux:calendar wire:model.live="rebook_date" min="today"
-                                                       :max="$this->membership->period_end->toDateString()"
-                                                       :unavailable="$this->rebookUnavailableDates"
-                                                       locale="lv" start-day="1"/>
-                                    </div>
-                                @endif
-
-                                @if($this->rebook_date && count($this->rebookTimeSlots) > 0)
-                                    <flux:radio.group wire:model.live="rebook_schedule_id"
-                                                      :label="__('Pieejamie laiki')" variant="cards">
-                                        @foreach($this->rebookTimeSlots as $slot)
-                                            <flux:radio wire:key="rebook-slot-{{ $slot['schedule_id'] }}"
-                                                        :value="$slot['schedule_id']"
-                                                        :label="$slot['start_time'] . ' — ' . $slot['coach_name']"
-                                                        :description="$slot['remaining'] . ' ' . ($slot['remaining'] === 1 ? __('vieta') : __('vietas'))"/>
-                                        @endforeach
-                                    </flux:radio.group>
-                                @elseif($this->rebook_date)
-                                    <flux:text
-                                        class="text-center">{{ __('Šajā datumā nav pieejamu laiku.') }}</flux:text>
-                                @endif
-
-                                <flux:error name="rebook_date"/>
-                                <flux:error name="rebook"/>
-
-                                <div class="flex justify-between">
-                                    <flux:link as="button" wire:click="cancelRebook">{{ __('Atcelt') }}</flux:link>
-                                    @if($this->rebook_schedule_id)
-                                        <flux:button wire:click="confirmRebook"
-                                                     class="btn btn-primary">{{ __('Apstiprināt') }}</flux:button>
+                                    @else
+                                        <flux:badge size="sm" color="zinc">{{ __('Pagātnē') }}</flux:badge>
                                     @endif
                                 </div>
                             </div>
-                        @endif
-                    </div>
-                @endforeach
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mt-8 text-center">
+                <flux:link href="{{ route('home') }}"
+                           icon="arrow-uturn-left">
+                    {{ __('Atgriezties uz sākumu') }}
+                </flux:link>
             </div>
         </div>
+    @endif
 
-        <div class="mt-8 text-center">
-            <flux:link href="{{ route('home') }}"
-                       icon="arrow-uturn-left">
-                {{ __('Atgriezties uz sākumu') }}
-            </flux:link>
+    {{-- CONFIRM THE NEW TIME --}}
+    <flux:modal name="confirm-rebook" class="w-[calc(100vw-2rem)] max-w-md">
+        <div class="space-y-6 p-6">
+            <flux:heading size="lg">{{ __('Pārcelt nodarbību?') }}</flux:heading>
+            <div class="space-y-1 text-sm">
+                <div><span class="text-zinc-500">{{ __('No') }}:</span> {{ $this->rebookingLabel }}</div>
+                <div><span class="text-zinc-500">{{ __('Uz') }}:</span> <span class="font-medium">{{ $this->targetLabel }}</span></div>
+            </div>
+            <div class="flex justify-between">
+                <flux:modal.close>
+                    <flux:button class="btn btn-sm btn-tertiary">{{ __('Atcelt') }}</flux:button>
+                </flux:modal.close>
+                <flux:button class="btn btn-sm btn-primary" wire:click="confirmRebook">{{ __('Apstiprināt') }}</flux:button>
+            </div>
         </div>
-    </div>
+    </flux:modal>
 </div>
