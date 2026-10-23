@@ -79,6 +79,16 @@ test('creates an unpaid membership whose sessions wait for payment and hold thei
     expect(app(ScheduleAvailabilityService::class)->remainingCapacity($class, '2026-10-07'))->toBe(9);
 });
 
+test('accepts a first session on the last day customers may book', function () {
+    $class = createMembershipClass(schedule: ['day_of_week' => 1]);
+    $membershipService = Service::factory()->membership(1)->inCategoryOf($class->service)->create();
+
+    $membership = createPendingMembership($membershipService, [['schedule_id' => $class->id, 'date' => '2026-12-28']]);
+
+    expect($membership->period_start->toDateString())->toBe('2026-12-28')
+        ->and($membership->period_end->toDateString())->toBe('2027-01-28');
+});
+
 test('refuses a membership that is not on sale or a session list that does not fit it', function (Closure $membershipService, Closure $sessions) {
     $class = createMembershipClass();
 

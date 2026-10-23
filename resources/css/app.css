@@ -442,12 +442,10 @@ button {
     @apply hover:text-white size-8;
 }
 
-#bookingModal .close-button,
 #coaches .close-button {
     @apply size-8;
 }
 
-#bookingModal .close-button [data-flux-icon],
 #coaches .close-button [data-flux-icon] {
     @apply hover:text-white size-6;
 }

@@ -89,7 +89,9 @@ test('requires the customer details', function () {
         ->call('open', Service::factory()->membership(1)->inCategoryOf($class->service)->create()->id, [['schedule_id' => $class->id, 'date' => '2026-10-07']])
         ->set('email', 'not-an-email')
         ->call('pay')
-        ->assertHasErrors(['name', 'surname', 'phone', 'email']);
+        ->assertHasErrors(['name', 'surname', 'phone', 'email'])
+        ->assertSee('Vārds ir obligāts.')
+        ->assertSee('E-pastam jābūt derīgai e-pasta adresei.');
 
     expect(Membership::count())->toBe(0);
 });

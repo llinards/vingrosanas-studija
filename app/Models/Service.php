@@ -70,17 +70,6 @@ class Service extends Model
     }
 
     /**
-     * Scope to only include membership services.
-     *
-     * @param  Builder<Service>  $query
-     * @return Builder<Service>
-     */
-    public function scopeMembership(Builder $query): Builder
-    {
-        return $query->where('is_membership', true);
-    }
-
-    /**
      * Leave out one-time events: services whose active schedules are all on a specific date.
      *
      * Services with no active schedules are kept.

@@ -32,7 +32,7 @@ Route::get('booking/{booking}/success', static function (Booking $booking, Reque
     }
 
     return view('booking.success', ['booking' => $booking]);
-})->name('booking.success')->withTrashed();
+})->name('booking.success');
 
 Route::get('membership/{membership}/success', static function (Membership $membership, Request $request) {
     if ($request->filled('session_id')) {
