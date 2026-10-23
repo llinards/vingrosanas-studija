@@ -43,15 +43,39 @@
                     </div>
                 </div>
             </div>
-        @else
+        @elseif($membership->payment_status->value === 'failed')
             <div class="md:max-w-1/3 mx-auto">
                 <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-4">
-                    <flux:icon.clock class="size-12 text-blue mx-auto mb-4"/>
-                    <flux:heading level="3" class="text-center">{{ __('Maksājums tiek apstrādāts') }}</flux:heading>
+                    <flux:icon.exclamation-triangle class="size-12 text-blue mx-auto mb-4"/>
+                    <flux:heading level="3" class="text-center">{{ __('Ir notikusi kļūda!') }}</flux:heading>
                     <flux:text class="text-center mt-2">
-                        {{ __('Lūdzu, uzgaidiet apstiprinājuma e-pastu.') }}
+                        {{ __('Lūdzu, sazinies ar mums.') }}
                     </flux:text>
                 </div>
+
+                <div class="mt-8 text-center">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
+                        {{ __('Atgriezties uz sākumu') }}
+                    </flux:button>
+                </div>
+            </div>
+        @elseif($membership->payment_status->value === 'refunded')
+            <div class="md:max-w-1/3 mx-auto">
+                <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-4">
+                    <flux:icon.receipt-refund class="size-12 text-blue mx-auto mb-4"/>
+                    <flux:heading level="3"
+                                  class="text-center">{{ __('Abonements ir atcelts un tā apmaksa tiks atgriezta!') }}</flux:heading>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
+                        {{ __('Atgriezties uz sākumu') }}
+                    </flux:button>
+                </div>
+            </div>
+        @else
+            <div class="md:max-w-1/3 mx-auto">
+                <livewire:membership.membership-payment-status :membership="$membership" :session-id="$membership->stripe_checkout_session_id" />
 
                 <div class="mt-8 text-center">
                     <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">
