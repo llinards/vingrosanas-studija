@@ -256,6 +256,7 @@ test('offers the coaches who have classes that can be booked', function () {
 });
 
 test('lists the classes of the chosen coach with their usual day and time', function () {
+    $this->travelTo(Carbon::parse('2026-10-05 09:00:00'));
     $coach = Coach::factory()->create();
     wednesdayClassForAdmin(['service_id' => Service::factory()->create(['name' => 'Fusion Pilates', 'coach_id' => $coach->id])->id]);
     wednesdayClassForAdmin([
