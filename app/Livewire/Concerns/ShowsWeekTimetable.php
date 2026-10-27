@@ -5,7 +5,6 @@ namespace App\Livewire\Concerns;
 use App\Enums\DayOfWeek;
 use App\Enums\SlotStatus;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 
 /**
@@ -68,12 +67,12 @@ trait ShowsWeekTimetable
 
         foreach ($this->classesForWeek($this->weekStart) as $date => $entries) {
             $day = Carbon::parse($date);
-            $weekday = DayOfWeek::from($day->dayOfWeekIso)->label();
+            $weekday = DayOfWeek::from($day->dayOfWeekIso);
 
             $days[] = [
                 'date' => $date,
-                'weekday' => $weekday,
-                'weekday_short' => Str::substr($weekday, 0, 3),
+                'weekday' => $weekday->label(),
+                'weekday_short' => $weekday->shortLabel(),
                 'day_of_month' => $day->format('j'),
                 'short_date' => $day->format('d.m.'),
                 'entries' => $entries,

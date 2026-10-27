@@ -24,4 +24,20 @@ enum DayOfWeek: int
             self::Sunday => 'Svētdiena',
         };
     }
+
+    /**
+     * The standard Latvian abbreviation of the day, as printed on calendars.
+     */
+    public function shortLabel(): string
+    {
+        return match ($this) {
+            self::Monday => 'P',
+            self::Tuesday => 'O',
+            self::Wednesday => 'T',
+            self::Thursday => 'C',
+            self::Friday => 'Pk',
+            self::Saturday => 'S',
+            self::Sunday => 'Sv',
+        };
+    }
 }

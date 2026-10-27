@@ -154,6 +154,14 @@ test('labels an individual session instead of showing free places', function () 
         ->assertSee('Pieteikties');
 });
 
+test('labels the days on the small-screen day strip with the standard Latvian abbreviations', function () {
+    createClassForTimetablePage();
+
+    $days = Livewire::test('timetable')->instance()->days;
+
+    expect(array_column($days, 'weekday_short'))->toBe(['P', 'O', 'T', 'C', 'Pk', 'S', 'Sv']);
+});
+
 test('tells the visitor when a week has no classes', function () {
     createClassForTimetablePage(schedule: ['day_of_week' => null, 'date' => '2026-10-14']);
 
