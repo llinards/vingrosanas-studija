@@ -9,7 +9,7 @@ Jūsu rezervācija ir atcelta.
 - **Treneris:** {{ $booking->schedule->service->coach->name }}
 - **Datums:** {{ $booking->booking_date->format('d.m.Y') }}
 - **Laiks:** {{ substr($booking->schedule->start_time, 0, 5) }}
-- **Cena:** {{ number_format($booking->schedule->service->price / 100, 2) }} EUR
+- **Cena:** {{ number_format($booking->chargedPriceInCents() / 100, 2) }} EUR
 
 Atmaksa tiks ieskaitīta Jūsu kontā dažu darba dienu laikā.
 

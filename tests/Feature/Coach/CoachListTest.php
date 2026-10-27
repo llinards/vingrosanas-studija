@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\Booking;
 use App\Models\Coach;
+use App\Models\Schedule;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -78,4 +81,16 @@ test('coaches list refreshes after deletion', function () {
 
     $component->assertDontSee($coaches[0]->name)
         ->assertSee($coaches[1]->name);
+});
+
+test('refuses to delete a coach whose classes have upcoming bookings', function () {
+    $coach = Coach::factory()->create();
+    $schedule = Schedule::factory()->create(['service_id' => Service::factory()->create(['coach_id' => $coach->id])->id]);
+    $booking = Booking::factory()->paid()->create(['schedule_id' => $schedule->id, 'booking_date' => now()->addDays(3)->toDateString()]);
+
+    Livewire::test('coach.coach-list')
+        ->call('destroy', $coach->id);
+
+    $this->assertModelExists($coach);
+    $this->assertModelExists($booking);
 });

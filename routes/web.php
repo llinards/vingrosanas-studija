@@ -32,7 +32,7 @@ Route::get('booking/{booking}/success', static function (Booking $booking, Reque
     }
 
     return view('booking.success', ['booking' => $booking]);
-})->name('booking.success')->withTrashed();
+})->name('booking.success');
 
 Route::get('membership/{membership}/success', static function (Membership $membership, Request $request) {
     if ($request->filled('session_id')) {
@@ -50,6 +50,8 @@ Route::get('membership/{membership}/success', static function (Membership $membe
 
 Route::livewire('membership/{membership}/manage', 'membership.membership-manage')
     ->name('membership.manage');
+
+Route::livewire('nodarbibu-saraksts', 'timetable')->name('timetable');
 
 Route::view('check-in', 'check-in')->name('check-in')->middleware('throttle:10,1');
 

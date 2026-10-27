@@ -182,3 +182,24 @@ test('validation messages are in latvian', function () {
         ->call('save')
         ->assertSee('Nosaukums ir obligāts.');
 });
+
+test('service edit form is populated with the existing duration', function () {
+    $service = Service::factory()->create(['duration_minutes' => 90]);
+
+    Livewire::test('service.service-edit', ['service' => $service])
+        ->assertSet('duration_minutes', '90');
+});
+
+test('can update the class duration', function () {
+    $service = Service::factory()->create(['duration_minutes' => 60]);
+
+    Livewire::test('service.service-edit', ['service' => $service])
+        ->set('duration_minutes', '45')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $this->assertDatabaseHas('services', [
+        'id' => $service->id,
+        'duration_minutes' => 45,
+    ]);
+});

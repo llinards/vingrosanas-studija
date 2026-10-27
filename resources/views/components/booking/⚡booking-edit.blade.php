@@ -1,7 +1,7 @@
 <?php
 
 use App\Actions\RefundBooking;
-use App\Exceptions\RefundNotAllowedException;
+use App\Enums\PaymentStatus;
 use App\Livewire\Concerns\HasBookingForm;
 use App\Mail\BookingRescheduled;
 use App\Models\Booking;
@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
+use Stripe\Exception\ApiErrorException;
 
 new class extends Component
 {
@@ -27,8 +28,7 @@ new class extends Component
         $booking->load('schedule.service');
 
         $this->bookingId = $booking->id;
-        $this->service_type_id = $booking->schedule->service->service_type_id;
-        $this->service_id = $booking->schedule->service_id;
+        $this->coach_id = $booking->schedule->service->coach_id;
         $this->schedule_id = $booking->schedule_id;
         $this->booking_date = $booking->booking_date->format('Y-m-d');
         $this->participant_count = $booking->participant_count;
@@ -40,137 +40,29 @@ new class extends Component
         $this->attendance_status = $booking->attendance_status->value;
     }
 
-    /**
-     * Reset dependent fields when service type changes.
-     */
-    public function updatedServiceTypeId(): void
+    protected function editedBookingId(): ?int
     {
-        $this->service_id = null;
-        $this->schedule_id = null;
-        $this->participant_count = 1;
-        unset(
-            $this->services,
-            $this->schedules,
-            $this->selectedService,
-            $this->isExclusiveService,
-            $this->availablePriceTiers
-        );
+        return $this->bookingId;
+    }
+
+    protected function savedBooking(): ?Booking
+    {
+        return Booking::with('schedule.service')->find($this->bookingId);
     }
 
     /**
-     * Reset dependent fields when service changes.
+     * A booking that keeps its date may be corrected after that date has passed;
+     * only a move to a different date has to land on today or later.
+     *
+     * @return array<int, string>
      */
-    public function updatedServiceId(): void
+    protected function bookingDateRules(): array
     {
-        $this->schedule_id = null;
-        $this->participant_count = 1;
-        unset(
-            $this->schedules,
-            $this->selectedService,
-            $this->selectedSchedule,
-            $this->isExclusiveService,
-            $this->availablePriceTiers
-        );
-    }
+        $savedDate = Booking::findOrFail($this->bookingId)->booking_date->format('Y-m-d');
 
-    /**
-     * Reset participant count and capacity when schedule changes.
-     */
-    public function updatedScheduleId(): void
-    {
-        $this->participant_count = 1;
-        unset($this->selectedSchedule, $this->availablePriceTiers, $this->remainingCapacity, $this->isSlotAlreadyBooked);
-    }
-
-    /**
-     * Recalculate capacity when booking date changes.
-     */
-    public function updatedBookingDate(): void
-    {
-        unset($this->remainingCapacity, $this->isSlotAlreadyBooked);
-    }
-
-    /**
-     * Override isSlotAlreadyBooked to exclude the current booking.
-     */
-    public function getIsSlotAlreadyBookedProperty(): bool
-    {
-        if (! $this->schedule_id || ! $this->booking_date) {
-            return false;
-        }
-
-        return Booking::active()
-            ->where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->exists();
-    }
-
-    /**
-     * Override remainingCapacity to exclude the current booking's participants.
-     */
-    public function getRemainingCapacityProperty(): int
-    {
-        if (! $this->schedule_id || ! $this->booking_date) {
-            return 0;
-        }
-
-        $schedule = $this->selectedSchedule;
-        if (! $schedule) {
-            return 0;
-        }
-
-        $bookedParticipants = Booking::active()
-            ->where('schedule_id', $this->schedule_id)
-            ->whereDate('booking_date', $this->booking_date)
-            ->where('id', '!=', $this->bookingId)
-            ->sum('participant_count');
-
-        return max(0, $schedule->max_capacity - $bookedParticipants);
-    }
-
-    /**
-     * Check if the current booking is eligible for refund.
-     */
-    #[Computed]
-    public function isRefundable(): bool
-    {
-        $booking = Booking::with('schedule')->find($this->bookingId);
-
-        return $booking ? $booking->isRefundable() : false;
-    }
-
-    /**
-     * Process a refund for the current booking.
-     */
-    public function refund(): void
-    {
-        $booking = Booking::findOrFail($this->bookingId);
-
-        try {
-            app(RefundBooking::class)->execute($booking);
-
-            Flux::toast(
-                text: __('Rezervācija veiksmīgi atmaksāta!'),
-                variant: 'success',
-            );
-
-            $this->redirect(route('admin.bookings.index'), navigate: true);
-        } catch (RefundNotAllowedException $e) {
-            Flux::toast(
-                text: __('Atmaksa nav iespējama. Līdz pakalpojumam jābūt vairāk nekā 24 stundām.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
-        } catch (\Exception $e) {
-            Log::error($e);
-
-            Flux::toast(
-                text: __('Neizdevās veikt atmaksu. Lūdzu, mēģini vēlreiz.'),
-                heading: __('Kļūda!'),
-                variant: 'danger',
-            );
-        }
+        return $this->booking_date === $savedDate
+            ? ['required', 'date']
+            : ['required', 'date', 'after_or_equal:today'];
     }
 
     /**
@@ -180,8 +72,19 @@ new class extends Component
     {
         $this->validate();
 
+        $booking = Booking::findOrFail($this->bookingId);
+
+        if ($booking->isRefundedThroughStripe() && $this->payment_status !== PaymentStatus::Refunded->value) {
+            $this->addError('payment_status', __('Šī rezervācija ir atmaksāta caur Stripe, tāpēc maksājuma statusu vairs nevar mainīt.'));
+
+            return;
+        }
+
         try {
-            $booking = Booking::findOrFail($this->bookingId);
+            // Returning the money comes first: if Stripe refuses, nothing about the booking is changed.
+            if ($booking->isPaidThroughStripe() && $this->payment_status === PaymentStatus::Refunded->value) {
+                app(RefundBooking::class)->execute($booking, enforceCancellationWindow: false);
+            }
 
             $scheduleChanged = $booking->schedule_id !== (int) $this->schedule_id;
             $dateChanged = $booking->booking_date->format('Y-m-d') !== $this->booking_date;
@@ -211,6 +114,12 @@ new class extends Component
             );
 
             $this->redirect(route('admin.bookings.index'), navigate: true);
+        } catch (ApiErrorException $e) {
+            Flux::toast(
+                text: __('Neizdevās veikt atmaksu caur Stripe. Rezervācija nav mainīta.'),
+                heading: __('Kļūda!'),
+                variant: 'danger',
+            );
         } catch (\Exception $e) {
             Log::error($e);
 
@@ -236,24 +145,4 @@ new class extends Component
 
 <div>
     <x-booking.booking-form :heading="__('Rediģēt rezervāciju')"/>
-
-    @if($this->isRefundable)
-        <div class="flex min-h-full flex-col items-center justify-center px-6">
-            <div class="w-full max-w-2xl">
-                <flux:separator class="my-6"/>
-
-                <flux:heading level="2" size="lg" class="mb-4">{{ __('Atmaksa') }}</flux:heading>
-
-                <flux:text class="mb-4">
-                    {{ __('Atmaksa ir iespējama, jo līdz pakalpojumam ir vairāk nekā 24 stundas.') }}
-                </flux:text>
-                <flux:button wire:click="refund"
-                             wire:confirm="{{__('Vai tiešām vēlies veikt atmaksu un atcelt rezervāciju?')}}"
-                             variant="danger"
-                             icon="arrow-uturn-left">
-                    {{ __('Veikt atmaksu') }}
-                </flux:button>
-            </div>
-        </div>
-    @endif
 </div>

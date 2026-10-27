@@ -187,6 +187,20 @@ test('membership can be updated', function () {
         ->period_end->format('Y-m-d')->toBe('2026-04-30');
 });
 
+test('marking a membership paid in admin also marks its waiting sessions paid', function () {
+    $membership = Membership::factory()->create(['payment_status' => PaymentStatus::Pending]);
+    $waitingSession = Booking::factory()->forMembership($membership)->create(['payment_status' => PaymentStatus::Pending]);
+    $refundedSession = Booking::factory()->forMembership($membership)->refunded()->create();
+
+    Livewire::test('membership.membership-edit', ['membership' => $membership])
+        ->set('payment_status', PaymentStatus::Paid->value)
+        ->call('save')
+        ->assertRedirect(route('admin.memberships.index'));
+
+    expect($waitingSession->fresh()->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($refundedSession->fresh()->payment_status)->toBe(PaymentStatus::Refunded);
+});
+
 test('membership edit shows linked bookings', function () {
     $membership = Membership::factory()->paid()->create();
     $schedule = Schedule::factory()->create();

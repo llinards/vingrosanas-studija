@@ -9,10 +9,8 @@
                 level="1">{{ site('hero', 'heading', __('VINGROŠANAS STUDIJA veselīgam dzīvesveidam')) }}</flux:heading>
             <flux:button href="/#kontakti"
                          class="btn btn-lg btn-primary">{{ __(('Jauns klients')) }}</flux:button>
-            <flux:modal.trigger name="booking-modal">
-                <flux:button
-                    class="btn btn-lg btn-primary">{{ site('hero', 'cta_text', __('Pieteikties')) }}</flux:button>
-            </flux:modal.trigger>
+            <flux:button href="{{ route('timetable') }}"
+                         class="btn btn-lg btn-primary">{{ site('hero', 'cta_text', __('Pieteikties')) }}</flux:button>
         </div>
 
         {{-- CONTACT/SOCIAL MEDIA ICONS --}}

@@ -1,0 +1,276 @@
+<?php
+
+use App\Actions\ConfirmBookingPayment;
+use App\Actions\CreatePendingBooking;
+use App\Actions\CreateStripeCheckoutSession;
+use App\Enums\DayOfWeek;
+use App\Enums\SlotStatus;
+use App\Exceptions\SlotUnavailableException;
+use App\Models\Booking;
+use App\Models\Schedule;
+use App\Services\BookingStartLimiter;
+use App\Services\ScheduleAvailabilityService;
+use Flux\Flux;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
+use Livewire\Component;
+use Stripe\Exception\ApiErrorException;
+
+new class extends Component
+{
+    #[Locked]
+    public ?int $scheduleId = null;
+
+    #[Locked]
+    public ?string $date = null;
+
+    public int $participantCount = 1;
+
+    public string $name = '';
+
+    public string $surname = '';
+
+    public string $phone = '';
+
+    public string $email = '';
+
+    public bool $isProcessing = false;
+
+    /**
+     * Open the checkout for a class chosen in the timetable.
+     *
+     * The slot comes from the browser, so it is checked again before it is accepted.
+     */
+    #[On('open-booking-checkout')]
+    public function open(int $scheduleId, string $date): void
+    {
+        $this->resetErrorBag();
+        $this->reset('scheduleId', 'date', 'participantCount', 'isProcessing');
+        unset($this->schedule, $this->participantOptions);
+
+        if ($this->isBookable($scheduleId, $date)) {
+            $this->scheduleId = $scheduleId;
+            $this->date = $date;
+            $this->participantCount = $this->participantOptions[0];
+        } else {
+            $this->dispatch('timetable-refresh');
+        }
+
+        Flux::modal('booking-checkout')->show();
+    }
+
+    /**
+     * The class being booked, or null when none is open.
+     */
+    #[Computed]
+    public function schedule(): ?Schedule
+    {
+        if ($this->scheduleId === null) {
+            return null;
+        }
+
+        return Schedule::with(['service.coach', 'service.priceTiers'])->find($this->scheduleId);
+    }
+
+    /**
+     * Group sizes the customer may choose for the open class.
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function participantOptions(): array
+    {
+        if ($this->schedule === null) {
+            return [1];
+        }
+
+        return app(CreatePendingBooking::class)->allowedParticipantCounts($this->schedule);
+    }
+
+    /**
+     * Total price in cents for the chosen group size.
+     */
+    #[Computed]
+    public function price(): int
+    {
+        return $this->schedule?->service->priceFor($this->participantCount) ?? 0;
+    }
+
+    /**
+     * Reserve the place and send the customer to Stripe to pay.
+     */
+    public function pay(): void
+    {
+        if ($this->isProcessing || $this->schedule === null) {
+            return;
+        }
+
+        $this->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'surname' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:50'],
+            'email' => ['required', 'email', 'max:255'],
+            'participantCount' => ['required', 'integer', Rule::in($this->participantOptions)],
+        ], [
+            'name.required' => __('Vārds ir obligāts.'),
+            'name.max' => __('Vārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'surname.required' => __('Uzvārds ir obligāts.'),
+            'surname.max' => __('Uzvārds nedrīkst pārsniegt 255 rakstzīmes.'),
+            'phone.required' => __('Tālrunis ir obligāts.'),
+            'phone.max' => __('Tālrunis nedrīkst pārsniegt 50 rakstzīmes.'),
+            'email.required' => __('E-pasts ir obligāts.'),
+            'email.email' => __('E-pastam jābūt derīgai e-pasta adresei.'),
+            'email.max' => __('E-pasts nedrīkst pārsniegt 255 rakstzīmes.'),
+            'participantCount.*' => __('Izvēlētais dalībnieku skaits nav pieejams.'),
+        ]);
+
+        $limiter = app(BookingStartLimiter::class);
+
+        if ($limiter->tooManyStarts()) {
+            $this->addError('booking', $limiter->tooManyStartsMessage());
+
+            return;
+        }
+
+        $this->isProcessing = true;
+
+        try {
+            $booking = app(CreatePendingBooking::class)->execute($this->scheduleId, $this->date, $this->participantCount, [
+                'name' => $this->name,
+                'surname' => $this->surname,
+                'phone' => $this->phone,
+                'email' => $this->email,
+            ]);
+        } catch (SlotUnavailableException) {
+            $this->isProcessing = false;
+            $this->addError('booking', __('Šis laiks vairs nav pieejams. Lūdzu, izvēlieties citu.'));
+            $this->dispatch('timetable-refresh');
+
+            return;
+        }
+
+        if ($booking->price === 0) {
+            $this->confirmFreeBooking($booking);
+
+            return;
+        }
+
+        try {
+            $checkout = app(CreateStripeCheckoutSession::class)->execute($booking, $booking->price);
+        } catch (ApiErrorException) {
+            // No checkout session exists, so this booking could never be paid: release the place.
+            $booking->delete();
+
+            $this->isProcessing = false;
+            $this->addError('booking', __('Maksājuma sistēma pašlaik nav pieejama. Lūdzu, mēģiniet vēlreiz.'));
+
+            return;
+        }
+
+        // Only a start that holds a place and reaches Stripe counts towards the limit.
+        $limiter->hit();
+
+        $this->redirect($checkout['url'], navigate: false);
+    }
+
+    /**
+     * Confirm a free booking straight away, as there is nothing to pay at Stripe.
+     *
+     * The random code stands in for the Checkout Session id, which the success page and the
+     * confirmation email use as the customer's access code. Without a payment reference the
+     * booking is never sent to Stripe for a refund.
+     */
+    private function confirmFreeBooking(Booking $booking): void
+    {
+        $accessCode = 'free_'.Str::random(40);
+
+        $booking->update(['stripe_checkout_session_id' => $accessCode]);
+
+        app(ConfirmBookingPayment::class)->execute($booking, null);
+
+        // Free bookings count towards the limit too, or nothing would stop a class being filled with them.
+        app(BookingStartLimiter::class)->hit();
+
+        $this->redirect(route('booking.success', ['booking' => $booking, 'session_id' => $accessCode]), navigate: false);
+    }
+
+    private function isBookable(int $scheduleId, string $date): bool
+    {
+        if (! Carbon::canBeCreatedFromFormat($date, 'Y-m-d')) {
+            return false;
+        }
+
+        $schedule = Schedule::with('service.coach')->find($scheduleId);
+
+        if ($schedule === null) {
+            return false;
+        }
+
+        return app(ScheduleAvailabilityService::class)->slotStatus($schedule, Carbon::parse($date)) === SlotStatus::Available;
+    }
+};
+?>
+
+<div>
+    <flux:modal name="booking-checkout" :dismissible="false" class="w-[calc(100vw-2rem)] max-w-lg">
+        @if($this->schedule)
+            <form wire:submit="pay" class="space-y-6 p-6 md:p-8">
+                <flux:heading size="lg">{{ __('Pieteikšanās nodarbībai') }}</flux:heading>
+
+                {{-- CLASS SUMMARY --}}
+                <div>
+                    <div class="flex justify-between gap-4 font-medium">
+                        <span>{{ $this->schedule->service->name }}</span>
+                        <span class="shrink-0">{{ price_label($this->price) }}</span>
+                    </div>
+                    <flux:text size="sm">
+                        {{ DayOfWeek::from(Carbon::parse($date)->dayOfWeekIso)->label() }},
+                        {{ Carbon::parse($date)->format('d.m.Y') }} {{ substr($this->schedule->start_time, 0, 5) }}@if($this->schedule->service->coach) · {{ $this->schedule->service->coach->name }}@endif
+                    </flux:text>
+                </div>
+
+                {{-- GROUP SIZE (individual sessions with several price tiers) --}}
+                @if(count($this->participantOptions) > 1)
+                    <flux:radio.group wire:model.live="participantCount" :label="__('Dalībnieku skaits')"
+                                      variant="cards" class="grid grid-cols-3 gap-2">
+                        @foreach($this->participantOptions as $option)
+                            <flux:radio wire:key="participants-{{ $option }}" :value="$option"
+                                        :label="$option . ' ' . ($option === 1 ? __('persona') : __('personas'))"
+                                        :description="price_label($this->schedule->service->priceFor($option))"/>
+                        @endforeach
+                    </flux:radio.group>
+                @endif
+
+                {{-- CUSTOMER DETAILS --}}
+                <x-booking.customer-fields/>
+
+                @error('participantCount')
+                <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
+                @enderror
+                @error('booking')
+                <flux:text class="text-red-500 text-sm">{{ $message }}</flux:text>
+                @enderror
+
+                <div class="flex justify-between">
+                    <flux:modal.close>
+                        <flux:button class="btn btn-sm btn-tertiary">{{ __('Atcelt') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" class="btn btn-sm btn-primary"
+                                 :disabled="$isProcessing">{{ $this->price === 0 ? __('Apstiprināt rezervāciju') : __('Apmaksāt ar karti') }}</flux:button>
+                </div>
+            </form>
+        @else
+            <div class="space-y-6 p-6 md:p-8">
+                <flux:heading size="lg">{{ __('Šis laiks vairs nav pieejams.') }}</flux:heading>
+                <flux:text>{{ __('Lūdzu, izvēlieties citu nodarbību sarakstā.') }}</flux:text>
+                <flux:modal.close>
+                    <flux:button class="btn btn-sm btn-primary">{{ __('Aizvērt') }}</flux:button>
+                </flux:modal.close>
+            </div>
+        @endif
+    </flux:modal>
+</div>

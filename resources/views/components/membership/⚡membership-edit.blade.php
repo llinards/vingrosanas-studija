@@ -125,14 +125,21 @@ new class extends Component
         try {
             $membership = Membership::findOrFail($this->membershipId);
 
-            $membership->update([
-                'name' => $this->name,
-                'surname' => $this->surname,
-                'phone' => $this->phone,
-                'email' => $this->email,
-                'period_end' => $this->period_end,
-                'payment_status' => $this->payment_status,
-            ]);
+            DB::transaction(function () use ($membership) {
+                $membership->update([
+                    'name' => $this->name,
+                    'surname' => $this->surname,
+                    'phone' => $this->phone,
+                    'email' => $this->email,
+                    'period_end' => $this->period_end,
+                    'payment_status' => $this->payment_status,
+                ]);
+
+                // A membership paid outside Stripe (e.g. at the studio) makes its waiting sessions paid too.
+                if ($membership->payment_status === PaymentStatus::Paid) {
+                    $membership->markSessionsAsPaid();
+                }
+            });
 
             Flux::toast(
                 text: __('Abonements atjaunināts!'),

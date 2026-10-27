@@ -48,7 +48,4 @@
     {{-- FORM --}}
     <x-contact-form />
 
-    {{--
-    <x-EXTRA-booking-modal /> --}}
-
 </x-layouts.main>

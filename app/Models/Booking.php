@@ -91,6 +91,17 @@ class Booking extends Model
     }
 
     /**
+     * Scope to bookings that hold a place on a class taking place today or later.
+     *
+     * @param  Builder<Booking>  $query
+     * @return Builder<Booking>
+     */
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query->active()->whereDate('booking_date', '>=', today()->toDateString());
+    }
+
+    /**
      * Check if the booking payment is still pending and not expired.
      */
     public function isPendingPayment(): bool
@@ -101,25 +112,31 @@ class Booking extends Model
     }
 
     /**
-     * Check if the booking has expired without payment.
+     * Mark the booking as paid with the given payment reference, or none for a free booking.
      */
-    public function isExpired(): bool
-    {
-        return $this->payment_status === PaymentStatus::Pending
-            && $this->expires_at !== null
-            && $this->expires_at->isPast();
-    }
-
-    /**
-     * Mark the booking as paid with the given payment reference.
-     */
-    public function markAsPaid(string $paymentReference): void
+    public function markAsPaid(?string $paymentReference): void
     {
         $this->update([
             'payment_status' => PaymentStatus::Paid,
             'payment_reference' => $paymentReference,
             'expires_at' => null,
         ]);
+    }
+
+    /**
+     * Check if the customer paid for this booking through Stripe and the money has not been returned.
+     */
+    public function isPaidThroughStripe(): bool
+    {
+        return $this->payment_status === PaymentStatus::Paid && filled($this->payment_reference);
+    }
+
+    /**
+     * Check if the payment for this booking was returned through Stripe.
+     */
+    public function isRefundedThroughStripe(): bool
+    {
+        return $this->payment_status === PaymentStatus::Refunded && filled($this->refund_reference);
     }
 
     /**
@@ -158,6 +175,17 @@ class Booking extends Model
     }
 
     /**
+     * Get the price in cents the customer was charged for this booking.
+     *
+     * Bookings made before prices were recorded, and bookings created in the
+     * admin panel, have no recorded price and show the price of the service.
+     */
+    public function chargedPriceInCents(): int
+    {
+        return $this->price ?? $this->schedule->service->price;
+    }
+
+    /**
      * Get the full service date and time as a Carbon instance.
      */
     public function getServiceDateTime(): Carbon
@@ -172,6 +200,7 @@ class Booking extends Model
             'attendance_status' => AttendanceStatus::class,
             'booking_date' => 'date',
             'participant_count' => 'integer',
+            'price' => 'integer',
             'expires_at' => 'datetime',
             'payment_reminder_sent_at' => 'datetime',
             'refunded_at' => 'datetime',

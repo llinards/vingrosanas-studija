@@ -74,13 +74,7 @@
             </div>
         @else
             <div class="md:max-w-1/3 mx-auto">
-                <div class="py-8 px-6 md:px-8 border-8 md:border-12 border-blue rounded-4xl space-y-4">
-                    <flux:icon.clock class="size-12 text-blue mx-auto mb-4"/>
-                    <flux:heading level="3" class="text-center">{{ __('Maksājums tiek apstrādāts') }}</flux:heading>
-                    <flux:text class="text-center mt-2">
-                        {{ __('Lūdzu, uzgaidiet apstiprinājuma e-pastu.') }}
-                    </flux:text>
-                </div>
+                <livewire:booking.booking-payment-status :booking="$booking" :session-id="request('session_id')" />
 
                 <div class="mt-8 text-center">
                     <flux:button href="{{ route('home') }}" class="btn btn-lg btn-primary">

@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\ConfirmBookingPayment;
+use App\Actions\ConfirmMembershipPayment;
 use App\Enums\PaymentStatus;
-use App\Mail\BookingConfirmation;
 use App\Mail\BookingRefunded;
-use App\Mail\MembershipConfirmation;
 use App\Mail\MembershipRefunded;
-use App\Mail\NewBookingNotification;
-use App\Mail\NewMembershipNotification;
 use App\Models\Booking;
 use App\Models\Membership;
 use Illuminate\Http\Request;
@@ -82,25 +80,7 @@ class StripeWebhookController extends Controller
             return response('Already processed', 200);
         }
 
-        // Mark the booking as paid
-        $booking->markAsPaid($session->payment_intent);
-
-        // Load relationships for emails
-        $booking->load('schedule.service.coach');
-
-        // Send confirmation email to customer
-        Mail::to($booking->email)->send(new BookingConfirmation($booking));
-
-        // Send notification to coach
-        $coachEmail = $booking->schedule->service->coach->email ?? null;
-        if ($coachEmail) {
-            Mail::to($coachEmail)->send(new NewBookingNotification($booking));
-        }
-
-        Log::info('Booking payment completed', [
-            'booking_id' => $booking->id,
-            'payment_intent' => $session->payment_intent,
-        ]);
+        app(ConfirmBookingPayment::class)->execute($booking, $session->payment_intent);
 
         return response('Payment processed', 200);
     }
@@ -126,26 +106,7 @@ class StripeWebhookController extends Controller
             return response('Already processed', 200);
         }
 
-        $membership->markAsPaid($session->payment_intent);
-
-        $membership->load('bookings.schedule.service.coach');
-
-        Mail::to($membership->email)->send(new MembershipConfirmation($membership));
-
-        // Send notification to each unique coach
-        $coachEmails = $membership->bookings
-            ->map(fn ($booking) => $booking->schedule->service->coach->email ?? null)
-            ->filter()
-            ->unique();
-
-        foreach ($coachEmails as $coachEmail) {
-            Mail::to($coachEmail)->send(new NewMembershipNotification($membership));
-        }
-
-        Log::info('Membership payment completed', [
-            'membership_id' => $membership->id,
-            'payment_intent' => $session->payment_intent,
-        ]);
+        app(ConfirmMembershipPayment::class)->execute($membership, $session->payment_intent);
 
         return response('Membership payment processed', 200);
     }

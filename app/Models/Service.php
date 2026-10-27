@@ -14,6 +14,8 @@ class Service extends Model
     /** @use HasFactory<ServiceFactory> */
     use HasFactory;
 
+    public const DEFAULT_DURATION_MINUTES = 60;
+
     /**
      * @return BelongsTo<ServiceType, $this>
      */
@@ -47,22 +49,24 @@ class Service extends Model
     }
 
     /**
-     * Get the maximum number of participants allowed for this service.
+     * Whether a session of this class can be part of the given membership:
+     * the class is open to memberships and belongs to the membership's category.
      */
-    public function maxParticipants(): int
+    public function isCoveredBy(Service $membership): bool
     {
-        return $this->priceTiers()->max('participant_count') ?? 1;
+        return $this->is_membership_eligible
+            && ! $this->is_membership
+            && (int) $this->service_type_id === (int) $membership->service_type_id;
     }
 
     /**
-     * Scope to only include membership services.
+     * Get the total price in cents for a booking of the given group size.
      *
-     * @param  Builder<Service>  $query
-     * @return Builder<Service>
+     * Falls back to the base price when no tier is defined for that size.
      */
-    public function scopeMembership(Builder $query): Builder
+    public function priceFor(int $participantCount): int
     {
-        return $query->where('is_membership', true);
+        return $this->priceTiers->firstWhere('participant_count', $participantCount)?->price ?? $this->price;
     }
 
     /**
@@ -90,6 +94,7 @@ class Service extends Model
             'notify_coach_on_cancellation' => 'boolean',
             'sessions_count' => 'integer',
             'price' => 'integer',
+            'duration_minutes' => 'integer',
             'position' => 'integer',
         ];
     }

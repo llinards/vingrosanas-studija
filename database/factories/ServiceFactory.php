@@ -24,6 +24,7 @@ class ServiceFactory extends Factory
             'coach_id' => Coach::factory(),
             'name' => fake()->words(3, true),
             'price' => fake()->numberBetween(500, 10000),
+            'duration_minutes' => Service::DEFAULT_DURATION_MINUTES,
             'is_active' => true,
             'is_exclusive' => false,
             'is_membership_eligible' => false,
@@ -51,6 +52,16 @@ class ServiceFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_membership_eligible' => true,
+        ]);
+    }
+
+    /**
+     * Put the service in the same category (service type) as the given service.
+     */
+    public function inCategoryOf(Service $service): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'service_type_id' => $service->service_type_id,
         ]);
     }
 

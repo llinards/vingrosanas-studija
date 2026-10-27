@@ -1,11 +1,13 @@
 <?php
 
+use App\Enums\SlotStatus;
 use App\Models\Coach;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Models\ServiceType;
 use App\Models\UnavailableDate;
 use App\Services\ScheduleAvailabilityService;
+use Illuminate\Support\Carbon;
 
 function createScheduleForTomorrow(Coach $coach, array $scheduleOverrides = []): array
 {
@@ -27,265 +29,129 @@ function createScheduleForTomorrow(Coach $coach, array $scheduleOverrides = []):
     return [$service, $schedule, $tomorrow];
 }
 
-test('studio-wide closure marks date as unavailable', function () {
+/**
+ * Create a one-off class at the given time on each of the given days from today.
+ *
+ * @param  list<int>  $daysFromToday
+ * @return list<Schedule>
+ */
+function createOneOffClasses(Coach $coach, array $daysFromToday, string $startTime): array
+{
+    $service = Service::factory()->create(['coach_id' => $coach->id, 'is_active' => true]);
+
+    return array_map(fn (int $day) => Schedule::factory()->create([
+        'service_id' => $service->id,
+        'date' => now()->addDays($day)->toDateString(),
+        'day_of_week' => null,
+        'start_time' => $startTime,
+        'is_active' => true,
+        'max_capacity' => 5,
+    ]), $daysFromToday);
+}
+
+/**
+ * The status of a class on a date, as the booking and membership checks see it.
+ */
+function slotStatusOn(Schedule $schedule, Carbon $date): SlotStatus
+{
+    return app(ScheduleAvailabilityService::class)->slotStatus($schedule->fresh(['service.coach']), $date->copy());
+}
+
+/**
+ * The status of a one-off class as the week timetable shows it on its date.
+ */
+function timetableStatusOf(Schedule $schedule): SlotStatus
+{
+    $date = $schedule->date->toDateString();
+    $week = app(ScheduleAvailabilityService::class)->weekTimetable($schedule->date->copy()->startOfWeek(Carbon::MONDAY));
+
+    return collect($week[$date])->firstWhere('schedule_id', $schedule->id)['status'];
+}
+
+test('a studio-wide closure cancels the class', function () {
     $coach = Coach::factory()->create();
-    [$service, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
+    [, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
 
     UnavailableDate::factory()->range($tomorrow, $tomorrow)->create();
 
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('id', $schedule->id)->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $tomorrow->copy(), $tomorrow->copy());
-
-    expect($unavailable)->toContain($tomorrow->toDateString());
+    expect(slotStatusOn($schedule, $tomorrow))->toBe(SlotStatus::Cancelled);
 });
 
-test('studio-wide closure returns empty time slots', function () {
-    $coach = Coach::factory()->create();
-    [$service, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
-
-    UnavailableDate::factory()->range($tomorrow, $tomorrow)->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('id', $schedule->id)->get();
-
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    expect($slots)->toBeEmpty();
-});
-
-test('per-coach unavailability blocks only that coach schedules', function () {
+test('a coach absence cancels only that coach\'s classes', function () {
     $coach1 = Coach::factory()->create();
     $coach2 = Coach::factory()->create();
 
-    [$service1, $schedule1, $tomorrow] = createScheduleForTomorrow($coach1);
-    [$service2, $schedule2] = createScheduleForTomorrow($coach2, [
+    [, $schedule1, $tomorrow] = createScheduleForTomorrow($coach1);
+    [, $schedule2] = createScheduleForTomorrow($coach2, [
         'day_of_week' => $tomorrow->dayOfWeekIso,
     ]);
 
     UnavailableDate::factory()->forCoach($coach1)->range($tomorrow, $tomorrow)->create();
 
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->whereIn('id', [$schedule1->id, $schedule2->id])->get();
-
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    expect($slots)->toHaveCount(1)
-        ->and($slots[0]['schedule_id'])->toBe($schedule2->id);
+    expect(slotStatusOn($schedule1, $tomorrow))->toBe(SlotStatus::Cancelled)
+        ->and(slotStatusOn($schedule2, $tomorrow))->toBe(SlotStatus::Available);
 });
 
-test('other coaches remain available when one coach is blocked', function () {
+test('a multi-day closure cancels every class in the span and none outside it', function () {
+    $coach = Coach::factory()->create();
+    [$before, $first, $last, $after] = createOneOffClasses($coach, [1, 2, 3, 4], '10:00');
+
+    UnavailableDate::factory()->range(now()->addDays(2), now()->addDays(3))->create();
+
+    expect(timetableStatusOf($before))->toBe(SlotStatus::Available)
+        ->and(timetableStatusOf($first))->toBe(SlotStatus::Cancelled)
+        ->and(timetableStatusOf($last))->toBe(SlotStatus::Cancelled)
+        ->and(timetableStatusOf($after))->toBe(SlotStatus::Available);
+});
+
+test('overlapping coach and studio-wide closures cancel the class', function () {
+    $coach = Coach::factory()->create();
+    [, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
+
+    UnavailableDate::factory()->range($tomorrow, $tomorrow)->create();
+    UnavailableDate::factory()->forCoach($coach)->range($tomorrow, $tomorrow)->create();
+
+    expect(slotStatusOn($schedule, $tomorrow))->toBe(SlotStatus::Cancelled);
+});
+
+test('a coach time window cancels only the classes starting inside it', function () {
+    $coach = Coach::factory()->create();
+    [, $morning, $tomorrow] = createScheduleForTomorrow($coach, ['start_time' => '10:00']);
+    [, $afternoon] = createScheduleForTomorrow($coach, ['start_time' => '17:00']);
+    [, $evening] = createScheduleForTomorrow($coach, ['start_time' => '21:00']);
+
+    UnavailableDate::factory()
+        ->forCoach($coach)
+        ->range($tomorrow, $tomorrow)
+        ->withTimeRange('15:00', '20:00')
+        ->create();
+
+    expect(slotStatusOn($morning, $tomorrow))->toBe(SlotStatus::Available)
+        ->and(slotStatusOn($afternoon, $tomorrow))->toBe(SlotStatus::Cancelled)
+        ->and(slotStatusOn($evening, $tomorrow))->toBe(SlotStatus::Available);
+});
+
+test('a time window includes its start and excludes its end', function () {
+    $coach = Coach::factory()->create();
+    [, $atStart, $tomorrow] = createScheduleForTomorrow($coach, ['start_time' => '15:00']);
+    [, $atEnd] = createScheduleForTomorrow($coach, ['start_time' => '20:00']);
+
+    UnavailableDate::factory()
+        ->forCoach($coach)
+        ->range($tomorrow, $tomorrow)
+        ->withTimeRange('15:00', '20:00')
+        ->create();
+
+    expect(slotStatusOn($atStart, $tomorrow))->toBe(SlotStatus::Cancelled)
+        ->and(slotStatusOn($atEnd, $tomorrow))->toBe(SlotStatus::Available);
+});
+
+test('a studio-wide time window cancels the matching classes of every coach', function () {
     $coach1 = Coach::factory()->create();
     $coach2 = Coach::factory()->create();
 
-    [$service1, $schedule1, $tomorrow] = createScheduleForTomorrow($coach1);
-    [$service2, $schedule2] = createScheduleForTomorrow($coach2, [
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-    ]);
-
-    UnavailableDate::factory()->forCoach($coach1)->range($tomorrow, $tomorrow)->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->whereIn('id', [$schedule1->id, $schedule2->id])->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $tomorrow->copy(), $tomorrow->copy());
-
-    expect($unavailable)->not->toContain($tomorrow->toDateString());
-});
-
-test('multi-day range blocks all dates in span', function () {
-    $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
-    $startDate = now()->addDays(1);
-    $endDate = now()->addDays(3);
-
-    // Create schedules for each of the 3 days
-    foreach (range(1, 3) as $day) {
-        $date = now()->addDays($day);
-        Schedule::factory()->create([
-            'service_id' => $service->id,
-            'date' => $date->toDateString(),
-            'day_of_week' => null,
-            'start_time' => '10:00',
-            'is_active' => true,
-            'max_capacity' => 5,
-        ]);
-    }
-
-    UnavailableDate::factory()->range($startDate, $endDate)->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $startDate->copy(), $endDate->copy());
-    $unavailableDates = explode(',', $unavailable);
-
-    expect($unavailableDates)->toContain($startDate->toDateString())
-        ->toContain(now()->addDays(2)->toDateString())
-        ->toContain($endDate->toDateString());
-});
-
-test('dates outside the range remain available', function () {
-    $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
-    $blockStart = now()->addDays(2);
-    $blockEnd = now()->addDays(3);
-
-    // Create schedules for days 1-4
-    foreach (range(1, 4) as $day) {
-        $date = now()->addDays($day);
-        Schedule::factory()->create([
-            'service_id' => $service->id,
-            'date' => $date->toDateString(),
-            'day_of_week' => null,
-            'start_time' => '10:00',
-            'is_active' => true,
-            'max_capacity' => 5,
-        ]);
-    }
-
-    UnavailableDate::factory()->range($blockStart, $blockEnd)->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    $rangeStart = now()->addDays(1);
-    $rangeEnd = now()->addDays(4);
-    $unavailable = $availability->unavailableDates($schedules, $rangeStart->copy(), $rangeEnd->copy());
-
-    expect($unavailable)->not->toContain($rangeStart->toDateString())
-        ->and($unavailable)->not->toContain($rangeEnd->toDateString());
-});
-
-test('overlapping coach and studio-wide blocks are handled correctly', function () {
-    $coach = Coach::factory()->create();
-    [$service, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
-
-    // Both studio-wide and per-coach block for the same date
-    UnavailableDate::factory()->range($tomorrow, $tomorrow)->create(); // studio-wide
-    UnavailableDate::factory()->forCoach($coach)->range($tomorrow, $tomorrow)->create(); // per-coach
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('id', $schedule->id)->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $tomorrow->copy(), $tomorrow->copy());
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    expect($unavailable)->toContain($tomorrow->toDateString())
-        ->and($slots)->toBeEmpty();
-});
-
-test('coach time-range hides only slots whose start time falls in the window', function () {
-    $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
-    $tomorrow = now()->addDay();
-
-    $morning = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '10:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    $afternoon = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '17:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    $evening = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '21:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-
-    UnavailableDate::factory()
-        ->forCoach($coach)
-        ->range($tomorrow, $tomorrow)
-        ->withTimeRange('15:00', '20:00')
-        ->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    $scheduleIds = array_column($slots, 'schedule_id');
-    expect($scheduleIds)->toContain($morning->id)
-        ->not->toContain($afternoon->id)
-        ->toContain($evening->id);
-});
-
-test('time-range boundary uses half-open interval', function () {
-    $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
-    $tomorrow = now()->addDay();
-
-    $atStart = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '15:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    $atEnd = Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '20:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-
-    UnavailableDate::factory()
-        ->forCoach($coach)
-        ->range($tomorrow, $tomorrow)
-        ->withTimeRange('15:00', '20:00')
-        ->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    $scheduleIds = array_column($slots, 'schedule_id');
-    expect($scheduleIds)->not->toContain($atStart->id)
-        ->toContain($atEnd->id);
-});
-
-test('studio-wide time-range blocks matching slot for every coach', function () {
-    $coach1 = Coach::factory()->create();
-    $coach2 = Coach::factory()->create();
-
-    [$service1, $schedule1, $tomorrow] = createScheduleForTomorrow($coach1, ['start_time' => '17:00']);
-    [$service2, $schedule2] = createScheduleForTomorrow($coach2, [
+    [, $schedule1, $tomorrow] = createScheduleForTomorrow($coach1, ['start_time' => '17:00']);
+    [, $schedule2] = createScheduleForTomorrow($coach2, [
         'day_of_week' => $tomorrow->dayOfWeekIso,
         'start_time' => '17:00',
     ]);
@@ -295,149 +161,43 @@ test('studio-wide time-range blocks matching slot for every coach', function () 
         ->withTimeRange('15:00', '20:00')
         ->create();
 
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->whereIn('id', [$schedule1->id, $schedule2->id])->get();
-
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    expect($slots)->toBeEmpty();
+    expect(slotStatusOn($schedule1, $tomorrow))->toBe(SlotStatus::Cancelled)
+        ->and(slotStatusOn($schedule2, $tomorrow))->toBe(SlotStatus::Cancelled);
 });
 
-test('time-range applies on each day of a multi-day range', function () {
+test('a time window applies on each day of a multi-day closure', function () {
     $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
-
-    $start = now()->addDay();
-    $end = now()->addDays(3);
-
-    foreach (range(1, 3) as $day) {
-        $date = now()->addDays($day);
-        Schedule::factory()->create([
-            'service_id' => $service->id,
-            'date' => $date->toDateString(),
-            'day_of_week' => null,
-            'start_time' => '17:00',
-            'is_active' => true,
-            'max_capacity' => 5,
-        ]);
-    }
+    $classes = createOneOffClasses($coach, [1, 2, 3], '17:00');
 
     UnavailableDate::factory()
         ->forCoach($coach)
-        ->range($start, $end)
+        ->range(now()->addDay(), now()->addDays(3))
         ->withTimeRange('15:00', '20:00')
         ->create();
 
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    foreach (range(1, 3) as $day) {
-        $date = now()->addDays($day);
-        $slots = $availability->availableTimeSlots($schedules, $date->copy());
-
-        expect($slots)->toBeEmpty();
+    foreach ($classes as $class) {
+        expect(timetableStatusOf($class))->toBe(SlotStatus::Cancelled);
     }
 });
 
-test('partial time-range does not mark the date as unavailable in the calendar', function () {
+test('a full-day closure on one date and a time window on the next both apply', function () {
     $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
+    [$firstDay, $secondDay] = createOneOffClasses($coach, [1, 2], '17:00');
 
-    $tomorrow = now()->addDay();
-
-    Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '10:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    Schedule::factory()->create([
-        'service_id' => $service->id,
-        'day_of_week' => $tomorrow->dayOfWeekIso,
-        'start_time' => '17:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-
+    UnavailableDate::factory()->forCoach($coach)->range(now()->addDay(), now()->addDay())->create();
     UnavailableDate::factory()
         ->forCoach($coach)
-        ->range($tomorrow, $tomorrow)
+        ->range(now()->addDays(2), now()->addDays(2))
         ->withTimeRange('15:00', '20:00')
         ->create();
 
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $tomorrow->copy(), $tomorrow->copy());
-
-    expect($unavailable)->not->toContain($tomorrow->toDateString());
+    expect(slotStatusOn($firstDay, now()->addDay()))->toBe(SlotStatus::Cancelled)
+        ->and(slotStatusOn($secondDay, now()->addDays(2)))->toBe(SlotStatus::Cancelled);
 });
 
-test('full-day block on one date plus time-range on adjacent date both apply', function () {
+test('a class stays available when there are no closures', function () {
     $coach = Coach::factory()->create();
-    $serviceType = ServiceType::factory()->create();
-    $service = Service::factory()->create([
-        'service_type_id' => $serviceType->id,
-        'coach_id' => $coach->id,
-        'is_active' => true,
-    ]);
+    [, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
 
-    $day1 = now()->addDay();
-    $day2 = now()->addDays(2);
-
-    Schedule::factory()->create([
-        'service_id' => $service->id,
-        'date' => $day1->toDateString(),
-        'day_of_week' => null,
-        'start_time' => '17:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-    Schedule::factory()->create([
-        'service_id' => $service->id,
-        'date' => $day2->toDateString(),
-        'day_of_week' => null,
-        'start_time' => '17:00',
-        'is_active' => true,
-        'max_capacity' => 5,
-    ]);
-
-    UnavailableDate::factory()->forCoach($coach)->range($day1, $day1)->create();
-    UnavailableDate::factory()
-        ->forCoach($coach)
-        ->range($day2, $day2)
-        ->withTimeRange('15:00', '20:00')
-        ->create();
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('service_id', $service->id)->get();
-
-    expect($availability->availableTimeSlots($schedules, $day1->copy()))->toBeEmpty()
-        ->and($availability->availableTimeSlots($schedules, $day2->copy()))->toBeEmpty();
-});
-
-test('no unavailable date records does not affect existing behavior', function () {
-    $coach = Coach::factory()->create();
-    [$service, $schedule, $tomorrow] = createScheduleForTomorrow($coach);
-
-    $availability = new ScheduleAvailabilityService;
-    $schedules = Schedule::with('service')->where('id', $schedule->id)->get();
-
-    $unavailable = $availability->unavailableDates($schedules, $tomorrow->copy(), $tomorrow->copy());
-    $slots = $availability->availableTimeSlots($schedules, $tomorrow->copy());
-
-    expect($unavailable)->not->toContain($tomorrow->toDateString())
-        ->and($slots)->toHaveCount(1)
-        ->and($slots[0]['schedule_id'])->toBe($schedule->id);
+    expect(slotStatusOn($schedule, $tomorrow))->toBe(SlotStatus::Available);
 });

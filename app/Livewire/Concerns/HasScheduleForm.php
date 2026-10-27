@@ -27,6 +27,11 @@ trait HasScheduleForm
     public bool $is_active = false;
 
     /**
+     * Upcoming bookings that a pending change of day or time would move; above zero the form asks for confirmation.
+     */
+    public int $bookingsToMove = 0;
+
+    /**
      * Get all coaches that have non-membership services.
      */
     #[Computed]

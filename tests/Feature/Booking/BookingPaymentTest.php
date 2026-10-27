@@ -45,21 +45,6 @@ test('booking model correctly identifies pending payment status', function () {
     expect($paidBooking->isPendingPayment())->toBeFalse();
 });
 
-test('booking model correctly identifies expired status', function () {
-    $pendingBooking = Booking::factory()->create([
-        'payment_status' => PaymentStatus::Pending,
-        'expires_at' => now()->addMinutes(30),
-    ]);
-
-    $expiredBooking = Booking::factory()->create([
-        'payment_status' => PaymentStatus::Pending,
-        'expires_at' => now()->subMinutes(5),
-    ]);
-
-    expect($pendingBooking->isExpired())->toBeFalse();
-    expect($expiredBooking->isExpired())->toBeTrue();
-});
-
 test('booking success page displays booking details', function () {
     $booking = Booking::factory()->paid()->create([
         'stripe_checkout_session_id' => 'cs_test_123',

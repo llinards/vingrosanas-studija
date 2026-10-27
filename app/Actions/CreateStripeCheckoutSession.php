@@ -40,6 +40,7 @@ class CreateStripeCheckoutSession
         try {
             $session = Session::create([
                 'mode' => 'payment',
+                'locale' => 'lv',
                 'line_items' => [[
                     'price_data' => [
                         'currency' => config('cashier.currency', 'eur'),
@@ -53,11 +54,11 @@ class CreateStripeCheckoutSession
                 ]],
                 'customer_email' => $booking->email,
                 'success_url' => route('booking.success', ['booking' => $booking->id]).'?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => route('home').'?booking_cancelled=1',
+                'cancel_url' => route('timetable', ['booking_cancelled' => 1]),
                 'metadata' => [
                     'booking_id' => $booking->id,
                 ],
-                'expires_at' => now()->addMinutes(30)->timestamp,
+                'expires_at' => now()->addMinutes(CreatePendingBooking::PAYMENT_WINDOW_MINUTES)->timestamp,
             ]);
         } catch (ApiErrorException $e) {
             Log::error('Stripe checkout session creation failed', [
