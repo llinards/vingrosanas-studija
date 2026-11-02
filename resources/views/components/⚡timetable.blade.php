@@ -1,10 +1,12 @@
 <?php
 
+use App\Enums\DayOfWeek;
 use App\Enums\SlotStatus;
 use App\Livewire\Concerns\ShowsWeekTimetable;
 use App\Models\Schedule;
 use App\Models\Service;
 use App\Services\ScheduleAvailabilityService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -34,6 +36,13 @@ new class extends Component
      */
     #[Url(as: 'veids')]
     public string $mode = self::SINGLE_MODE;
+
+    /**
+     * The class the customer is looking for, by name, so classes of the same name by different coaches show together.
+     * Null shows every class.
+     */
+    #[Url(as: 'class')]
+    public ?string $className = null;
 
     /**
      * The membership product being bought.
@@ -73,6 +82,7 @@ new class extends Component
         $this->membershipPaymentCancelled = request()->boolean('membership_cancelled');
         $this->week = $this->clampWeek($this->week);
         $this->mode = $this->normalizeMode($this->mode);
+        $this->className = $this->normalizeClassName($this->className);
     }
 
     #[Computed]
@@ -155,9 +165,83 @@ new class extends Component
             ->all();
     }
 
+    /**
+     * Names of the classes the timetable can list, for the class picker.
+     *
+     * @return list<string>
+     */
+    #[Computed]
+    public function classNames(): array
+    {
+        return Service::query()
+            ->where('is_active', true)
+            ->where('is_membership', false)
+            ->whereDoesntHave('coach', fn (Builder $query) => $query->where('is_active', false))
+            ->whereHas('schedules', fn (Builder $query) => $query
+                ->where('is_active', true)
+                ->where(fn (Builder $query) => $query
+                    ->whereNotNull('day_of_week')
+                    ->orWhereDate('date', '>=', today())))
+            ->orderBy('name')
+            ->distinct()
+            ->pluck('name')
+            ->all();
+    }
+
+    /**
+     * The next session of the chosen class that can be booked, searched up to the end of the booking window.
+     *
+     * @return array<string, mixed>|null
+     */
+    #[Computed]
+    public function nearestSession(): ?array
+    {
+        if ($this->isMembershipMode || $this->className === null) {
+            return null;
+        }
+
+        $currentWeekStart = today()->startOfWeek(Carbon::MONDAY);
+
+        for ($week = $this->firstWeek(); $week <= $this->lastWeek(); $week++) {
+            foreach ($this->classesForWeek($currentWeekStart->copy()->addWeeks($week)) as $entries) {
+                foreach ($entries as $entry) {
+                    if ($entry['status'] === SlotStatus::Available) {
+                        return $entry;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Label for the day of a session: "Šodien, 02.11.", "Rīt, 03.11." or the weekday, e.g. "Otrdiena, 04.11.".
+     */
+    public function sessionDayLabel(string $date): string
+    {
+        $day = Carbon::parse($date);
+
+        $dayName = match (true) {
+            $day->isToday() => __('Šodien'),
+            $day->isTomorrow() => __('Rīt'),
+            default => DayOfWeek::from($day->dayOfWeekIso)->label(),
+        };
+
+        return $dayName.', '.$day->format('d.m.');
+    }
+
     public function updatedMode(): void
     {
         $this->mode = $this->normalizeMode($this->mode);
+        $this->className = $this->normalizeClassName($this->className);
+    }
+
+    public function updatedClassName(): void
+    {
+        $this->className = $this->normalizeClassName($this->className);
+
+        unset($this->days, $this->nearestSession);
     }
 
     /**
@@ -277,7 +361,7 @@ new class extends Component
     #[On('timetable-refresh')]
     public function refreshTimetable(): void
     {
-        unset($this->days, $this->pickedSessions);
+        unset($this->days, $this->pickedSessions, $this->nearestSession);
 
         $stillPickable = array_values(array_filter(
             $this->picks,
@@ -426,6 +510,18 @@ new class extends Component
         return $mode === self::MEMBERSHIP_MODE ? self::MEMBERSHIP_MODE : self::SINGLE_MODE;
     }
 
+    /**
+     * Accept only a class the timetable lists, and none in membership mode; anything else shows every class.
+     */
+    private function normalizeClassName(?string $className): ?string
+    {
+        if ($this->mode === self::MEMBERSHIP_MODE || ! in_array($className, $this->classNames, true)) {
+            return null;
+        }
+
+        return $className;
+    }
+
     protected function firstWeek(): int
     {
         return 0;
@@ -438,13 +534,23 @@ new class extends Component
 
     /**
      * Membership mode lists only the classes a membership can be used for, of the chosen membership's category.
+     * Otherwise only the class picked in the class picker, when there is one.
      */
     protected function classesForWeek(Carbon $weekStart): array
     {
-        return app(ScheduleAvailabilityService::class)->weekTimetable(
+        $week = app(ScheduleAvailabilityService::class)->weekTimetable(
             $weekStart,
             membershipEligibleOnly: $this->isMembershipMode,
             serviceTypeId: $this->isMembershipMode ? $this->membershipService?->service_type_id : null,
+        );
+
+        if ($this->isMembershipMode || $this->className === null) {
+            return $week;
+        }
+
+        return array_map(
+            fn (array $entries) => array_values(array_filter($entries, fn (array $entry) => $entry['service_name'] === $this->className)),
+            $week,
         );
     }
 
@@ -468,7 +574,7 @@ new class extends Component
     <flux:heading level="1">{{ __('Nodarbību saraksts') }}</flux:heading>
 
     {{-- BOOKING TYPE SWITCH --}}
-    <flux:radio.group wire:model.live="mode" variant="segmented" class="max-w-md">
+    <flux:radio.group wire:model.live="mode" variant="segmented" class="mx-auto max-w-md">
         <flux:radio value="{{ $this::SINGLE_MODE }}" :label="__('Vienreizēja nodarbība')"/>
         <flux:radio value="{{ $this::MEMBERSHIP_MODE }}" :label="__('Abonements')"/>
     </flux:radio.group>
@@ -487,10 +593,47 @@ new class extends Component
         </flux:callout>
     @endif
 
+    {{-- CLASS PICKER AND NEAREST SESSION --}}
+    @if(! $this->isMembershipMode)
+        <div class="space-y-6">
+            <div class="mx-auto max-w-md">
+                <flux:select wire:model.live="className" :label="__('Nodarbība')">
+                    <flux:select.option value="">{{ __('Visas nodarbības') }}</flux:select.option>
+                    @foreach($this->classNames as $name)
+                        <flux:select.option wire:key="class-name-{{ $loop->index }}" :value="$name">{{ $name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            @if($className !== null)
+                <div class="mx-auto max-w-md space-y-3">
+                    <div class="text-center text-sm font-medium text-zinc-800">{{ __('Tuvākā brīvā nodarbība') }}</div>
+
+                    @if($this->nearestSession === null)
+                        <flux:text class="text-center">
+                            {{ __('Tuvākajās :weeks nedēļās brīvu vietu nav.', ['weeks' => ScheduleAvailabilityService::BOOKING_HORIZON_WEEKS]) }}
+                        </flux:text>
+                    @else
+                        @php($card = $this->cardFor($this->nearestSession))
+                        <x-timetable.class-card wire:key="nearest-{{ $card['key'] }}" :entry="$this->nearestSession"
+                                                :lines="[$this->sessionDayLabel($this->nearestSession['date']), ...$card['lines']]">
+                            <x-slot:action>
+                                <flux:button :variant="$card['button']['variant']" size="sm" class="lg:w-full"
+                                             wire:click="{{ $card['button']['action'] }}">
+                                    {{ $card['button']['label'] }}
+                                </flux:button>
+                            </x-slot:action>
+                        </x-timetable.class-card>
+                    @endif
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- MEMBERSHIP PRODUCTS --}}
     @if($this->isMembershipMode)
         @if($this->membershipServices->isEmpty())
-            <flux:text>{{ __('Abonementi pašlaik nav pieejami.') }}</flux:text>
+            <flux:text class="text-center">{{ __('Abonementi pašlaik nav pieejami.') }}</flux:text>
         @else
             <div class="space-y-3">
                 <flux:radio.group wire:model.live="membershipServiceId" variant="cards"
@@ -503,7 +646,7 @@ new class extends Component
                     @endforeach
                 </flux:radio.group>
                 @if($this->membershipService)
-                    <flux:text size="sm">
+                    <flux:text size="sm" class="text-center">
                         {{ __('Pievienojiet :count nodarbības no saraksta. Visām jābūt viena mēneša laikā no pirmās nodarbības.', ['count' => $this->membershipService->sessions_count]) }}
                     </flux:text>
                 @endif
