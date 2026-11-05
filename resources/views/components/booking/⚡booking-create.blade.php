@@ -1,9 +1,11 @@
 <?php
 
 use App\Livewire\Concerns\HasBookingForm;
+use App\Mail\BookingConfirmation;
 use App\Models\Booking;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 new class extends Component
@@ -11,14 +13,14 @@ new class extends Component
     use HasBookingForm;
 
     /**
-     * Validate and create a new booking.
+     * Validate and create a new booking, then send the customer a confirmation email.
      */
     public function save(): void
     {
         $this->validate();
 
         try {
-            Booking::create([
+            $booking = Booking::create([
                 'schedule_id' => $this->schedule_id,
                 'booking_date' => $this->booking_date,
                 'participant_count' => $this->participant_count,
@@ -29,6 +31,9 @@ new class extends Component
                 'payment_status' => $this->payment_status,
                 'attendance_status' => $this->attendance_status,
             ]);
+
+            $booking->load('schedule.service.coach');
+            Mail::to($booking->email)->send(new BookingConfirmation($booking));
 
             Flux::toast(
                 text: __('Rezervācija izveidota!'),
