@@ -45,6 +45,13 @@ new class extends Component
     public ?string $className = null;
 
     /**
+     * The day small screens open on: the nearest free session at the moment the class was picked.
+     * It stays when that session's availability changes later, so the view does not move by itself.
+     */
+    #[Locked]
+    public ?string $focusedDate = null;
+
+    /**
      * The membership product being bought.
      */
     public ?int $membershipServiceId = null;
@@ -74,7 +81,8 @@ new class extends Component
     public bool $membershipPaymentCancelled = false;
 
     /**
-     * Bring values taken from the address bar into the allowed range.
+     * Bring values taken from the address bar into the allowed range. A link with a class but
+     * no week opens on the week of that class's nearest free session.
      */
     public function mount(): void
     {
@@ -83,6 +91,10 @@ new class extends Component
         $this->week = $this->clampWeek($this->week);
         $this->mode = $this->normalizeMode($this->mode);
         $this->className = $this->normalizeClassName($this->className);
+
+        if (! request()->has('week')) {
+            $this->showNearestSessionWeek();
+        }
     }
 
     #[Computed]
@@ -242,6 +254,8 @@ new class extends Component
         $this->className = $this->normalizeClassName($this->className);
 
         unset($this->days, $this->nearestSession);
+
+        $this->showNearestSessionWeek();
     }
 
     /**
@@ -508,6 +522,28 @@ new class extends Component
     private function normalizeMode(string $mode): string
     {
         return $mode === self::MEMBERSHIP_MODE ? self::MEMBERSHIP_MODE : self::SINGLE_MODE;
+    }
+
+    /**
+     * Show the week of the picked class's nearest free session, opening its day on small screens.
+     * Without one (no class picked, or nothing free) the shown week and day stay as they are.
+     */
+    private function showNearestSessionWeek(): void
+    {
+        if ($this->nearestSession === null) {
+            return;
+        }
+
+        $date = Carbon::parse($this->nearestSession['date']);
+
+        $this->week = $this->clampWeek($this->weekOffset($date));
+        $this->opensOnLastDay = false;
+        $this->focusedDate = $date->toDateString();
+    }
+
+    protected function focusDate(): ?string
+    {
+        return $this->focusedDate;
     }
 
     /**

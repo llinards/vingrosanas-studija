@@ -309,14 +309,6 @@ new class extends Component
     }
 
     /**
-     * Number of weeks from the current week to the week of the given date.
-     */
-    private function weekOffset(Carbon $date): int
-    {
-        return (int) round(today()->startOfWeek(Carbon::MONDAY)->diffInWeeks($date->copy()->startOfWeek(Carbon::MONDAY)));
-    }
-
-    /**
      * Whether this membership already has a session in that class on that day.
      */
     private function hasSessionAt(int $scheduleId, string $date, ?int $exceptBookingId = null): bool

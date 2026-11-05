@@ -382,3 +382,72 @@ test('clears the picked class when switching to memberships', function () {
         ->assertSet('className', null)
         ->assertDontSee('Tuvākā brīvā nodarbība');
 });
+
+test('moves to the week of the nearest free session when a class is picked, opening its day on small screens', function () {
+    $class = createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['max_capacity' => 1]);
+    Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+    $component = Livewire::test('timetable')->set('className', 'Pilates REFORMER');
+
+    $component->assertSet('week', 1)->assertSee('12.10. – 18.10.2026');
+    expect($component->instance()->initialDay)->toBe('2026-10-14');
+});
+
+test('stays on the current week when the nearest free session is in it, opening its day on small screens', function () {
+    createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['day_of_week' => 5]);
+
+    $component = Livewire::test('timetable')->set('className', 'Pilates REFORMER');
+
+    $component->assertSet('week', 0);
+    expect($component->instance()->initialDay)->toBe('2026-10-09');
+});
+
+test('does not move the week when the picked class has no free place within the booking window', function () {
+    createClassForTimetablePage(['name' => 'Ziemas meistarklase'], ['day_of_week' => null, 'date' => '2027-01-20']);
+
+    Livewire::test('timetable')
+        ->call('nextWeek')
+        ->call('nextWeek')
+        ->set('className', 'Ziemas meistarklase')
+        ->assertSet('week', 2);
+});
+
+test('keeps the shown week when the nearest free session fills up after the class was picked', function () {
+    $class = createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['max_capacity' => 1]);
+    $component = Livewire::test('timetable')->set('className', 'Pilates REFORMER');
+    Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+    $component->dispatch('timetable-refresh');
+
+    $component->assertSet('week', 0);
+    expect($component->instance()->nearestSession)->toMatchArray(['date' => '2026-10-14'])
+        ->and($component->instance()->initialDay)->toBe('2026-10-07');
+});
+
+test('keeps the shown week when going back to all classes', function () {
+    $class = createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['max_capacity' => 1]);
+    Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+    Livewire::test('timetable')
+        ->set('className', 'Pilates REFORMER')
+        ->set('className', '')
+        ->assertSet('week', 1);
+});
+
+test('opens a class link on the week of the nearest free session', function () {
+    $class = createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['max_capacity' => 1]);
+    Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+    Livewire::withQueryParams(['class' => 'Pilates REFORMER'])
+        ->test('timetable')
+        ->assertSet('week', 1);
+});
+
+test('opens a class link on the week the link names, even when the nearest free session is later', function () {
+    $class = createClassForTimetablePage(['name' => 'Pilates REFORMER'], ['max_capacity' => 1]);
+    Booking::factory()->paid()->create(['schedule_id' => $class->id, 'booking_date' => '2026-10-07']);
+
+    Livewire::withQueryParams(['class' => 'Pilates REFORMER', 'week' => 0])
+        ->test('timetable')
+        ->assertSet('week', 0);
+});
