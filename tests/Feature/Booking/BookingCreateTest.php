@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\PaymentStatus;
+use App\Mail\BookingConfirmation;
+use App\Mail\NewBookingNotification;
 use App\Models\Booking;
 use App\Models\Coach;
 use App\Models\Schedule;
@@ -8,6 +10,7 @@ use App\Models\Service;
 use App\Models\UnavailableDate;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
@@ -364,4 +367,39 @@ test('does not list a one-off class whose date has passed', function () {
         ->assertDontSee('Pagājušā meistarklase')
         ->assertSee('Šodienas meistarklase')
         ->assertSee('Nākotnes meistarklase');
+});
+
+test('sends only the customer a booking confirmation when the admin saves a booking', function () {
+    Mail::fake();
+    $class = wednesdayClassForAdmin();
+
+    adminBookingFormFor($class, '2026-10-07')
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('phone', '+37120000000')
+        ->set('email', 'janis@example.com')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $booking = Booking::sole();
+    Mail::assertQueued(BookingConfirmation::class, fn (BookingConfirmation $mail) => $mail->hasTo('janis@example.com')
+        && $mail->booking->is($booking));
+    Mail::assertNotQueued(NewBookingNotification::class);
+    Mail::assertQueuedCount(1);
+});
+
+test('sends no email when the booking fails validation', function () {
+    Mail::fake();
+    $class = wednesdayClassForAdmin();
+
+    adminBookingFormFor($class, '2026-10-07')
+        ->set('name', 'Jānis')
+        ->set('surname', 'Bērziņš')
+        ->set('phone', '+37120000000')
+        ->set('email', 'not-an-email')
+        ->call('save')
+        ->assertHasErrors(['email' => 'email']);
+
+    expect(Booking::count())->toBe(0);
+    Mail::assertNothingOutgoing();
 });

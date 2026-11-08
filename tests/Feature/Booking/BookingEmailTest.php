@@ -70,6 +70,30 @@ test('booking confirmation email contains correct data', function () {
     $mailable->assertSeeInHtml($booking->schedule->service->coach->name, escape: false);
 });
 
+test('booking confirmation of an online paid booking links to the booking page and allows cancelling up to 24 hours before', function () {
+    $booking = Booking::factory()->paid()->create([
+        'payment_reference' => 'pi_test_online',
+        'stripe_checkout_session_id' => 'cs_test_online',
+    ]);
+
+    (new BookingConfirmation($booking))
+        ->assertSeeInHtml(route('booking.success', ['booking' => $booking, 'session_id' => 'cs_test_online']), escape: false)
+        ->assertSeeInHtml('Jūs varat atcelt rezervāciju ne vēlāk kā 24 stundas pirms nodarbības sākuma.')
+        ->assertDontSeeInHtml('sazinieties ar mums');
+});
+
+test('booking confirmation of an admin-made booking has no booking page link and asks the customer to contact the studio to cancel', function () {
+    $booking = Booking::factory()->paid()->create([
+        'payment_reference' => null,
+        'stripe_checkout_session_id' => null,
+    ]);
+
+    (new BookingConfirmation($booking))
+        ->assertDontSeeInHtml(route('booking.success', $booking), escape: false)
+        ->assertSeeInHtml('Lai atceltu rezervāciju, lūdzu, sazinieties ar mums.')
+        ->assertDontSeeInHtml('ne vēlāk kā 24 stundas');
+});
+
 test('new booking notification email contains customer data', function () {
     $booking = Booking::factory()->create();
     $booking->load('schedule.service.coach');

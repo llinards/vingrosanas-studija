@@ -29,7 +29,8 @@
     </div>
 
     @if(collect($days)->contains(fn (array $day) => $day['entries'] !== []))
-        <div wire:key="week-{{ $week }}" class="space-y-4"
+        {{-- Keyed by the first day too, so small screens open a new focus date even within the same week. --}}
+        <div wire:key="week-{{ $week }}-{{ $initialDay }}" class="space-y-4"
              x-data="{
                  day: '{{ $initialDay }}',
                  dates: @js(array_column($days, 'date')),

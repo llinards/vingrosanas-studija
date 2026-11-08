@@ -163,4 +163,12 @@ trait ShowsWeekTimetable
     {
         return max($this->firstWeek(), min($this->lastWeek(), $week));
     }
+
+    /**
+     * Number of weeks from the current week to the week of the given date.
+     */
+    protected function weekOffset(Carbon $date): int
+    {
+        return (int) round(today()->startOfWeek(Carbon::MONDAY)->diffInWeeks($date->copy()->startOfWeek(Carbon::MONDAY)));
+    }
 }
